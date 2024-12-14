@@ -1,4 +1,7 @@
 Rails.application.routes.draw do
+  get 'users/index'
+  get 'users/update'
+  get 'users/delete'
   # devise_for :users
   devise_for :users, path: "", path_names: {
     sign_in: "login",
