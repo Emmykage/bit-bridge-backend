@@ -10,10 +10,87 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_12_14_143455) do
+ActiveRecord::Schema[7.1].define(version: 2024_12_18_081851) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
+
+  create_table "gift_cards", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "provider"
+    t.string "provision"
+    t.decimal "value"
+    t.text "header_info"
+    t.text "description"
+    t.integer "rating"
+    t.text "notice_info"
+    t.text "alert_info"
+    t.decimal "value_max"
+    t.decimal "value_min"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "order_details", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.decimal "total_amount"
+    t.integer "status"
+    t.integer "payment_method"
+    t.boolean "viewed"
+    t.decimal "net_total"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.index ["user_id"], name: "index_order_details_on_user_id"
+  end
+
+  create_table "order_items", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.integer "quantity"
+    t.decimal "amount"
+    t.uuid "product_id", null: false
+    t.uuid "order_details_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["order_details_id"], name: "index_order_items_on_order_details_id"
+    t.index ["product_id"], name: "index_order_items_on_product_id"
+  end
+
+  create_table "products", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.boolean "integer", default: false
+    t.boolean "featured", default: false
+    t.string "extra_info"
+    t.string "provider"
+    t.string "provision"
+    t.decimal "value"
+    t.text "header_info"
+    t.text "description"
+    t.integer "rating", default: 5
+    t.text "notice_info"
+    t.text "alert_info"
+    t.decimal "value_max"
+    t.decimal "value_min"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "transactions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.integer "status", default: 0
+    t.decimal "amount"
+    t.string "address"
+    t.integer "transaction_type", default: 0
+    t.uuid "wallet_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["wallet_id"], name: "index_transactions_on_wallet_id"
+  end
+
+  create_table "user_profiles", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "first_name"
+    t.string "last_name"
+    t.string "phone_number"
+    t.uuid "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_user_profiles_on_user_id"
+  end
 
   create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "email", default: "", null: false
@@ -29,4 +106,17 @@ ActiveRecord::Schema[7.1].define(version: 2024_12_14_143455) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "wallets", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_wallets_on_user_id"
+  end
+
+  add_foreign_key "order_details", "users"
+  add_foreign_key "order_items", "order_details", column: "order_details_id"
+  add_foreign_key "order_items", "products"
+  add_foreign_key "transactions", "wallets"
+  add_foreign_key "user_profiles", "users"
+  add_foreign_key "wallets", "users"
 end

@@ -1,7 +1,7 @@
-class Api::V1::UsersController < ApplicationController
-  def user_profile
+class Users::UsersController < ApplicationController
+  def index
 
-
+    binding.b
     render json: {data: current_user}, status: :ok
   end
 

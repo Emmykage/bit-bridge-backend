@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+
   get 'users/index'
   get 'users/update'
   get 'users/delete'
@@ -21,6 +22,31 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       # Define your API routes here
+      resources :products
+      resources :gift_cards
+      resources :transactions
+      resources :wallets do
+        collection do
+          get :user
+
+        end
+
+      end
+
+      resources :order_items
+      resources :order_details
+      resources :user_profiles do
+        collection do
+        get  :user
+        end
+      end
+      resources :users do
+        collection do
+        get  :user_profile
+        end
+      end
+
+
     end
   end
 
