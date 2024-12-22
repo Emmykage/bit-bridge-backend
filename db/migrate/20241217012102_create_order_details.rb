@@ -7,6 +7,9 @@ class CreateOrderDetails < ActiveRecord::Migration[7.1]
       t.boolean :viewed, default: 0
       t.decimal :net_total
 
+      t.references :user, null: false, foreign_key: true, type: :uuid
+
+
       t.timestamps
     end
   end

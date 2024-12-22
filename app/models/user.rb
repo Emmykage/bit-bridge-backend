@@ -30,10 +30,15 @@ class User < ApplicationRecord
 
   # end
 
-
+  # def after_database_authentication
+  #   create_wallet unless wallet
+  # end
 
   def initialize_wallet
-    build_wallet unless wallet
+    # build_wallet unless wallet
+    create_wallet unless wallet
+    # binding.b
+
   end
 
 end

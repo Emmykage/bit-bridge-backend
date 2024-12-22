@@ -4,7 +4,7 @@ class CreateOrderItems < ActiveRecord::Migration[7.1]
       t.integer :quantity, default: 1
       t.decimal :amount
       t.references :product, null: false, foreign_key: true, type: :uuid
-      t.references :order_details, null: false, foreign_key: true, type: :uuid
+      t.references :order_detail, null: false, foreign_key: true, type: :uuid
 
       t.timestamps
     end

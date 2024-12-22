@@ -34,7 +34,12 @@ Rails.application.routes.draw do
       end
 
       resources :order_items
-      resources :order_details
+      resources :order_details do
+        collection do
+          get :user
+        end
+      end
+
       resources :user_profiles do
         collection do
         get  :user

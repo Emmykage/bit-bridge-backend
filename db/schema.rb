@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_12_18_081851) do
+ActiveRecord::Schema[7.1].define(version: 2024_12_17_100150) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -32,41 +32,43 @@ ActiveRecord::Schema[7.1].define(version: 2024_12_18_081851) do
 
   create_table "order_details", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.decimal "total_amount"
-    t.integer "status"
-    t.integer "payment_method"
-    t.boolean "viewed"
+    t.integer "status", default: 0
+    t.integer "payment_method", default: 0
+    t.boolean "viewed", default: false
     t.decimal "net_total"
+    t.uuid "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.uuid "user_id", null: false
     t.index ["user_id"], name: "index_order_details_on_user_id"
   end
 
   create_table "order_items", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.integer "quantity"
+    t.integer "quantity", default: 1
     t.decimal "amount"
     t.uuid "product_id", null: false
-    t.uuid "order_details_id", null: false
+    t.uuid "order_detail_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["order_details_id"], name: "index_order_items_on_order_details_id"
+    t.index ["order_detail_id"], name: "index_order_items_on_order_detail_id"
     t.index ["product_id"], name: "index_order_items_on_product_id"
   end
 
   create_table "products", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.boolean "integer", default: false
     t.boolean "featured", default: false
     t.string "extra_info"
     t.string "provider"
+    t.string "image"
     t.string "provision"
-    t.decimal "value"
+    t.decimal "min_value"
+    t.decimal "max_value"
     t.text "header_info"
     t.text "description"
-    t.integer "rating", default: 5
-    t.text "notice_info"
+    t.integer "rate", default: 5
+    t.integer "category", default: 0
+    t.integer "currency", default: 0
+    t.text "info"
+    t.text "attention"
     t.text "alert_info"
-    t.decimal "value_max"
-    t.decimal "value_min"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -114,7 +116,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_12_18_081851) do
   end
 
   add_foreign_key "order_details", "users"
-  add_foreign_key "order_items", "order_details", column: "order_details_id"
+  add_foreign_key "order_items", "order_details"
   add_foreign_key "order_items", "products"
   add_foreign_key "transactions", "wallets"
   add_foreign_key "user_profiles", "users"

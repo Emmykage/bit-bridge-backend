@@ -18,7 +18,8 @@ class Api::V1::WalletsController < ApplicationController
 
     @wallet = current_user.wallet
     # binding.b
-    render json: {data: WalletSerializer.new(@wallet)}, status: :ok
+    # render json: {data: WalletSerializer.new(@wallet)}, status: :ok
+    render json: {data: current_user}, status: :ok
 
   end
 
