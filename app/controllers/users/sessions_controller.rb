@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Users::SessionsController < Devise::SessionsController
+  skip_before_action :authenticate_user!, except: %i[create ]
+
   respond_to :json
   include RackSessionFix
 

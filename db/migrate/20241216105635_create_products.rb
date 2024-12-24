@@ -15,7 +15,7 @@ class CreateProducts < ActiveRecord::Migration[7.1]
       t.integer :currency, default: 0
       t.text :info
       t.text :attention
-      t.text :alert_info
+      t.text :notice_info
 
       t.timestamps
     end

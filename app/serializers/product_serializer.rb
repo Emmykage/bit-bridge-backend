@@ -1,3 +1,3 @@
 class ProductSerializer < ActiveModel::Serializer
-  attributes :id, :product_type, :featured, :extra_info, :provider, :provision, :value, :header_info, :description, :rating, :notice_info, :alert_info, :value_max, :value_min
+  attributes :id, :featured, :extra_info, :provider, :provision, :min_value, :max_value, :header_info, :description, :rate, :info, :attention, :notice_info, :category, :currency
 end
