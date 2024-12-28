@@ -4,7 +4,7 @@
 # Create a default user
 User.find_or_create_by!(email: "emmiemenz@gmail.com") do |user|
     user.password = "chemistry101"
-    user.role = "client"
+    user.role = "admin"
   end
 
   # Seed product
