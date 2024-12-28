@@ -5,7 +5,7 @@ class Api::V1::TransactionsController < ApplicationController
   def index
     @transactions = Transaction.all
 
-    render json: @transactions
+    render json:{data: @transactions}
   end
 
   # GET /transactions/1
@@ -17,9 +17,9 @@ class Api::V1::TransactionsController < ApplicationController
   def create
 # binding.b
 
-if current_user.wallet.nil?
-  current_user.initialize_wallet
-end
+  if current_user.wallet.nil?
+    current_user.initialize_wallet
+  end
    @wallet =  current_user.wallet
     @transaction = @wallet.transactions.new(transaction_params)
 
@@ -33,9 +33,9 @@ end
   # PATCH/PUT /transactions/1
   def update
     if @transaction.update(transaction_params)
-      render json: @transaction
+      render json:{data: @transaction, message: "updated successfully"}
     else
-      render json: @transaction.errors, status: :unprocessable_entity
+      render json: {message: @transaction.errors.to_sentence}, status: :unprocessable_entity
     end
   end
 
@@ -52,6 +52,6 @@ end
 
     # Only allow a list of trusted parameters through.
     def transaction_params
-      params.require(:transaction).permit(:status, :amount, :address, :transaction_type, :wallet_id)
+      params.require(:transaction).permit(:status, :amount, :address, :proof, :transaction_type, :wallet_id)
     end
 end

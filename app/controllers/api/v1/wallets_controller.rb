@@ -14,12 +14,10 @@ class Api::V1::WalletsController < ApplicationController
   end
 
   def user
-    # binding.b
 
     @wallet = current_user.wallet
-    # binding.b
     # render json: {data: WalletSerializer.new(@wallet)}, status: :ok
-    render json: {data: current_user}, status: :ok
+    render json: {data: WalletSerializer.new(@wallet).as_json}, status: :ok
 
   end
 
