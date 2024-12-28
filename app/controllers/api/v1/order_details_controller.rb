@@ -56,6 +56,6 @@ class Api::V1::OrderDetailsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def order_detail_params
-      params.require(:order_detail).permit(:total_amount, :status, :payment_method, :viewed, :net_total, order_items_attributes: %i[quantity amount product_id ])
+      params.require(:order_detail).permit(:total_amount, :extra_info, :status, :payment_method, :viewed, :net_total,:order_type, :proof, order_items_attributes: %i[quantity amount product_id ])
     end
 end

@@ -18,8 +18,7 @@ class Wallet < ApplicationRecord
 
   def balance
 
-    total_deposit - (total_withdrawal + user.user_net_expense
-)
+    (total_deposit + user.total_sale) - (total_withdrawal + user.user_net_expense)
   end
 
 

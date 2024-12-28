@@ -19,23 +19,22 @@ class User < ApplicationRecord
 
 
   def user_net_expense
-    order_details.sum(:net_total)
+    order_details.sum(:total_amount)
   end
 
 
 
 
-  # def create_wallet
-  #   Wallet.create(user: self)
-
-  # end
+  def total_sale
+    order_details.where(order_type: "sell", status: "approved").sum(:total_amount)
+  end
 
   # def after_database_authentication
   #   create_wallet unless wallet
   # end
 
 
-  def admin?
+  def admin
     role == 'admin'
   end
   def initialize_wallet
