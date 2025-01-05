@@ -28,7 +28,9 @@ class Api::V1::OrderDetailsController < ApplicationController
     if @order_detail.save
       # Rails.logger.debug(@order_detail.errors.full_messages)
 
-      render json: {data: OrderDetailSerializer.new(@order_detail), message: "Order created"}, status: :created
+      render json: {data: OrderDetailSerializer.new(@order_detail), message: "Order created" }, status: :created
+      # render json: {data: OrderDetailSerializer.new(@order_detail), message: "Order created" }, status: :created
+
     else
       render json: {message: @order_detail.errors.full_messages}, status: :unprocessable_entity
     end

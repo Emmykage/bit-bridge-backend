@@ -34,7 +34,8 @@ class Api::V1::TransactionsController < ApplicationController
     @transaction = @wallet.transactions.new(transaction_params)
 
     if @transaction.save
-      render json: @transaction, status: :created
+      render json: {data: TransactionSerializer.new(@transaction), message: "Transaction created successfully" }, status: :created
+
     else
       render json: @transaction.errors, status: :unprocessable_entity
     end
