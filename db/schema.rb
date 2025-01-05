@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_12_28_181841) do
+ActiveRecord::Schema[7.1].define(version: 2024_12_29_072156) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -79,8 +79,10 @@ ActiveRecord::Schema[7.1].define(version: 2024_12_28_181841) do
     t.uuid "order_detail_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "provision_id"
     t.index ["order_detail_id"], name: "index_order_items_on_order_detail_id"
     t.index ["product_id"], name: "index_order_items_on_product_id"
+    t.index ["provision_id"], name: "index_order_items_on_provision_id"
   end
 
   create_table "products", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -101,6 +103,17 @@ ActiveRecord::Schema[7.1].define(version: 2024_12_28_181841) do
     t.text "notice_info"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "provisions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "name"
+    t.string "min_value"
+    t.string "max_value"
+    t.integer "provision_value_type"
+    t.uuid "product_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["product_id"], name: "index_provisions_on_product_id"
   end
 
   create_table "transactions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -151,6 +164,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_12_28_181841) do
   add_foreign_key "order_details", "users"
   add_foreign_key "order_items", "order_details"
   add_foreign_key "order_items", "products"
+  add_foreign_key "order_items", "provisions"
+  add_foreign_key "provisions", "products"
   add_foreign_key "transactions", "wallets"
   add_foreign_key "user_profiles", "users"
   add_foreign_key "wallets", "users"

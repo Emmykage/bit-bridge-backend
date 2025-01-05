@@ -8,6 +8,16 @@ class Api::V1::TransactionsController < ApplicationController
     render json:{data: @transactions}
   end
 
+  def user
+
+
+    transaction_type = params[:transaction_type]
+    @transactions = current_user.transactions
+    @transactions = @transactions.where(transaction_type: transaction_type) if transaction_type.present?
+
+    render json:{data:  ActiveModelSerializers::SerializableResource.new(@transactions)}
+  end
+
   # GET /transactions/1
   def show
     render json: @transaction

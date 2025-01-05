@@ -28,7 +28,7 @@ class Api::V1::OrderDetailsController < ApplicationController
     if @order_detail.save
       # Rails.logger.debug(@order_detail.errors.full_messages)
 
-      render json: {data: @order_detail, message: "Order created"}, status: :created
+      render json: {data: OrderDetailSerializer.new(@order_detail), message: "Order created"}, status: :created
     else
       render json: {message: @order_detail.errors.full_messages}, status: :unprocessable_entity
     end
@@ -56,6 +56,6 @@ class Api::V1::OrderDetailsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def order_detail_params
-      params.require(:order_detail).permit(:total_amount, :extra_info, :status, :payment_method, :viewed, :net_total,:order_type, :proof, order_items_attributes: %i[quantity amount product_id ])
+      params.require(:order_detail).permit(:total_amount, :extra_info, :status, :payment_method, :viewed, :net_total,:order_type, :proof, order_items_attributes: %i[quantity amount provision_id product_id ])
     end
 end

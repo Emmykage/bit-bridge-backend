@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resources :provisions
 
   get 'users/index'
   get 'users/update'
@@ -24,7 +25,11 @@ Rails.application.routes.draw do
       # Define your API routes here
       resources :products
       resources :gift_cards
-      resources :transactions
+      resources :transactions do
+        collection do
+        get :user
+        end
+      end
       resources :wallets do
         collection do
           get :user
