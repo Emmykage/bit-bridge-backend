@@ -9,8 +9,6 @@ class Api::V1::TransactionsController < ApplicationController
   end
 
   def user
-
-
     transaction_type = params[:transaction_type]
     @transactions = current_user.transactions
     @transactions = @transactions.where(transaction_type: transaction_type) if transaction_type.present?
