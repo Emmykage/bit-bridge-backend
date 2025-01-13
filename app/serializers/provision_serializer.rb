@@ -1,4 +1,4 @@
 class ProvisionSerializer < ActiveModel::Serializer
-  attributes :id, :name, :min_value, :max_value, :provision_value_type
+  attributes :id, :name, :min_value, :value, :provision_value_type, :description
   has_one :product
 end

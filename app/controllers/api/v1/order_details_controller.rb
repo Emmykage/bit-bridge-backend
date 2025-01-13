@@ -3,19 +3,19 @@ class Api::V1::OrderDetailsController < ApplicationController
 
   # GET /order_details
   def index
-    @order_details = current_user.order_details
+    @order_details = OrderDetail.all
+    render json: {data: ActiveModelSerializers::SerializableResource.new(@order_details)}, status: :ok
+  end
 
-    render json: {data: @order_details}, status: :ok
+
+  def user
+    @order_details = current_user.order_details
+    render json: {data: ActiveModelSerializers::SerializableResource.new(@order_details)}, status: :ok
   end
 
   # GET /order_details/1
   def show
     render json: @order_detail
-  end
-
-  def user
-    @orders = current_user.order_details
-    render json: {data: @orders}, status: :ok
   end
 
 

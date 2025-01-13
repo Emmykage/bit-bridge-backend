@@ -2,6 +2,7 @@ class OrderDetail < ApplicationRecord
     has_one_attached :proof
     belongs_to :user
     has_many :order_items
+    has_many :provisions, through: :order_items
     # validates :total_amount, presence: true,  numericality: {greater_than: 0}
     enum :order_type,  { buy: 0, sell: 1}
     enum :status,  {pending: 0, approved: 1, declined: 2}

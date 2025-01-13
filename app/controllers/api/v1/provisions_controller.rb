@@ -1,11 +1,10 @@
-class ProvisionsController < ApplicationController
+class Api::V1::ProvisionsController < ApplicationController
   before_action :set_provision, only: %i[ show update destroy ]
 
   # GET /provisions
   def index
     @provisions = Provision.all
-
-    render json: @provisions
+    render json: {data: ActiveModelSerializers::SerializableResource.new(@provisions)}
   end
 
   # GET /provisions/1
@@ -18,11 +17,12 @@ class ProvisionsController < ApplicationController
     @provision = Provision.new(provision_params)
 
     if @provision.save
-      render json: @provision, status: :created, location: @provision
+      render json:{data: ProvisionSerializer.new(@provision)}, status: :created
     else
-      render json: @provision.errors, status: :unprocessable_entity
+      render json: @provision.errors.full_messages.to_sentence, status: :unprocessable_entity
     end
   end
+
 
   # PATCH/PUT /provisions/1
   def update
@@ -46,6 +46,6 @@ class ProvisionsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def provision_params
-      params.require(:provision).permit(:name, :min_value, :max_value, :provision_value_type, :product_id)
+      params.require(:provision).permit(:name, :value, :description, :currency,  :min_value, :max_value, :provision_value_type, :product_id)
     end
 end

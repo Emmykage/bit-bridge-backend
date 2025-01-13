@@ -11,7 +11,8 @@ class Api::V1::ProductsController < ApplicationController
 
   # GET /products/1
   def show
-    render json: @product
+    render json: {data: ProductSerializer.new(@product)}
+
   end
 
   # POST /products
@@ -37,6 +38,10 @@ class Api::V1::ProductsController < ApplicationController
   # DELETE /products/1
   def destroy
     @product.destroy!
+
+    render json: {
+      message: "Deleted Successfully"
+    }, status: :ok
   end
 
   private
