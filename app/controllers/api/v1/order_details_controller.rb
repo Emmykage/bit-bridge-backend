@@ -15,7 +15,7 @@ class Api::V1::OrderDetailsController < ApplicationController
 
   # GET /order_details/1
   def show
-    render json: @order_detail
+    render json: {data: OrderDetailSerializer.new(@order_detail), message: "Order created" }, status: :ok
   end
 
 

@@ -1,6 +1,6 @@
 class Api::V1::ProvisionsController < ApplicationController
   before_action :set_provision, only: %i[ show update destroy ]
-
+  skip_before_action :authenticate_user!, only: %i[index]
   # GET /provisions
   def index
     @provisions = Provision.all
@@ -46,6 +46,6 @@ class Api::V1::ProvisionsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def provision_params
-      params.require(:provision).permit(:name, :value, :description, :currency,  :min_value, :max_value, :provision_value_type, :product_id)
+      params.require(:provision).permit(:name, :value, :description, :currency,  :min_value, :max_value, :provision_value_type, :product_id, :info, :notice)
     end
 end

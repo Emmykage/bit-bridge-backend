@@ -7,5 +7,6 @@ class OrderItem < ApplicationRecord
 
 
   validates :amount, numericality: { greater_than: 0 }
+  validates :quantity, numericality: { greater_than: 0 }
 
 end
