@@ -9,7 +9,7 @@ class Product < ApplicationRecord
 
     def photo_url
         Rails.application.routes.url_helpers.url_for(photo) if photo.attached?
-      end
+    end
 
 end
 
