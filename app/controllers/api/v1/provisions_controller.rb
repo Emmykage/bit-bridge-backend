@@ -19,7 +19,7 @@ class Api::V1::ProvisionsController < ApplicationController
     if @provision.save
       render json:{data: ProvisionSerializer.new(@provision)}, status: :created
     else
-      render json: @provision.errors.full_messages.to_sentence, status: :unprocessable_entity
+      render json: {message: @provision.errors.full_messages.to_sentence}, status: :unprocessable_entity
     end
   end
 
