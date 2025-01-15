@@ -17,7 +17,7 @@ class Api::V1::ProvisionsController < ApplicationController
     @provision = Provision.new(provision_params)
 
     if @provision.save
-      render json:{data: ProvisionSerializer.new(@provision)}, status: :created
+      render json:{data: ProvisionSerializer.new(@provision), message: "provision has been created"}, status: :created
     else
       render json: {message: @provision.errors.full_messages.to_sentence}, status: :unprocessable_entity
     end

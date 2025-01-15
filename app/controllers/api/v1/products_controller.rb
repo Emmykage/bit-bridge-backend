@@ -29,9 +29,9 @@ class Api::V1::ProductsController < ApplicationController
   # PATCH/PUT /products/1
   def update
     if @product.update(product_params)
-      render json: @product
+      render json: {data: ProductSerializer.new(@product), message: "Product updated"}, status: :ok
     else
-      render json: @product.errors, status: :unprocessable_entity
+      render json: {message: @product.errors.full_messages}, status: :unprocessable_entity
     end
   end
 
