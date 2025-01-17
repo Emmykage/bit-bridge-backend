@@ -3,8 +3,21 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
+
+  config.action_mailer.delivery_method = :smtp
+  host = "bitbridgeglobal.com"
+  config.action_mailer.default_url_options = { host: host }
   # Code is not reloaded between requests.
   config.enable_reloading = false
+
+  config.action_mailer.smtp_settings = {
+    :address              => "smtp.hostinger.com",
+    :port                 => 587,
+    :user_name            => "support@bitbridgeglobal.com",
+    :password             => "@Fintelvalues123",
+    :authentication       => "plain",
+    :enable_starttls_auto => true
+  }
 
   # Eager load code on boot. This eager loads most of Rails and
   # your application in memory, allowing both threaded web servers

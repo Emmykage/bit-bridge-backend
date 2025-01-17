@@ -3,7 +3,7 @@ class Api::V1::TransactionsController < ApplicationController
 
   # GET /transactions
   def index
-    @transactions = Transaction.all
+    @transactions = Transaction.all.order(created_at: :desc)
 
     render json:{data: @transactions}
   end
@@ -35,7 +35,7 @@ class Api::V1::TransactionsController < ApplicationController
       render json: {data: TransactionSerializer.new(@transaction), message: "Transaction created successfully" }, status: :created
 
     else
-      render json: @transaction.errors, status: :unprocessable_entity
+      render json:{message: @transaction.errors.full_messages.to_sentence}, status: :unprocessable_entity
     end
   end
 
@@ -44,7 +44,7 @@ class Api::V1::TransactionsController < ApplicationController
     if @transaction.update(transaction_params)
       render json:{data: @transaction, message: "updated successfully"}
     else
-      render json: {message: @transaction.errors.to_sentence}, status: :unprocessable_entity
+      render json: {message: @transaction.errors.full_messages.to_sentence}, status: :unprocessable_entity
     end
   end
 
@@ -61,6 +61,6 @@ class Api::V1::TransactionsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def transaction_params
-      params.require(:transaction).permit(:status, :amount, :address, :proof, :transaction_type, :wallet_id)
+      params.require(:transaction).permit(:status, :amount, :address, :proof, :transaction_type, :coin_type, :wallet_id)
     end
 end
