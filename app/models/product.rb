@@ -2,8 +2,7 @@ class Product < ApplicationRecord
     has_one_attached :photo
     has_many :order_items
     has_many :provisions
-    # validates :provision, presence: true, uniqueness: true
-    # enum :currency,  {ngn: 0, usd: 1, gbp: 2}
+
     enum :category,  {"mobile provider" =>  0, "gift card" => 1,  service: 2 }
 
 

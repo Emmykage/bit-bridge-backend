@@ -21,7 +21,14 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
+      get "payment-processor/get-balance", to: "payment_processors#get_balance"
       # Define your API routes here
+      resource :payment_processors do
+        collection do
+          post :payment_order
+          post :verify_meter
+        end
+      end
       resources :products
       resources :provisions
       resources :gift_cards
