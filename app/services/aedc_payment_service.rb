@@ -2,7 +2,8 @@ require 'uri'
 class AedcPaymentService
     include HTTParty
 
-    base_uri Rails.env.production? ? 'https://vtpass.com/api' : 'https://sandbox.vtpass.com/api'
+    # base_uri Rails.env.production? ? 'https://vtpass.com/api' : 'https://sandbox.vtpass.com/api'
+    base_uri 'https://sandbox.vtpass.com/api'
 
 
     def initialize()
