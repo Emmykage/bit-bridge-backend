@@ -22,10 +22,40 @@ class AedcPaymentService
         }
 
 
+        def process_payment(payment_processor_params)
+            verify_meter_params= {
+                type: payment_processor_params[:variation_code],
+                billersCode: payment_processor_params[:billersCode],
+                serviceID: payment_processor_params[:serviceID]
+            }
+
+          res = verify_meter(verify_meter_params)
+
+          electric_bill_order = ElectricBillOrder.new(
+            meter_number: res["content"]["MeterNumber"],
+            meter_type: payment_processor_params[:variation_code],
+            meter_address: res["content"]["Address"],
+            customer_name: res["content"]["Customer_Name"],
+            email: payment_processor_params[:email],
+            amount: payment_processor_params[:amount],
+            request_id: payment_processor_params[:request_id],
+            phone: payment_processor_params[:phone],
+            serviceID: payment_processor_params[:serviceID],
+            request_id: payment_processor_params[:request_id],
+            )
+            electric_bill_order.save
+
+            electric_bill_order
+
+
+        end
+
+
+
         def verify_meter(verify_processor_params)
             begin
-            body = verify_processor_params.to_json
-            response = self.class.post("/merchant-verify", headers: @get_headers, body: body  )
+            body = verify_processor_params
+            response = self.class.post("/merchant-verify", headers: @post_headers, body: body  )
 
             if response.success?
                 return response
@@ -40,20 +70,28 @@ class AedcPaymentService
 
         end
 
-        def pay_power(payment_processor_params)
+        def pay_power(electric_bill_order)
+            body = {
 
+            billersCode: electric_bill_order["meter_number"],
+            amount: electric_bill_order["amount"],
+            request_id: electric_bill_order["request_id"],
+            variation_code: electric_bill_order["meter_type"],
+            phone: electric_bill_order["phone"],
+            serviceID: electric_bill_order["serviceID"],
+            email: electric_bill_order["email"]
+        }
 
-            body = payment_processor_params.to_h
-
-
+        # binding.b
 
             begin
 
               response = self.class.post("/pay", headers: @post_headers, body: body)
 
               if response.success?
-                return response
-              else
+                electric_bill_order.update(status: "completed", token: response["Token"], transaction_id: response["content"]["transactions"]["transactionId"])
+                return { response: electric_bill_order }
+            else
                 return raise "API Error #{response.body} - #{response.code}"
 
               end
