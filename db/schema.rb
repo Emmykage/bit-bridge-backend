@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_01_20_132523) do
+ActiveRecord::Schema[7.1].define(version: 2025_01_22_032832) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -59,6 +59,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_01_20_132523) do
     t.string "transaction_id"
     t.decimal "amount"
     t.string "token"
+    t.decimal "total_amount"
     t.index ["order_detail_id"], name: "index_electric_bill_orders_on_order_detail_id"
   end
 
@@ -137,6 +138,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_01_20_132523) do
     t.integer "currency", default: 0
     t.text "info"
     t.text "notice"
+    t.decimal "value_range", default: [], array: true
     t.index ["product_id"], name: "index_provisions_on_product_id"
   end
 

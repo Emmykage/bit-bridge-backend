@@ -8,36 +8,44 @@ class Api::V1:: PaymentProcessorsController < ApplicationController
     end
 
     def show
-
         render json:{data:  @electric_bill_order}
     end
 
     def approve_payment
         service = AedcPaymentService.new
-        response = service.pay_power(@electric_bill_order)
+        service_response = service.pay_power(@electric_bill_order)
+        if service_response[:status] == "success"
+            render json: { success: true, data: service_response[:response], message: "payment confirmed" }, status: :ok
+        else
+            render json: { success: false, message: service_response[:response] }, status: :unprocessable_entity
+        end
 
-        render json: { success: true, data: response[:response], message: "payment confirmed" }, status: :ok
 
     end
 
 
-    def payment_order
-        service = AedcPaymentService.new
-        response =   service.pay_power(payment_processor_params)
+    # def payment_order
+    #     service = AedcPaymentService.new
+    #     response =   service.pay_power(payment_processor_params)
 
 
-        # render json: @provision.errors, status: :ok
+    #     # render json: @provision.errors, status: :ok
 
 
-        render json: {data: response}
+    #     render json: {data: response}
 
-    end
+    # end
 
     def process_payment
         service = AedcPaymentService.new
-        response = service.process_payment(payment_processor_params)
+        service_response = service.process_payment(payment_processor_params)
 
-        render json: {data: response, message: "Transaction initiated"}, status: :created
+        if service_response[:status] == "success"
+
+            render json: {data: service_response[:response], message: "Transaction initiated"}, status: :created
+        else
+            render json: { message: service_response[:response]}, status: :unprocessable_entity
+        end
 
 
     end

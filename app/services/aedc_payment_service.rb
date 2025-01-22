@@ -7,9 +7,9 @@ class AedcPaymentService
 
 
     def initialize()
-        api_key = "954f481698605fc0ffc27f24184928cd"
-        public_key ="PK_4489272b5d44ab753dad880508a0b58e9d27b25d5a3"
-        secret_key = "SK_548649124522dedaaa994acbb4779e91f9e8c7abf1a"
+        api_key = "5abfd3634000545546e91094b1c1bc27"
+        public_key ="PK_3319f11930fec21677595bdce2807c33fc2d0f84b0f"
+        secret_key = "SK_14174fe2e55c6e8b115911f80d994e236774845c97c"
 
         @get_headers = {
             "api-key" =>  api_key,
@@ -22,13 +22,17 @@ class AedcPaymentService
 
         }
 
+    end
 
-        def process_payment(payment_processor_params)
+
+    def process_payment(payment_processor_params)
             verify_meter_params= {
                 type: payment_processor_params[:variation_code],
                 billersCode: payment_processor_params[:billersCode],
                 serviceID: payment_processor_params[:serviceID]
             }
+
+            begin
 
           res = verify_meter(verify_meter_params)
 
@@ -42,68 +46,81 @@ class AedcPaymentService
             request_id: payment_processor_params[:request_id],
             phone: payment_processor_params[:phone],
             serviceID: payment_processor_params[:serviceID],
-            request_id: payment_processor_params[:request_id],
             )
-            electric_bill_order.save
 
-            electric_bill_order
+            # binding.b
+
+            if electric_bill_order.save
+                return {response: electric_bill_order, status: "success"}
+            else
+                return {response:  electric_bill_order.errors, status: "error"}
+            end
+
+            rescue StandardError => e
+                return {response: "#{e.message}", status: "error"}
+
+            end
 
 
-        end
+
+
+    end
 
 
 
-        def verify_meter(verify_processor_params)
-            begin
+    def verify_meter(verify_processor_params)
+        begin
             body = verify_processor_params
             response = self.class.post("/merchant-verify", headers: @post_headers, body: body  )
 
-            if response.success?
-                return response
-            else
-                raise "API Error: #{response.code} - #{response.body}"
+            if response.success? && response["content"]["error"].present?
+            raise response["content"]["error"]
 
-            end
-            rescue StandardError => e
-                raise "API Error: #{e.message}"
+        else
+             return response
 
-            end
+        end
+        rescue StandardError => e
+            raise e.message
+            # return {message: "#{e.message}"}
+
 
         end
 
-        def pay_power(electric_bill_order)
-            body = {
+    end
 
-            billersCode: electric_bill_order["meter_number"],
-            amount: electric_bill_order["amount"],
-            request_id: electric_bill_order["request_id"],
-            variation_code: electric_bill_order["meter_type"],
-            phone: electric_bill_order["phone"],
-            serviceID: electric_bill_order["serviceID"],
-            email: electric_bill_order["email"]
+    def pay_power(electric_bill_order)
+        body = {
+
+        billersCode: electric_bill_order["meter_number"],
+        amount: electric_bill_order["amount"],
+        request_id: electric_bill_order["request_id"],
+        variation_code: electric_bill_order["meter_type"],
+        phone: electric_bill_order["phone"],
+        serviceID: electric_bill_order["serviceID"],
+        email: electric_bill_order["email"]
         }
 
-        # binding.b
+
 
             begin
 
               response = self.class.post("/pay", headers: @post_headers, body: body)
 
-              if response.success?
-                electric_bill_order.update(status: "completed", token: response["Token"], transaction_id: response["content"]["transactions"]["transactionId"])
-                return { response: electric_bill_order }
-            else
-                return raise "API Error #{response.body} - #{response.code}"
+              if response["code"] == "000" && response.success?
 
-              end
+                electric_bill_order.update(status: "completed", token: response["Token"], transaction_id: response["content"]["transactions"]["transactionId"])
+                return { response: electric_bill_order, status: "success" }
+             else
+                    return {response: response["response_description"], status: "error"}
+            end
 
 
             rescue StandardError => e
-                raise "API Error: #{e.message}"
+                return {response: "#{e.message}", status: "error"}
 
             end
 
-        end
 
 
     end
