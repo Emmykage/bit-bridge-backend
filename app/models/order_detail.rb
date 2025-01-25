@@ -14,7 +14,7 @@ class OrderDetail < ApplicationRecord
 
 
     def add_total
-        self.total_amount = order_items.sum(&:amount)
+        self.total_amount = order_items.sum(&:amount) unless self.total_amount.present?
     end
 
 

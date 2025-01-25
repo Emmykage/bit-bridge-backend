@@ -23,19 +23,6 @@ class Api::V1:: PaymentProcessorsController < ApplicationController
 
     end
 
-
-    # def payment_order
-    #     service = AedcPaymentService.new
-    #     response =   service.pay_power(payment_processor_params)
-
-
-    #     # render json: @provision.errors, status: :ok
-
-
-    #     render json: {data: response}
-
-    # end
-
     def process_payment
         service = AedcPaymentService.new
         service_response = service.process_payment(payment_processor_params)

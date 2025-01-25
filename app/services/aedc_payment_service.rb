@@ -37,7 +37,8 @@ class AedcPaymentService
           res = verify_meter(verify_meter_params)
 
           electric_bill_order = ElectricBillOrder.new(
-            meter_number: res["content"]["MeterNumber"],
+            meter_number: payment_processor_params[:billersCode],
+            # meter_number: res["content"]["Meter_Number"] || res["content"]["MeterNumber"],
             meter_type: payment_processor_params[:variation_code],
             meter_address: res["content"]["Address"],
             customer_name: res["content"]["Customer_Name"],
@@ -48,7 +49,6 @@ class AedcPaymentService
             serviceID: payment_processor_params[:serviceID],
             )
 
-            # binding.b
 
             if electric_bill_order.save
                 return {response: electric_bill_order, status: "success"}
@@ -71,6 +71,7 @@ class AedcPaymentService
     def verify_meter(verify_processor_params)
         begin
             body = verify_processor_params
+
             response = self.class.post("/merchant-verify", headers: @post_headers, body: body  )
 
             if response.success? && response["content"]["error"].present?
@@ -106,10 +107,11 @@ class AedcPaymentService
             begin
 
               response = self.class.post("/pay", headers: @post_headers, body: body)
+              binding.b
 
               if response["code"] == "000" && response.success?
 
-                electric_bill_order.update(status: "completed", token: response["Token"], transaction_id: response["content"]["transactions"]["transactionId"])
+                electric_bill_order.update(status: "completed", token: response["purchased_code"], transaction_id: response["content"]["transactions"]["transactionId"])
                 return { response: electric_bill_order, status: "success" }
              else
                     return {response: response["response_description"], status: "error"}
