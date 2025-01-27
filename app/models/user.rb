@@ -17,7 +17,7 @@ class User < ApplicationRecord
 
 
   after_create :initialize_wallet
-  after_create :send_emmail_confirmation
+  after_create :send_email_confirmation
 
 
   def user_net_expense
@@ -46,7 +46,7 @@ class User < ApplicationRecord
 
   end
 
-  def send_emmail_confirmation
+  def send_email_confirmation
     UserMailer.welcome_email(self).deliver_later
     # SendConfirmationEmailInstructionJob.perform_later
 
