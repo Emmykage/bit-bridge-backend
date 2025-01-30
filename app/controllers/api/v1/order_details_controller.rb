@@ -3,7 +3,7 @@ class Api::V1::OrderDetailsController < ApplicationController
 
   # GET /order_details
   def index
-    @order_details = OrderDetail.all
+    @order_details = OrderDetail.all.order(created_at: :desc)
     render json: {data: ActiveModelSerializers::SerializableResource.new(@order_details)}, status: :ok
   end
 
@@ -15,7 +15,7 @@ class Api::V1::OrderDetailsController < ApplicationController
 
   # GET /order_details/1
   def show
-    render json: {data: OrderDetailSerializer.new(@order_detail), message: "Order created" }, status: :ok
+    render json: {data: OrderDetailSerializer.new(@order_detail)}, status: :ok
   end
 
 
@@ -53,7 +53,7 @@ class Api::V1::OrderDetailsController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_order_detail
-      @order_detail = OrderDetail.find(params[:id])
+      @order_detail = OrderDetail.includes(order_items: [:card_token,  :provision, :product]).find(params[:id])
     end
 
     # Only allow a list of trusted parameters through.

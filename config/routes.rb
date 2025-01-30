@@ -35,7 +35,11 @@ Rails.application.routes.draw do
         end
 
       end
-
+      resources :card_tokens do
+        collection do
+          get :user
+        end
+      end
       resources :products
       resources :provisions
       resources :gift_cards

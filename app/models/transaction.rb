@@ -8,6 +8,7 @@ class Transaction < ApplicationRecord
   enum :transaction_type, {deposit: 0, withdrawal: 1}
   enum :coin_type, {usdt: 0, bitcoin: 1, dodgecoin: 2, bank: 3}
 
+  default_scope { order(created_at: :desc)}
   validate :validate_transaction, if: :withdrawal
 
 

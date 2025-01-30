@@ -8,6 +8,8 @@ class User < ApplicationRecord
         has_one :wallet, class_name: "Wallet"
         has_many :transactions, through: :wallet
         has_many :order_details
+        has_many :order_items, through: :order_details
+        has_many :card_tokens, through: :order_items
   has_one :user_profile
 
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_01_22_032832) do
+ActiveRecord::Schema[7.1].define(version: 2025_01_27_111406) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -41,6 +41,15 @@ ActiveRecord::Schema[7.1].define(version: 2025_01_22_032832) do
     t.uuid "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "card_tokens", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.boolean "reveal"
+    t.uuid "order_item_id", null: false
+    t.string "token"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["order_item_id"], name: "index_card_tokens_on_order_item_id"
   end
 
   create_table "electric_bill_orders", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -188,6 +197,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_01_22_032832) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "card_tokens", "order_items"
   add_foreign_key "electric_bill_orders", "order_details"
   add_foreign_key "order_details", "users"
   add_foreign_key "order_items", "order_details"
