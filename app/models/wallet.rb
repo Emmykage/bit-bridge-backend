@@ -9,7 +9,7 @@ class Wallet < ApplicationRecord
 
   def total_withdrawal
     # transactions.where(transaction_type: "withdrawal", status: "approved").sum(:amount)
-    transactions.where(transaction_type: "withdrawal", status: "approved", status: "pending").sum(:amount)
+    transactions.where(transaction_type: "withdrawal", status: [ "approved", "pending"]).sum(:amount)
   end
 
   def total_deposit
