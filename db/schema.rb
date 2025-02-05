@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_01_27_111406) do
+ActiveRecord::Schema[7.1].define(version: 2025_02_04_141801) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -50,6 +50,14 @@ ActiveRecord::Schema[7.1].define(version: 2025_01_27_111406) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["order_item_id"], name: "index_card_tokens_on_order_item_id"
+  end
+
+  create_table "currencies", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.text "currency_rates"
+    t.string "rate_time_stamp"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.jsonb "exchange_rates"
   end
 
   create_table "electric_bill_orders", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

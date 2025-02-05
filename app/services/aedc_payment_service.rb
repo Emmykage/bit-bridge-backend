@@ -107,7 +107,6 @@ class AedcPaymentService
             begin
 
               response = self.class.post("/pay", headers: @post_headers, body: body)
-              binding.b
 
               if response["code"] == "000" && response.success?
 
