@@ -9,17 +9,17 @@ class OrderDetail < ApplicationRecord
     enum :payment_method,  { wallet: 0}
     enum :status,  {pending: 0, approved: 1, declined: 2}
 
-
-
-
-
     before_save :add_total
     accepts_nested_attributes_for :order_items
 
 
 
     def add_total
-        self.total_amount = order_items.sum(&:amount) unless self.total_amount.present?
+        conversion = CurrencyService.new("ngn", "usd")
+
+
+        self.total_amount = order_items.collect{|item| conversion.get_calculated_rate(item.amount)[:rate]}.sum
+        # self.total_amount = order_items.sum(&:amount) unless self.total_amount.present?
     end
 
 

@@ -6,11 +6,10 @@ class CurrencyService
 
     base_uri "https://api.coingecko.com/api/v3"
 
-    def initialize( from_curr, to_curr, amount)
+    def initialize( from_curr, to_curr)
 
         @from_curr = from_curr
         @to_curr = to_curr
-        @amount = amount
 
     end
 
@@ -79,9 +78,37 @@ class CurrencyService
             end
 
         rescue StandardError => e
-            binding.b
-            return {message: "#{e.message}", status: "error"}
+            raise e.message
+
+
         end
+
+
+    end
+
+    def get_calculated_rate(amount)
+
+
+
+        begin
+
+
+        to_value = get_conversion[:response][:to_rate]
+        from_value = get_conversion[:response][:from_rate]
+
+        calculated_rate = (to_value * amount.to_i)/from_value
+
+
+        return {from_curr: from_value, to_curr: to_value, rate: calculated_rate}
+
+
+        rescue StandardError => e
+
+            return {message: "#{e.message}", status: "error"}
+
+
+        end
+
 
     end
 

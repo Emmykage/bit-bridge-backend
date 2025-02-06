@@ -1,8 +1,8 @@
 class Api::V1:: PaymentProcessorsController < ApplicationController
     before_action :set_electric_bill_order, only: %i[ show approve_payment ]
-
+    skip_before_action :authenticate_user!
     def verify_meter
-        service = AedcPaymentService.new
+        service = BuyPowerPaymentService.new
         service.verify_meter(verify_processor_params)
 
     end
@@ -12,7 +12,7 @@ class Api::V1:: PaymentProcessorsController < ApplicationController
     end
 
     def approve_payment
-        service = AedcPaymentService.new
+        service = BuyPowerPaymentService.new
         service_response = service.pay_power(@electric_bill_order)
         if service_response[:status] == "success"
             render json: { success: true, data: service_response[:response], message: "payment confirmed" }, status: :ok
@@ -24,7 +24,9 @@ class Api::V1:: PaymentProcessorsController < ApplicationController
     end
 
     def process_payment
-        service = AedcPaymentService.new
+
+        service = BuyPowerPaymentService.new
+
         service_response = service.process_payment(payment_processor_params)
 
         if service_response[:status] == "success"

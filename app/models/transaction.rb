@@ -24,6 +24,11 @@ class Transaction < ApplicationRecord
     user.email
   end
 
+  # def insert_usd
+
+  # end
+
+
 
 
 

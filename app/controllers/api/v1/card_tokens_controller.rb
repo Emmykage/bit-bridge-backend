@@ -4,8 +4,6 @@ class Api::V1::CardTokensController < ApplicationController
   # GET /card_tokens
   def index
     @card_tokens = CardToken.all
-    # binding.b
-
     render json: {data: ActiveModelSerializers::SerializableResource.new(@card_tokens)}
   end
 

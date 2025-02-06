@@ -8,16 +8,17 @@ class Api::V1::CurrenciesController < ApplicationController
         to = params[:to_curr]
         amount = params[:amount]
 
-        conversion = CurrencyService.new(from, to ,amount)
-        response = conversion.get_conversion
+        conversion = CurrencyService.new(from, to)
+        # response = conversion.get_conversion
+
+        response = conversion.get_calculated_rate(amount)
 
 
         if response[:status] == "error"
         render json: {message: response[:message] }
 
         else
-            #    binding.b
-            render json: {data: response[:response] }
+            render json: {data: response }
 
         end
     end

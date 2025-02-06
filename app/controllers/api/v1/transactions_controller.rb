@@ -23,7 +23,6 @@ class Api::V1::TransactionsController < ApplicationController
 
   # POST /transactions
   def create
-# binding.b
 
   if current_user.wallet.nil?
     current_user.initialize_wallet
