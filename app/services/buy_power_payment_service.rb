@@ -30,28 +30,30 @@ class BuyPowerPaymentService
 
             res = verify_meter(payment_processor_params)
 
-
-            # binding.b
-          electric_bill_order = ElectricBillOrder.new(
+          bill_order = BillOrder.new(
             meter_number: payment_processor_params[:billersCode],
-            meter_type: payment_processor_params[:variation_code],
-            meter_address: res["address"],
-            customer_name: res["name"],
+            meter_type: res["vendType"],
+            address: res["address"],
+            name: res["name"],
+            tariff_class: payment_processor_params[:tariff_class],
+            service_type: payment_processor_params[:service_type],
             email: payment_processor_params[:email],
             amount: payment_processor_params[:amount],
-            request_id: res["orderId"],
             phone: payment_processor_params[:phone],
-            serviceID: payment_processor_params[:serviceID],
+            biller: payment_processor_params[:biller],
             )
 
+            if bill_order.save
 
-            if electric_bill_order.save
-                return {response: electric_bill_order, status: "success"}
+                return {response: bill_order, status: "success"}
             else
-                return {response:  electric_bill_order.errors, status: "error"}
+
+
+                return {response:  bill_order.errors, status: "error"}
             end
 
             rescue StandardError => e
+
                 return {response: "#{e.message}", status: "error"}
 
             end
@@ -65,14 +67,16 @@ class BuyPowerPaymentService
 
     def verify_meter(verify_processor_params)
 
-        meter_no = verify_processor_params[:billersCode]
-        biller = verify_processor_params[:serviceID]
-        type = verify_processor_params[:variation_code]
+        meter_number = verify_processor_params[:billersCode]
+        biller = verify_processor_params[:biller]
+        meter_type = verify_processor_params[:meter_type]
+        service_type = verify_processor_params[:service_type].upcase
+
+
         begin
             body = verify_processor_params
 
-            response = self.class.get("/check/meter?meter=#{meter_no}&disco=#{biller}&vendType=#{type}&vertical=ELECTRICITY&orderId=false", headers: @get_headers )
-
+            response = self.class.get("/check/meter?meter=#{meter_number}&disco=#{biller}&vendType=#{meter_type}&vertical=#{service_type}&orderId=false", headers: @get_headers )
 
 
             if !response.success?
@@ -99,25 +103,25 @@ class BuyPowerPaymentService
         orderId: electric_bill_order["id"],
         vendType: electric_bill_order["meter_type"],
         phone: electric_bill_order["phone"],
-        disco: electric_bill_order["serviceID"],
-        vertical: "ELECTRICITY"
-        paymentType: "online"
-        # tariffClass: ""
+        disco: electric_bill_order["biller"],
+        vertical: electric_bill_order["service_type"],
+        paymentType: electric_bill_order["payment_type"],
+        name: electric_bill_order["name"],
         email: electric_bill_order["email"]
         }
 
 
-
             begin
 
-              response = self.class.post("/pay", headers: @post_headers, body: body)
+              response = self.class.post("/vend", headers: @post_headers, body: body)
 
               if response.success?
 
-                electric_bill_order.update(status: "completed", token: response["purchased_code"], transaction_id: response["content"]["transactions"]["transactionId"])
+                electric_bill_order.update(status: "completed", units: response["data"]["units"],  token: response["data"]["token"], transaction_id: response["data"]["id"])
                 return { response: electric_bill_order, status: "success" }
              else
-                    return {response: response["response_description"], status: "error"}
+
+                    raise response["message"]
             end
 
 
@@ -130,33 +134,38 @@ class BuyPowerPaymentService
 
     end
 
+
+
+
     def pay_data(electric_bill_order)
+
         body = {
 
         meter: electric_bill_order["meter_number"],
         amount: electric_bill_order["amount"],
         orderId: electric_bill_order["id"],
         vendType: electric_bill_order["meter_type"],
-        phone: electric_bill_order["phone"],
-        disco: electric_bill_order["serviceID"],
-        vertical: "ELECTRICITY"
-        paymentType: "online"
-        tariffClass: ""
-        email: electric_bill_order["email"]
+        phone: electric_bill_order["meter_number"],
+        disco: electric_bill_order["biller"],
+        vertical: electric_bill_order["service_type"],
+        paymentType: electric_bill_order["payment_type"],
+        name: electric_bill_order["name"],
+        email: electric_bill_order["email"],
+        tariffClass: electric_bill_order["tariff_class"]
         }
-
 
 
             begin
 
-              response = self.class.post("/pay", headers: @post_headers, body: body)
+              response = self.class.post("/vend", headers: @post_headers, body: body)
 
-              if response["code"] == "000" && response.success?
+              if response.success?
 
-                electric_bill_order.update(status: "completed", token: response["purchased_code"], transaction_id: response["content"]["transactions"]["transactionId"])
+                electric_bill_order.update(status: "completed", units: response["data"]["units"],  token: response["data"]["token"], transaction_id: response["data"]["id"])
                 return { response: electric_bill_order, status: "success" }
              else
-                    return {response: response["response_description"], status: "error"}
+
+                    raise response["message"]
             end
 
 
@@ -168,6 +177,98 @@ class BuyPowerPaymentService
 
 
     end
+
+    def confirm_subscription(electric_bill_order)
+
+        body = {
+
+        meter: electric_bill_order["meter_number"],
+        amount: electric_bill_order["amount"],
+        orderId: electric_bill_order["id"],
+        vendType: electric_bill_order["meter_type"],
+        phone: electric_bill_order["meter_number"],
+        disco: electric_bill_order["biller"],
+        vertical: electric_bill_order["service_type"],
+        paymentType: electric_bill_order["payment_type"],
+        name: electric_bill_order["name"],
+        email: electric_bill_order["email"],
+        tariffClass: electric_bill_order["tariff_class"]
+        }
+
+
+            begin
+
+              response = self.class.post("/vend", headers: @post_headers, body: body)
+
+              if response.success?
+
+                electric_bill_order.update(status: "completed", units: response["data"]["units"],  token: response["data"]["token"], transaction_id: response["data"]["id"])
+                return { response: electric_bill_order, status: "success" }
+             else
+
+                    raise response["message"]
+            end
+
+
+            rescue StandardError => e
+                return {response: "#{e.message}", status: "error"}
+
+            end
+
+
+
+    end
+
+
+
+
+    def get_wallet_balance
+
+
+
+            begin
+
+              response = self.class.get("/wallet/balance", headers: @post_headers, body: body)
+
+              if response.success?
+
+                return { response: response, status: "success" }
+             else
+                raise response["message"]
+            end
+
+
+            rescue StandardError => e
+                return {response: "#{e.message}", status: "error"}
+
+            end
+
+
+
+    end
+
+
+    def get_list(service_type, provider)
+
+
+        begin
+
+            response = self.class.get("/tariff/?vertical=#{service_type}&provider=#{provider}", headers: @get_headers)
+
+            if response.success?
+            return { response: response["data"], status: "success"}
+
+            else
+                raise response["message"]
+
+            end
+
+        rescue StandardError => e
+            return {response: "#{e.message}", status: "error"}
+        end
+
+    end
+
 
 
 end

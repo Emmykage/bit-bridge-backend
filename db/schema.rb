@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_02_04_141801) do
+ActiveRecord::Schema[7.1].define(version: 2025_02_06_140630) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -41,6 +41,29 @@ ActiveRecord::Schema[7.1].define(version: 2025_02_04_141801) do
     t.uuid "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "bill_orders", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.integer "status", default: 0
+    t.string "meter_number"
+    t.decimal "amount"
+    t.decimal "total_amount"
+    t.integer "meter_type", default: 0
+    t.string "phone"
+    t.string "biller"
+    t.string "service_type"
+    t.integer "payment_type", default: 0
+    t.string "email"
+    t.string "tariff_class"
+    t.string "name"
+    t.uuid "order_detail_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "address"
+    t.string "units"
+    t.string "transaction_id"
+    t.string "token"
+    t.index ["order_detail_id"], name: "index_bill_orders_on_order_detail_id"
   end
 
   create_table "card_tokens", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -156,6 +179,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_02_04_141801) do
     t.text "info"
     t.text "notice"
     t.decimal "value_range", default: [], array: true
+    t.string "service_type"
     t.index ["product_id"], name: "index_provisions_on_product_id"
   end
 
@@ -205,6 +229,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_02_04_141801) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "bill_orders", "order_details"
   add_foreign_key "card_tokens", "order_items"
   add_foreign_key "electric_bill_orders", "order_details"
   add_foreign_key "order_details", "users"

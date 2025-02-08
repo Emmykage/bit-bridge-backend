@@ -46,6 +46,6 @@ class Api::V1::ProvisionsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def provision_params
-      params.require(:provision).permit(:name, :value, :description, :currency,  :min_value, :max_value, :provision_value_type, :product_id, :info, :notice, value_range: [])
+      params.require(:provision).permit(:name, :value, :description, :currency,  :min_value, :max_value, :provision_value_type, :product_id, :service_type, :info, :notice, value_range: [])
     end
 end

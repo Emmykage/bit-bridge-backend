@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resources :bill_orders
 
   get 'users/index'
   get 'users/update'
@@ -36,9 +37,14 @@ Rails.application.routes.draw do
           post :payment_order
           post :verify_meter
           post :process_payment
+          get :get_balance
+          get :get_price_list
         end
         member do
           patch :approve_payment
+          get :approve_data
+          get :confirm_payment
+
         end
 
       end
