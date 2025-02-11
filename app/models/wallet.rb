@@ -1,7 +1,7 @@
 class Wallet < ApplicationRecord
   belongs_to :user
   has_many :transactions, class_name: "Transaction"
-
+  has_many :bill_orders, through: :user
 
   def total_deposit
 

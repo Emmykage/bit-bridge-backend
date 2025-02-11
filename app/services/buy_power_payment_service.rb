@@ -24,13 +24,13 @@ class BuyPowerPaymentService
     end
 
 
-    def process_payment(payment_processor_params)
+    def process_payment(current_user, payment_processor_params)
 
             begin
 
             res = verify_meter(payment_processor_params)
 
-          bill_order = BillOrder.new(
+            bill_order = current_user.bill_orders.new(
             meter_number: payment_processor_params[:billersCode],
             meter_type: res["vendType"],
             address: res["address"],

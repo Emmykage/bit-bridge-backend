@@ -26,8 +26,11 @@ class Api::V1::ProvisionsController < ApplicationController
 
   # PATCH/PUT /provisions/1
   def update
+
     if @provision.update(provision_params)
       render json: @provision
+
+
     else
       render json: @provision.errors, status: :unprocessable_entity
     end

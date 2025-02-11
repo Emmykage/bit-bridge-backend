@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_02_06_140630) do
+ActiveRecord::Schema[7.1].define(version: 2025_02_11_063011) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -63,7 +63,9 @@ ActiveRecord::Schema[7.1].define(version: 2025_02_06_140630) do
     t.string "units"
     t.string "transaction_id"
     t.string "token"
+    t.uuid "user_id"
     t.index ["order_detail_id"], name: "index_bill_orders_on_order_detail_id"
+    t.index ["user_id"], name: "index_bill_orders_on_user_id"
   end
 
   create_table "card_tokens", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -230,6 +232,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_02_06_140630) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "bill_orders", "order_details"
+  add_foreign_key "bill_orders", "users"
   add_foreign_key "card_tokens", "order_items"
   add_foreign_key "electric_bill_orders", "order_details"
   add_foreign_key "order_details", "users"
