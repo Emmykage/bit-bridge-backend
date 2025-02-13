@@ -3,7 +3,8 @@ class Wallet < ApplicationRecord
   has_many :transactions, class_name: "Transaction"
   has_many :bill_orders, through: :user
 
-  def total_deposit
+  def total_bills
+    bill_orders.where(status: "completed").sum(:usd_amount)
 
   end
 
@@ -19,7 +20,7 @@ class Wallet < ApplicationRecord
 
   def balance
 
-    (total_deposit + user.total_sale) - (total_withdrawal + user.user_net_expense)
+     (total_deposit + user.total_sale) - (total_withdrawal + user.user_net_expense + total_bills)
   end
 
 

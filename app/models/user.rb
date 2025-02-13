@@ -45,7 +45,6 @@ class User < ApplicationRecord
   def initialize_wallet
     # build_wallet unless wallet
     create_wallet unless wallet
-    # binding.b
 
   end
 

@@ -66,10 +66,7 @@ class Api::V1:: PaymentProcessorsController < ApplicationController
     def process_payment
 
 
-        # binding.b
-
-
-        service = BuyPowerPaymentService.new
+       service = BuyPowerPaymentService.new
 
         service_response = service.process_payment(current_user, payment_processor_params)
 

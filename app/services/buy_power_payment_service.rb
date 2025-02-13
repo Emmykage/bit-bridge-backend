@@ -47,9 +47,7 @@ class BuyPowerPaymentService
 
                 return {response: bill_order, status: "success"}
             else
-
-
-                return {response:  bill_order.errors, status: "error"}
+                raise bill_order.errors.full_messages.to_sentence
             end
 
             rescue StandardError => e
