@@ -17,6 +17,10 @@ class Api::V1:: PaymentProcessorsController < ApplicationController
         service_response = service.pay_power(@bill_order)
         if service_response[:status] == "success"
             render json: { success: true, data: service_response[:response], message: "payment confirmed" }, status: :ok
+
+        elsif service_response[:status] == "TIMEOUT"
+            render json: { success: false, message: service_response[:response], code: 504 }, status: :request_timeout
+
         else
             render json: { success: false, message: service_response[:response] }, status: :unprocessable_entity
         end
@@ -111,6 +115,22 @@ class Api::V1:: PaymentProcessorsController < ApplicationController
         render json: {message: service_response[:response]}, status: :unprocessable_entity
         end
     end
+
+
+    def query_transaction
+        id = params[:id]
+
+        service =  BuyPowerPaymentService.new
+        response_service = service.re_query(@bill_order[:id])
+        if service_response[:status] == "success"
+            render json: {data: service_response[:response]}, status: :ok
+
+        else
+
+        render json: {message: service_response[:response]}, status: :unprocessable_entity
+        end
+    end
+
 
 
 

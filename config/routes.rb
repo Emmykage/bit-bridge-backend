@@ -44,6 +44,7 @@ Rails.application.routes.draw do
           patch :approve_payment
           get :approve_data
           get :confirm_payment
+          get :query_transaction
 
         end
 

@@ -94,6 +94,7 @@ class BuyPowerPaymentService
     end
 
     def pay_power(electric_bill_order)
+        response = nil
         body = {
 
         meter: electric_bill_order["meter_number"],
@@ -110,8 +111,10 @@ class BuyPowerPaymentService
 
 
             begin
-
-              response = self.class.post("/vend", headers: @post_headers, body: body)
+                Timeout.timeout(120) do
+                    # sleep(12)
+                response = self.class.post("/vend", headers: @post_headers, body: body)
+            end
 
               if response.success?
 
@@ -121,6 +124,11 @@ class BuyPowerPaymentService
 
                     raise response["message"]
             end
+
+            rescue Timeout::Error
+                electric_bill_order.update(status: "timedout")
+            {response: "The request timed out. Please try again", code: 504, status: "TIMEOUT"}
+
 
 
             rescue StandardError => e
@@ -266,6 +274,28 @@ class BuyPowerPaymentService
         end
 
     end
+
+    def re_query(order_id)
+
+        begin
+
+        response = self.class.get("/transaction/#{order_id}", headers: @get_headers)
+
+        if response.success?
+           return {response: response, status: "success"}
+
+        else
+            raise response["message"]
+
+
+        end
+
+        rescue
+            return {response: "#{e.message}", status: "error"}
+
+        end
+    end
+
 
 
 

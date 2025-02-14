@@ -3,7 +3,7 @@ class Product < ApplicationRecord
     has_many :order_items
     has_many :provisions
 
-    enum :category,  {"mobile provider" =>  0, "gift card" => 1,  service: 2, utility: 3 , power: 4}
+    enum :category,  {"mobile provider" =>  0, "gift card" => 1,  service: 2, utility: 3 , power: 4, crypto: 5}
 
 
     def photo_url
