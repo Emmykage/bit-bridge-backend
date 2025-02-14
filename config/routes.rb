@@ -84,7 +84,8 @@ Rails.application.routes.draw do
       end
       resources :users do
         collection do
-        get  :user_profile
+          get  :user_profile
+          patch  :update_password
         end
       end
 

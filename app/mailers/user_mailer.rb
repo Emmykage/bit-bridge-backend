@@ -6,4 +6,18 @@ class UserMailer < ApplicationMailer
 
     end
 
+
+    def send_password_reset(user)
+        @user = user
+        @url =
+
+    end
+
+    def pawword_reset_url(user)
+        "#{Rails.application.config.action_mailer.default_url_options[:host]}/reset_password?password_token=#{user.reset_password_token}&user_email=#{user.email}"
+
+    end
+
+
+
 end
