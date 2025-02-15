@@ -76,4 +76,22 @@ Rails.application.configure do
   config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
   config.action_mailer.delivery_method = :letter_opener
   config.action_mailer.perform_deliveries = true
+
+
+
+  config.action_mailer.delivery_method = :smtp
+  host = 'http://localhost:3000' #replace with your own url
+  config.action_mailer.default_url_options = { host: 'localhost:3000', port: 3000 }
+  config.action_mailer.delivery_method = :letter_opener
+  config.action_mailer.perform_deliveries = true
+  # SMTP settings for gmail
+  config.action_mailer.smtp_settings = {
+    :address              => "premium165.web-hosting.com",
+    :port                 => 587,
+    :user_name            => "support@melisports.com",
+    :password             => "support-melisports-2024",
+    :authentication       => "plain",
+    :enable_starttls_auto => true
+  }
+
 end

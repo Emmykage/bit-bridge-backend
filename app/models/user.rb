@@ -28,15 +28,9 @@ class User < ApplicationRecord
   end
 
 
-
-
   def total_sale
     order_details.where(order_type: "sell", status: "approved").sum(:total_amount)
   end
-
-  # def after_database_authentication
-  #   create_wallet unless wallet
-  # end
 
 
   def admin

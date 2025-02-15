@@ -5,11 +5,16 @@ class Api::V1::UsersController < ApplicationController
     render json: {data: UserSerializer.new(current_user)}, status: :ok
   end
 
+  def index
+    @users = User.all
+    render json: {data: @users}, status: :ok
+
+
+  end
+
   def update_password
 
-    user_params
-
-    if @user.update(user_params) &&  user_params[:password].present?
+    if @user.update(password: user_params[:password]) &&  user_params[:password].present?
          render json: {message: "pasword has been updated"}
       else
       render json: {message: "failed to update password:  #{@user.errors.full_messages.to_sentence}"}, status: :unprocessable_entity
@@ -18,9 +23,15 @@ class Api::V1::UsersController < ApplicationController
 
   end
 
-  def password_change
+  def password_reset
 
 
+
+    email = params[:email]
+    @user = User.find_by(email: email )
+    generate_reset_token(@user)
+
+    render json: {message: "A password reset link has been sent to you"}
 
 
 
@@ -32,6 +43,21 @@ class Api::V1::UsersController < ApplicationController
   end
 
   def user_params
-    params.require(:user).permit(:email, :password)
+    params.require(:user).permit(:email, :password, :password_token, )
+  end
+
+  def generate_reset_token(user)
+    raw, hashed = Devise.token_generator.generate(User, :reset_password_token)
+
+    @token = raw
+    user.reset_password_token = hashed
+    user.reset_password_sent_at = Time.now
+    if user.save
+      puts "Token saved successfully!"
+      UserMailer.send_password_reset(user, @token).deliver_later
+
+    else
+      puts "Failed to save token: #{user.errors.full_messages.join(", ")}"
+    end
   end
 end
