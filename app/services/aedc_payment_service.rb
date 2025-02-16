@@ -7,9 +7,9 @@ class AedcPaymentService
 
 
     def initialize()
-        api_key = "5abfd3634000545546e91094b1c1bc27"
-        public_key ="PK_3319f11930fec21677595bdce2807c33fc2d0f84b0f"
-        secret_key = "SK_14174fe2e55c6e8b115911f80d994e236774845c97c"
+        api_key = ENV["API_KEY"]
+        public_key = ENV["PUBLIC_KEY"]
+        secret_key =  ENV["SECRET_KEY"]
 
         @get_headers = {
             "api-key" =>  api_key,
