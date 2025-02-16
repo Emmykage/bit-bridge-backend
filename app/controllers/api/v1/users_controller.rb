@@ -1,9 +1,12 @@
 class Api::V1::UsersController < ApplicationController
   before_action :set_user_params, only: %i[update_password]
-  skip_before_action :authenticate_user!
+  skip_before_action :authenticate_user!, only: %i[update_password password_reset]
   def user_profile
-    render json: {data: UserSerializer.new(current_user)}, status: :ok
-  end
+    if current_user.nil?
+      render json: { error: 'User not found or not authenticated' }, status: :unauthorized
+    else
+      render json: { data: UserSerializer.new(current_user) }, status: :ok
+    end  end
 
   def index
     @users = User.all
