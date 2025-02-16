@@ -6,9 +6,9 @@ class BuyPowerPaymentService
 
     def initialize()
 
-        SECRET_TOKEN_DEV =  ENV['SECRET_TOKEN_DEV']
-        SECRET_TOKEN_PROD = ENV['SECRET_TOKEN_PROD']
-        token =  Rails.env.production? ? SECRET_TOKEN_PROD : SECRET_TOKEN_DEV
+        secret_token_dev  =  ENV['SECRET_TOKEN_DEV']
+        secret_token_prod  = ENV['SECRET_TOKEN_PROD']
+        token =  Rails.env.production? ? secret_token_prod  : secret_token_dev
 
         @get_headers = {
             "Authorization" =>  "Bearer #{token}"
