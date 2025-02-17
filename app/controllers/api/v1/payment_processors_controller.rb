@@ -1,4 +1,4 @@
-class Api::V1:: PaymentProcessorsController < ApplicationController
+class Api::V1::PaymentProcessorsController < ApplicationController
     before_action :set_bill_order, only: %i[ show approve_payment approve_data confirm_payment ]
     skip_before_action :authenticate_user!
     def verify_meter

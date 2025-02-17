@@ -77,6 +77,19 @@ Rails.application.routes.draw do
         end
       end
 
+      resources :paystack_transactions do
+        collection do
+          post :initialize_payment
+          get :verify_payment
+          get :list_payments
+        end
+
+        member do
+          get :fetch_payment
+        end
+
+      end
+
       resources :user_profiles do
         collection do
         get  :user
@@ -88,7 +101,11 @@ Rails.application.routes.draw do
           patch  :update_password
           get :password_reset
         end
+
       end
+
+
+
 
 
     end
