@@ -28,7 +28,7 @@ class BuyPowerPaymentService
 
             res = verify_meter(payment_processor_params)
 
-            bill_order = current_user.bill_orders.new(
+            bill_order = current_user&.bill_orders&.new(
             meter_number: payment_processor_params[:billersCode],
             meter_type: res["vendType"],
             address: res["address"],
@@ -39,7 +39,19 @@ class BuyPowerPaymentService
             amount: payment_processor_params[:amount],
             phone: payment_processor_params[:phone],
             biller: payment_processor_params[:biller],
-            )
+            ) || BillOrder.new(
+                meter_number: payment_processor_params[:billersCode],
+                meter_type: res["vendType"],
+                address: res["address"],
+                name: res["name"],
+                tariff_class: payment_processor_params[:tariff_class],
+                service_type: payment_processor_params[:service_type],
+                email: payment_processor_params[:email],
+                amount: payment_processor_params[:amount],
+                phone: payment_processor_params[:phone],
+                biller: payment_processor_params[:biller]
+              )
+
 
             if bill_order.save
 
@@ -79,6 +91,7 @@ class BuyPowerPaymentService
             raise response["message"]
 
         else
+
              return response
 
         end
@@ -156,7 +169,7 @@ class BuyPowerPaymentService
         name: electric_bill_order["name"],
         email: electric_bill_order["email"],
         tariffClass: electric_bill_order["tariff_class"]
-        }
+    }.transform_values {|v| v.is_a?(String) ? v.strip : v }
 
 
             begin
@@ -182,10 +195,9 @@ class BuyPowerPaymentService
 
     end
 
-    def confirm_subscription(electric_bill_order)
+    def confirm_subscription(electric_bill_order, payment_method)
 
         body = {
-
         meter: electric_bill_order["meter_number"],
         amount: electric_bill_order["amount"],
         orderId: electric_bill_order["id"],
@@ -197,21 +209,36 @@ class BuyPowerPaymentService
         name: electric_bill_order["name"],
         email: electric_bill_order["email"],
         tariffClass: electric_bill_order["tariff_class"]
-        }
+     }.transform_values {|v| v.is_a?(String) ? v.strip : v }
 
 
             begin
+                response = nil
+                if payment_method == "wallet"
+                  if  electric_bill_order.user.wallet.balance > electric_bill_order[:usd_amount]
+                    response = self.class.post("/vend", headers: @post_headers, body: body)
 
-              response = self.class.post("/vend", headers: @post_headers, body: body)
+                    else
+                    raise 'Insufficient funds'
 
-              if response.success?
+                 end
 
-                electric_bill_order.update(status: "completed", units: response["data"]["units"],  token: response["data"]["token"], transaction_id: response["data"]["id"])
-                return { response: electric_bill_order, status: "success" }
-             else
+                else payment_method == "card"
+                    response = self.class.post("/vend", headers: @post_headers, body: body)
 
+                end
+
+
+                # binding.b
+
+                if response.success?
+                    electric_bill_order.update(status: "completed", payment_method: payment_method, units: response["data"]["units"],  token: response["data"]["token"], transaction_id: response["data"]["id"])
+                    return { response: electric_bill_order, status: "success" }
+
+                 else
                     raise response["message"]
-            end
+
+                 end
 
 
             rescue StandardError => e

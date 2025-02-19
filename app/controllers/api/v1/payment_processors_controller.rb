@@ -56,8 +56,10 @@ class Api::V1::PaymentProcessorsController < ApplicationController
 
     def confirm_payment
 
+        payment_method = params[:payment_method]
+
         service = BuyPowerPaymentService.new
-        service_response = service.confirm_subscription(@bill_order)
+        service_response = service.confirm_subscription(@bill_order, payment_method)
         if service_response[:status] == "success"
             render json: { success: true, data: service_response[:response], message: "payment confirmed" }, status: :ok
         else
