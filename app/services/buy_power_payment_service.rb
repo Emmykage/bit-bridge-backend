@@ -26,7 +26,9 @@ class BuyPowerPaymentService
 
             begin
 
+
             res = verify_meter(payment_processor_params)
+
 
             bill_order = current_user&.bill_orders&.new(
             meter_number: payment_processor_params[:billersCode],
@@ -79,8 +81,6 @@ class BuyPowerPaymentService
         biller = verify_processor_params[:biller]
         meter_type = verify_processor_params[:meter_type]
         service_type = verify_processor_params[:service_type].upcase
-
-
         begin
             body = verify_processor_params
 
@@ -285,7 +285,7 @@ class BuyPowerPaymentService
         begin
 
             response = self.class.get("/tariff/?vertical=#{service_type}&provider=#{provider}", headers: @get_headers)
-
+            binding.b
             if response.success?
             return { response: response["data"], status: "success"}
 

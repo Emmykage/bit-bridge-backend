@@ -24,7 +24,7 @@ class BillOrder < ApplicationRecord
     private
 
     def net_total
-        amount + 200
+        amount + 100
     end
 
 
