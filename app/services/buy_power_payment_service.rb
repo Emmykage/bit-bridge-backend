@@ -285,7 +285,7 @@ class BuyPowerPaymentService
         begin
 
             response = self.class.get("/tariff/?vertical=#{service_type}&provider=#{provider}", headers: @get_headers)
-            binding.b
+            # binding.b
             if response.success?
             return { response: response["data"], status: "success"}
 
