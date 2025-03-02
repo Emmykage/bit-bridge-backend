@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_02_17_151844) do
+ActiveRecord::Schema[7.1].define(version: 2025_03_01_143537) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -71,7 +71,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_02_17_151844) do
   end
 
   create_table "card_tokens", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.boolean "reveal"
+    t.boolean "reveal", default: false
     t.uuid "order_item_id", null: false
     t.string "token"
     t.datetime "created_at", null: false
@@ -228,6 +228,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_02_17_151844) do
     t.uuid "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "wallet_type", default: 0
     t.index ["user_id"], name: "index_wallets_on_user_id"
   end
 

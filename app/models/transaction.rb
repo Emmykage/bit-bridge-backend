@@ -11,6 +11,8 @@ class Transaction < ApplicationRecord
   default_scope { order(created_at: :desc)}
   validate :validate_transaction, if: :withdrawal
 
+  before_save :check_method_payment
+
 
   def validate_transaction
 
@@ -18,6 +20,12 @@ class Transaction < ApplicationRecord
       errors.add(:amount, "insufficient balance")
 
     end
+  end
+  def check_method_payment
+    if  coin_type === "bank"
+      self.status = "approved"
+    end
+
   end
 
   def email

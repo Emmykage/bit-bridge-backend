@@ -41,7 +41,9 @@ class CurrencyService
 
                     conversion = OpenStruct.new(from_rate: from_rate, to_rate: to_rate)
 
-                    return {response: conversion.table}
+                    # return {response: conversion.table}
+                    return json_parse
+
 
 
                 end
@@ -54,7 +56,8 @@ class CurrencyService
 
                 conversion =  OpenStruct.new(from_rate: from_rate, to_rate: to_rate)
 
-                return {response: conversion.table}
+                # return {response: conversion.table}
+                return json_string
 
             else
 
@@ -73,7 +76,9 @@ class CurrencyService
 
                     conversion =  OpenStruct.new(from_rate: from_rate, to_rate: to_rate)
 
-                    return {response: conversion.table}
+                    # return {response: conversion.table}
+                    return json_string
+
 
             end
 
@@ -86,15 +91,20 @@ class CurrencyService
 
     end
 
-    def get_calculated_rate(amount)
+    def get_calculated_rate(amount, from_curr, to_curr)
 
 
 
         begin
 
+            from_value = get_conversion["rates"][from_curr]["value"]
+            to_value = get_conversion["rates"][to_curr]["value"]
 
-        to_value = get_conversion[:response][:to_rate]
-        from_value = get_conversion[:response][:from_rate]
+
+
+                # to_value = get_conversion[:response][:to_rate]
+                # from_value = get_conversion[:response][:from_rate]
+
 
         calculated_rate = (to_value * amount.to_i)/from_value
 

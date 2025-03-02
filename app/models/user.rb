@@ -36,9 +36,12 @@ class User < ApplicationRecord
   def admin
     role == 'admin'
   end
+
+
   def initialize_wallet
     # build_wallet unless wallet
-    create_wallet unless wallet
+    # Wallet.create(wallet_type: "usdt") #unless wallet
+    create_wallet
 
   end
 

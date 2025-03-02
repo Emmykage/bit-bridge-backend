@@ -94,7 +94,6 @@ class PaystackPaymentService
     def verify_transaction(reference)
             begin
               response = self.class.get("/transaction/verify/#{reference}", headers: @post_headers)
-            #   binding.b
               if response.success?
 
                 return {response: response, status: true}

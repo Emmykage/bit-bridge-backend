@@ -3,15 +3,16 @@ class Api::V1::CurrenciesController < ApplicationController
     # before_action :set_wallet, only: %i[ show update destroy ]
 
     def get_currency
+        # binding.b
 
-        from = params[:from_curr]
-        to = params[:to_curr]
+        from_curr = params[:from_curr]
+        to_curr = params[:to_curr]
         amount = params[:amount]
 
-        conversion = CurrencyService.new(from, to)
+        conversion = CurrencyService.new(from_curr, to_curr)
         # response = conversion.get_conversion
 
-        response = conversion.get_calculated_rate(amount)
+        response = conversion.get_calculated_rate(amount, from_curr, to_curr)
 
 
         if response[:status] == "error"

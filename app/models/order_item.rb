@@ -6,6 +6,7 @@ class OrderItem < ApplicationRecord
 
   # validates :provision_id, presence: true
 
+  attr_accessor :currency
 
   validates :amount, numericality: { greater_than: 0 }
   validates :quantity, numericality: { greater_than: 0 }

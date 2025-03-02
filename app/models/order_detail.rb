@@ -15,16 +15,20 @@ class OrderDetail < ApplicationRecord
     before_validation :calculate_total_amount, if: -> {order_items.any?(&:changed?)}
 
     before_save :set_total_amount
+    before_save :set_net_amount
     accepts_nested_attributes_for :order_items
 
     attr_accessor :calculate_total
 
     def add_total
 
+
         @calculate_total ||= begin
-        conversion = CurrencyService.new("ngn", "usd")
-        order_items.collect{|item| conversion.get_calculated_rate(item.amount)[:rate]}.sum
+        conversion = CurrencyService.new("usd", "usd")
+
+        order_items.collect{|item| conversion.get_calculated_rate(item.amount, item.currency, "usd")[:rate]}.sum
         end
+
     end
 
     def approve_order
@@ -42,6 +46,9 @@ class OrderDetail < ApplicationRecord
         self.calculate_total = add_total
     end
 
+    def set_net_amount
+        self.net_total = ((10/100) * add_total)  + add_total
+    end
 
 
 

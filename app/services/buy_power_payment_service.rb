@@ -23,13 +23,9 @@ class BuyPowerPaymentService
 
 
     def process_payment(current_user, payment_processor_params)
-
             begin
 
-
             res = verify_meter(payment_processor_params)
-
-
             bill_order = current_user&.bill_orders&.new(
             meter_number: payment_processor_params[:billersCode],
             meter_type: res["vendType"],
@@ -81,6 +77,8 @@ class BuyPowerPaymentService
         biller = verify_processor_params[:biller]
         meter_type = verify_processor_params[:meter_type]
         service_type = verify_processor_params[:service_type].upcase
+
+
         begin
             body = verify_processor_params
 
@@ -224,12 +222,10 @@ class BuyPowerPaymentService
                  end
 
                 else payment_method == "card"
+
                     response = self.class.post("/vend", headers: @post_headers, body: body)
 
                 end
-
-
-                # binding.b
 
                 if response.success?
                     electric_bill_order.update(status: "completed", payment_method: payment_method, units: response["data"]["units"],  token: response["data"]["token"], transaction_id: response["data"]["id"])
@@ -285,7 +281,6 @@ class BuyPowerPaymentService
         begin
 
             response = self.class.get("/tariff/?vertical=#{service_type}&provider=#{provider}", headers: @get_headers)
-            # binding.b
             if response.success?
             return { response: response["data"], status: "success"}
 

@@ -22,7 +22,27 @@ class Api::V1::TransactionsController < ApplicationController
   end
 
   # POST /transactions
+  # def create
+
+  #   existing_wallet =  current_user.wallets.find_by(type: transaction_params[:currency])
+
+  # if existing_wallet.nil?
+  #   # existing_wallet = current_user.initialize_wallet(transaction_params[:currency])
+  #   existing_wallet = initialize_wallet(transaction_params[:currency])
+  # end
+  #   @transaction = existing_wallet.transactions.new(transaction_params)
+
+  #   if @transaction.save
+  #     render json: {data: TransactionSerializer.new(@transaction), message: "Transaction created successfully" }, status: :created
+
+  #   else
+  #     render json:{message: @transaction.errors.full_messages.to_sentence}, status: :unprocessable_entity
+  #   end
+  # end
+
   def create
+
+    # existing_wallet =  current_user.wallets.find_by(type: transaction_params[:currency])
 
   if current_user.wallet.nil?
     current_user.initialize_wallet
@@ -60,6 +80,12 @@ class Api::V1::TransactionsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def transaction_params
-      params.require(:transaction).permit(:status, :amount, :address, :proof, :transaction_type, :coin_type, :wallet_id)
+      params.require(:transaction).permit(:status, :amount, :address, :proof, :transaction_type, :currency, :coin_type, :wallet_id)
+    end
+
+    def initialize_wallet(wallet_type)
+      # build_wallet unless wallet
+      current_user.wallets.create(type: wallet_type) #unless wallet
+
     end
 end

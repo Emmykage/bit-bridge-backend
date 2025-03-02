@@ -4,8 +4,14 @@ class Wallet < ApplicationRecord
   has_many :bill_orders, through: :user
   has_many :order_details, through: :user
 
+  enum :wallet_type, {ngn: 0, usdt: 1}
+
+  validates :wallet_type, presence: true, uniqueness: { scope: :user_id }
+
+
+
   def total_bills
-    bill_orders.where(status: "completed").sum(:usd_amount)
+    bill_orders.where(status: "completed", payment_method: "wallet").sum(:total_amount)
   end
 
   def total_withdrawal
@@ -21,7 +27,4 @@ class Wallet < ApplicationRecord
   def balance
      (total_deposit + user.total_sale) - (total_withdrawal + user.user_net_expense + total_bills)
   end
-
-
-
 end

@@ -9,7 +9,7 @@ class BillOrder < ApplicationRecord
     enum :payment_method, {wallet: 0, card: 1}
 
     validates :amount, presence: true
-    validate :validate_order, if: :persisted?
+    validate :validate_order, if: -> {persisted? && wallet_payment?}
 
 
 
@@ -29,12 +29,14 @@ class BillOrder < ApplicationRecord
 
 
     def calculate_total
+
         self.total_amount = net_total
     end
 
     def net_usd_conversion
-        currency = CurrencyService.new("ngn", "usd")
-        amount_in_usd = currency.get_calculated_rate(net_total)
+        currency = CurrencyService.new("ngn", "ngn")
+
+        amount_in_usd = currency.get_calculated_rate(net_total, "ngn", "ngn")
         usd_amount = amount_in_usd[:rate]
 
     end
@@ -43,6 +45,10 @@ class BillOrder < ApplicationRecord
 
         self.usd_amount = net_usd_conversion
 
+    end
+
+    def wallet_payment?
+        payment_method === "wallet"
     end
     def validate_order
 
