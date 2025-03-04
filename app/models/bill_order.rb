@@ -12,10 +12,16 @@ class BillOrder < ApplicationRecord
     validate :validate_order, if: -> {persisted? && wallet_payment?}
 
 
-
-
     before_save :calculate_total
     before_save :set_usd_conversion
+
+    def calc_service_charge
+        self.service_charge = 100 unless service_type == "VTU" || service_type === "DATA"
+
+        self.service_charge  = 0
+
+    end
+
 
 
 
@@ -24,7 +30,7 @@ class BillOrder < ApplicationRecord
     private
 
     def net_total
-        amount + 100
+        amount + calc_service_charge
     end
 
 
@@ -42,6 +48,8 @@ class BillOrder < ApplicationRecord
     end
 
     def set_usd_conversion
+
+
 
         self.usd_amount = net_usd_conversion
 

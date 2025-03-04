@@ -213,6 +213,8 @@ class BuyPowerPaymentService
             begin
                 response = nil
                 if payment_method == "wallet"
+
+
                   if  electric_bill_order.user.wallet.balance > electric_bill_order[:usd_amount]
                     response = self.class.post("/vend", headers: @post_headers, body: body)
 

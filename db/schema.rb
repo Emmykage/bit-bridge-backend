@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_03_01_143537) do
+ActiveRecord::Schema[7.1].define(version: 2025_03_03_140451) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -66,6 +66,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_01_143537) do
     t.uuid "user_id"
     t.decimal "usd_amount"
     t.integer "payment_method", default: 0
+    t.decimal "service_charge", default: "0.0"
     t.index ["order_detail_id"], name: "index_bill_orders_on_order_detail_id"
     t.index ["user_id"], name: "index_bill_orders_on_user_id"
   end
