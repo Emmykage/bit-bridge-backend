@@ -3,8 +3,6 @@ class Api::V1::CurrenciesController < ApplicationController
     # before_action :set_wallet, only: %i[ show update destroy ]
 
     def get_currency
-        # binding.b
-
         from_curr = params[:from_curr]
         to_curr = params[:to_curr]
         amount = params[:amount]

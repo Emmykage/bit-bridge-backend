@@ -23,14 +23,21 @@ class BuyPowerPaymentService
 
 
     def process_payment(current_user, payment_processor_params)
-            begin
 
-            res = verify_meter(payment_processor_params)
+            begin
+                res = nil
+
+                unless payment_processor_params[:skip] === true
+
+                    res = verify_meter(payment_processor_params)
+
+                end
+
             bill_order = current_user&.bill_orders&.new(
             meter_number: payment_processor_params[:billersCode],
-            meter_type: res["vendType"],
-            address: res["address"],
-            name: res["name"],
+            meter_type: res&.dig("vendType") || "PREPAID",
+            address: res&.dig("address") || payment_processor_params[:billersCode],
+            name: res&.dig("name") || payment_processor_params[:billersCode],
             tariff_class: payment_processor_params[:tariff_class],
             service_type: payment_processor_params[:service_type],
             email: payment_processor_params[:email],
@@ -39,9 +46,9 @@ class BuyPowerPaymentService
             biller: payment_processor_params[:biller],
             ) || BillOrder.new(
                 meter_number: payment_processor_params[:billersCode],
-                meter_type: res["vendType"],
-                address: res["address"],
-                name: res["name"],
+                meter_type: res&.dig("vendType") || "PREPAID",
+                address: res&.dig("address") || payment_processor_params[:billersCode],
+                name: res&.dig("name") || payment_processor_params[:billersCode],
                 tariff_class: payment_processor_params[:tariff_class],
                 service_type: payment_processor_params[:service_type],
                 email: payment_processor_params[:email],
@@ -49,6 +56,8 @@ class BuyPowerPaymentService
                 phone: payment_processor_params[:phone],
                 biller: payment_processor_params[:biller]
               )
+
+
 
 
             if bill_order.save

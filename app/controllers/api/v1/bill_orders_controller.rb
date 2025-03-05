@@ -1,4 +1,4 @@
-class BillOrdersController < ApplicationController
+class Api::V1::BillOrdersController < ApplicationController
   before_action :set_bill_order, only: %i[ show update destroy ]
 
   # GET /bill_orders
@@ -6,6 +6,12 @@ class BillOrdersController < ApplicationController
     @bill_orders = BillOrder.all
 
     render json: @bill_orders
+  end
+
+  def user
+
+    bill_orders = current_user.bill_orders
+    render json: {data: ActiveModelSerializers::SerializableResource.new(bill_orders)}, status: :ok
   end
 
   # GET /bill_orders/1
@@ -46,6 +52,6 @@ class BillOrdersController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def bill_order_params
-      params.require(:bill_order).permit(:status, :meter_number, :amount, :meter_type, :phone, :serviceID, :service_type, :payment_type, :email, :tariff_class, :name)
+      params.require(:bill_order).permit(:status, :meter_number, :amount, :meter_type, :phone, :service_type, :payment_type, :email, :tariff_class, :name)
     end
 end

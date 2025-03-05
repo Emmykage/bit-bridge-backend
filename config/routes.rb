@@ -77,6 +77,12 @@ Rails.application.routes.draw do
         end
       end
 
+      resources :bill_orders do
+        collection do
+          get :user
+        end
+      end
+
       resources :paystack_transactions do
         collection do
           post :initialize_payment
