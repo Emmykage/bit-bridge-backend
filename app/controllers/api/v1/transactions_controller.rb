@@ -18,7 +18,7 @@ class Api::V1::TransactionsController < ApplicationController
 
   # GET /transactions/1
   def show
-    render json: @transaction
+    render json: {data: TransactionSerializer.new(@transaction)}, status: :ok
   end
 
   # POST /transactions

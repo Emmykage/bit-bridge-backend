@@ -16,7 +16,9 @@ class Api::V1::BillOrdersController < ApplicationController
 
   # GET /bill_orders/1
   def show
-    render json: @bill_order
+
+    render json: {data: BillOrderSerializer.new(@bill_order)}, status: :ok
+
   end
 
   # POST /bill_orders
