@@ -16,10 +16,7 @@ class BillOrder < ApplicationRecord
     before_save :set_usd_conversion
 
     def calc_service_charge
-        self.service_charge = 100 unless service_type == "VTU" || service_type === "DATA"
-
-        self.service_charge  = 0
-
+        self.service_charge = service_type == "VTU" || service_type == "DATA" ? 0 : 100
     end
 
 
