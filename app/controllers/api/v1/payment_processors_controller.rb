@@ -11,22 +11,22 @@ class Api::V1::PaymentProcessorsController < ApplicationController
         render json:{data:  @bill_order}
     end
 
-    def approve_payment
+    # def approve_payment
 
-        service = BuyPowerPaymentService.new
-        service_response = service.pay_power(@bill_order)
-        if service_response[:status] == "success"
-            render json: { success: true, data: service_response[:response], message: "payment confirmed" }, status: :ok
+    #     service = BuyPowerPaymentService.new
+    #     service_response = service.pay_power(@bill_order)
+    #     if service_response[:status] == "success"
+    #         render json: { success: true, data: service_response[:response], message: "payment confirmed" }, status: :ok
 
-        elsif service_response[:status] == "TIMEOUT"
-            render json: { success: false, message: service_response[:response], code: 504 }, status: :request_timeout
+    #     elsif service_response[:status] == "TIMEOUT"
+    #         render json: { success: false, message: service_response[:response], code: 504 }, status: :request_timeout
 
-        else
-            render json: { success: false, message: service_response[:response] }, status: :unprocessable_entity
-        end
+    #     else
+    #         render json: { success: false, message: service_response[:response] }, status: :unprocessable_entity
+    #     end
 
 
-    end
+    # end
 
     def approve_data
 

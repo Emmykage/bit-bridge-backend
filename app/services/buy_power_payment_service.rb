@@ -111,53 +111,6 @@ class BuyPowerPaymentService
 
     end
 
-    def pay_power(electric_bill_order)
-        response = nil
-        body = {
-
-        meter: electric_bill_order["meter_number"],
-        amount: electric_bill_order["amount"],
-        orderId: electric_bill_order["id"],
-        vendType: electric_bill_order["meter_type"],
-        phone: electric_bill_order["phone"],
-        disco: electric_bill_order["biller"],
-        vertical: electric_bill_order["service_type"],
-        paymentType: electric_bill_order["payment_type"],
-        name: electric_bill_order["name"],
-        email: electric_bill_order["email"]
-        }
-
-
-            begin
-                Timeout.timeout(120) do
-                    # sleep(12)
-                response = self.class.post("/vend", headers: @post_headers, body: body)
-            end
-
-              if response.success?
-
-                electric_bill_order.update(status: "completed", units: response["data"]["units"],  token: response["data"]["token"], transaction_id: response["data"]["id"])
-                return { response: electric_bill_order, status: "success" }
-             else
-
-                    raise response["message"]
-            end
-
-            rescue Timeout::Error
-                electric_bill_order.update(status: "timedout")
-            {response: "The request timed out. Please try again", code: 504, status: "TIMEOUT"}
-
-
-
-            rescue StandardError => e
-                return {response: "#{e.message}", status: "error"}
-
-            end
-
-
-
-    end
-
 
 
 
@@ -209,7 +162,7 @@ class BuyPowerPaymentService
         amount: electric_bill_order["amount"],
         orderId: electric_bill_order["id"],
         vendType: electric_bill_order["meter_type"],
-        phone: electric_bill_order["meter_number"],
+        phone: electric_bill_order["service_type"] === "ELECTRICITY" ? electric_bill_order["phone"] :  electric_bill_order["meter_number"],
         disco: electric_bill_order["biller"],
         vertical: electric_bill_order["service_type"],
         paymentType: electric_bill_order["payment_type"],
@@ -218,25 +171,30 @@ class BuyPowerPaymentService
         tariffClass: electric_bill_order["tariff_class"]
      }.transform_values {|v| v.is_a?(String) ? v.strip : v }
 
-
             begin
                 response = nil
                 if payment_method == "wallet"
 
 
                   if  electric_bill_order.user.wallet.balance > electric_bill_order[:usd_amount]
-                    response = self.class.post("/vend", headers: @post_headers, body: body)
-
+                    Timeout.timeout(120) do
+                        response = self.class.post("/vend", headers: @post_headers, body: body)
+                    end
                     else
                     raise 'Insufficient funds'
 
                  end
 
-                else payment_method == "card"
+                elsif payment_method == "card"
+                        Timeout.timeout(120) do
+                        response = self.class.post("/vend", headers: @post_headers, body: body)
+                    end
+                else
+                    raise "no payment method selected"
 
-                    response = self.class.post("/vend", headers: @post_headers, body: body)
 
                 end
+
 
                 if response.success?
                     electric_bill_order.update(status: "completed", payment_method: payment_method, units: response["data"]["units"],  token: response["data"]["token"], transaction_id: response["data"]["id"])
@@ -246,6 +204,10 @@ class BuyPowerPaymentService
                     raise response["message"]
 
                  end
+
+                rescue Timeout::Error
+                    electric_bill_order.update(status: "timedout")
+                 {response: "The request timed out. Please try again", code: 504, status: "TIMEOUT"}
 
 
             rescue StandardError => e

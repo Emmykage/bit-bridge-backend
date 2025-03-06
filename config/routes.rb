@@ -41,7 +41,6 @@ Rails.application.routes.draw do
           get :get_price_list
         end
         member do
-          patch :approve_payment
           get :approve_data
           get :confirm_payment
           get :query_transaction
