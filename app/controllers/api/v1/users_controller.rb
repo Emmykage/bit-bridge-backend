@@ -1,5 +1,6 @@
 class Api::V1::UsersController < ApplicationController
   before_action :set_user_params, only: %i[update_password]
+  before_action :set_user, only: %i[show]
   skip_before_action :authenticate_user!, only: %i[update_password password_reset]
   def user_profile
     if current_user.nil?
@@ -14,6 +15,12 @@ class Api::V1::UsersController < ApplicationController
 
 
   end
+
+  def show
+    render json: {data: UserSerializer.new(@user)}, status: :ok
+
+  end
+
 
   def update_password
 
@@ -38,6 +45,10 @@ class Api::V1::UsersController < ApplicationController
 
 
 
+  end
+
+  def set_user
+    @user = User.find(params[:id])
   end
 
   def set_user_params
