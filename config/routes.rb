@@ -110,11 +110,6 @@ Rails.application.routes.draw do
       end
 
       resources :statistics
-
-
-
-
-
     end
   end
 

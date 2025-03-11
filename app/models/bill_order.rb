@@ -15,6 +15,8 @@ class BillOrder < ApplicationRecord
     before_save :calculate_total
     before_save :set_usd_conversion
 
+    default_scope {order(created_at: :desc)}
+
     def calc_service_charge
         self.service_charge = service_type == "VTU" || service_type == "DATA" ? 0 : 100
     end

@@ -5,7 +5,7 @@ class Api::V1::BillOrdersController < ApplicationController
   def index
     @bill_orders = BillOrder.all
 
-    render json: @bill_orders
+    render json: {data: ActiveModelSerializers::SerializableResource.new(@bill_orders)}, status: :ok
   end
 
   def user

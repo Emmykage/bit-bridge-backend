@@ -249,8 +249,6 @@ class BuyPowerPaymentService
 
 
     def get_list(service_type, provider)
-
-
         begin
 
             response = self.class.get("/tariff/?vertical=#{service_type}&provider=#{provider}", headers: @get_headers)
