@@ -171,6 +171,8 @@ class BuyPowerPaymentService
         tariffClass: electric_bill_order["tariff_class"]
      }.transform_values {|v| v.is_a?(String) ? v.strip : v }
 
+
+
             begin
                 response = nil
                 if payment_method == "wallet"
