@@ -20,7 +20,7 @@ class Wallet < ApplicationRecord
   end
 
   def total_deposit
-    transactions.where(transaction_type: "deposit", status: "approved").sum(:amount)
+    transactions.where(transaction_type: "deposit", status: "approved").sum{|d| d.deposit_amount}
   end
 
 

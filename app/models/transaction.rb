@@ -3,6 +3,8 @@ class Transaction < ApplicationRecord
   has_one_attached :proof
   has_one :user, through: :wallet
 
+  attr_accessor :coupon_code
+
   enum :status, {pending: 0, approved: 1, declined: 2}
   # enum :coin_type, {usdt: 0, ngn: 1}
   enum :transaction_type, {deposit: 0, withdrawal: 1}
@@ -10,6 +12,8 @@ class Transaction < ApplicationRecord
 
   default_scope { order(created_at: :desc)}
   validate :validate_transaction, if: :withdrawal
+
+  before_save :set_coupon_bonus, if: :coupon?
 
   before_save :check_method_payment
 
@@ -28,9 +32,24 @@ class Transaction < ApplicationRecord
 
   end
 
+
+  def deposit_amount
+    amount + (bonus || 0)
+  end
+
+
   def email
     user.email
   end
+
+  def set_coupon_bonus
+      self.bonus = amount * 0.05
+  end
+
+  def coupon?
+    coupon_code === "SUPERSTRIKERS"
+  end
+
 
   # def insert_usd
 
