@@ -47,7 +47,7 @@ class Transaction < ApplicationRecord
   end
 
   def coupon?
-    coupon_code === "SUPERSTRIKERS"
+    coupon_code.to_s.strip === "SUPERSTRIKERS"
   end
 
 
