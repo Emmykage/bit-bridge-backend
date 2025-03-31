@@ -198,6 +198,10 @@ class BuyPowerPaymentService
                 end
 
 
+                puts "Error response for confirmation #{response}"
+
+
+
                 if response.success?
                     electric_bill_order.update(status: "completed", payment_method: payment_method, units: response["data"]["units"],  token: response["data"]["token"], transaction_id: response["data"]["id"])
                     return { response: electric_bill_order, status: "success" }
