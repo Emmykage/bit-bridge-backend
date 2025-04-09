@@ -1,3 +1,5 @@
+# require 'set'
+
 class Api::V1::BillOrdersController < ApplicationController
   before_action :set_bill_order, only: %i[ show update destroy ]
 
@@ -8,10 +10,35 @@ class Api::V1::BillOrdersController < ApplicationController
     render json: {data: ActiveModelSerializers::SerializableResource.new(@bill_orders)}, status: :ok
   end
 
+  def recent
+    @bill_orders = BillOrder.select(:amount).distinct.order(created_at: :desc).limit(3)
+    render json: { data: ActiveModelSerializers::SerializableResource.new(@bill_orders) }, status: :ok
+  end
+
   def user
 
     bill_orders = current_user.bill_orders
     render json: {data: ActiveModelSerializers::SerializableResource.new(bill_orders)}, status: :ok
+  end
+
+  def user_recent
+
+    bill_orders = current_user.bill_orders.order(created_at: :desc)
+    unique_orders = []
+
+    seen_amounts = Set.new
+
+    bill_orders.each do |order|
+      unless seen_amounts.include?(order.amount)
+        unique_orders << order
+        seen_amounts.add(order.amount)
+
+        end
+      end
+
+    # unique_amounts = bill_orders.map(&:amount).uniq.first(3)
+    # binding.b
+    render json: {data: unique_orders.first(3)}, status: :ok
   end
 
   # GET /bill_orders/1

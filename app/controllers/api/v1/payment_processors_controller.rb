@@ -1,5 +1,5 @@
 class Api::V1::PaymentProcessorsController < ApplicationController
-    before_action :set_bill_order, only: %i[ show confirm_payment ]
+    before_action :set_bill_order, only: %i[ show confirm_payment repurchase ]
     skip_before_action :authenticate_user!
     def verify_meter
         service = BuyPowerPaymentService.new
@@ -54,6 +54,8 @@ class Api::V1::PaymentProcessorsController < ApplicationController
 
     end
 
+
+
     def confirm_payment
 
         payment_method = params[:payment_method]
@@ -68,6 +70,23 @@ class Api::V1::PaymentProcessorsController < ApplicationController
 
 
     end
+
+    def repurchase
+
+     service = BuyPowerPaymentService.new
+     service_response = service.repurchase_subscription(current_user, @bill_order)
+
+     if service_response[:status] === "success"
+        render json: {data: service_response[:response], message: "payment confirmed" }, status: :ok
+
+     else
+
+        render json: {message: service_response[:response]}, status: :unprocessable_entity
+
+
+    end
+
+end
 
     def process_payment
 
@@ -151,8 +170,6 @@ class Api::V1::PaymentProcessorsController < ApplicationController
 
     def set_bill_order
         @bill_order = BillOrder.find_by(id: params[:id])
-
-
         unless  @bill_order.present?
             render json: {message: "Not found"}, status: :unprocessable_entity
         end

@@ -10,6 +10,7 @@ class BuyPowerPaymentService
         secret_token_prod  = ENV['SECRET_TOKEN_PROD']
         token =  Rails.env.production? ? secret_token_prod  : secret_token_dev
 
+
         @get_headers = {
             "Authorization" =>  "Bearer #{token}"
 
@@ -155,7 +156,7 @@ class BuyPowerPaymentService
 
     end
 
-    def confirm_subscription(electric_bill_order, payment_method)
+    def confirm_subscription(electric_bill_order, payment_method = "wallet")
 
         body = {
         meter: electric_bill_order["meter_number"],
@@ -172,16 +173,15 @@ class BuyPowerPaymentService
      }.transform_values {|v| v.is_a?(String) ? v.strip : v }
 
 
-
             begin
                 response = nil
                 if payment_method == "wallet"
 
 
                   if  electric_bill_order.user.wallet.balance > electric_bill_order[:usd_amount]
-                    Timeout.timeout(120) do
+                    # Timeout.timeout(120) do
                         response = self.class.post("/vend", headers: @post_headers, body: body)
-                    end
+                    # end
                     else
                     raise 'Insufficient funds'
 
@@ -198,11 +198,7 @@ class BuyPowerPaymentService
                 end
 
 
-                puts "Error response for confirmation #{response}"
-
-
-
-                if response.success?
+                   if response.success?
                     electric_bill_order.update(status: "completed", payment_method: payment_method, units: response["data"]["units"],  token: response["data"]["token"], transaction_id: response["data"]["id"])
                     return { response: electric_bill_order, status: "success" }
 
@@ -221,6 +217,38 @@ class BuyPowerPaymentService
 
             end
 
+
+
+    end
+
+    def repurchase_subscription(current_user, bill_order)
+
+        begin
+    electric_bill_order =  current_user.bill_orders.new(
+            meter_number: bill_order[:meter_number],
+            meter_type: bill_order [:meter_type],
+            address: bill_order[:address],
+            name:  bill_order[:name],
+            tariff_class: bill_order[:tariff_class],
+            service_type: bill_order[:service_type],
+            email: bill_order[:email],
+            amount: bill_order[:amount],
+            phone: bill_order[:phone],
+            biller: bill_order[:biller],
+        )
+
+
+
+
+        if electric_bill_order.save
+            confirm_subscription(electric_bill_order)
+        else
+            raise bill_order.errors.full_messages.to_sentence
+        end
+
+        rescue StandardError => e
+         return {response: "#{e.message}", status: "error"}
+        end
 
 
     end

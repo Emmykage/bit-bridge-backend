@@ -39,11 +39,13 @@ Rails.application.routes.draw do
           post :process_payment
           get :get_balance
           get :get_price_list
+
         end
         member do
           get :approve_data
           get :confirm_payment
           get :query_transaction
+          get :repurchase
 
         end
 
@@ -79,6 +81,7 @@ Rails.application.routes.draw do
       resources :bill_orders do
         collection do
           get :user
+          get :user_recent
         end
       end
 
