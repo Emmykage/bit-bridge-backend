@@ -20,13 +20,13 @@ class Transaction < ApplicationRecord
 
   def validate_transaction
 
-    if  amount > wallet.balance
+    if  amount > wallet.balance && status !="declined"
       errors.add(:amount, "insufficient balance")
 
     end
   end
   def check_method_payment
-    if  coin_type === "bank"
+    if  coin_type === "bank" && transaction_type == "deposit"
       self.status = "approved"
     end
 
