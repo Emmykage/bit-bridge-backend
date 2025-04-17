@@ -6,6 +6,9 @@ class Api::V1::ProductsController < ApplicationController
   def index
     @products = Product.all
 
+    @products = @products.where(category:params[:category]) if params[:category].present?
+
+
     render json: {data: ActiveModelSerializers::SerializableResource.new(@products)}
   end
 
