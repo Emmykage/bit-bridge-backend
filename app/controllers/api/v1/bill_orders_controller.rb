@@ -23,7 +23,7 @@ class Api::V1::BillOrdersController < ApplicationController
 
   def user_recent
 
-    bill_orders = current_user.bill_orders.order(created_at: :desc)
+    bill_orders = current_user.bill_orders.where(status: "completed").order(created_at: :desc)
     unique_orders = []
 
     seen_amounts = Set.new
@@ -81,6 +81,6 @@ class Api::V1::BillOrdersController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def bill_order_params
-      params.require(:bill_order).permit(:status, :meter_number, :amount, :meter_type, :phone, :service_type, :payment_type, :email, :tariff_class, :name)
+      params.require(:bill_order).permit(:status, :meter_number, :amount, :meter_type, :phone, :service_type, :payment_type, :email, :tariff_class, :description, :name)
     end
 end
