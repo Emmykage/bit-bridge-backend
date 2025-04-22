@@ -157,7 +157,7 @@ end
 
 
     def payment_processor_params
-        params.permit(:billersCode, :amount, :request_id, :meter_type, :phone, :biller, :email, :status , :tariff_class, :service_type, :skip)
+        params.permit(:billersCode, :amount, :request_id, :meter_type, :phone, :biller, :email, :status , :tariff_class, :service_type, :skip, :description)
 
     end
 

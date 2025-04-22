@@ -9,7 +9,7 @@ class Api::V1::ProvisionsController < ApplicationController
 
   # GET /provisions/1
   def show
-    render json: @provision
+    render json:{data: @provision}
   end
 
   # POST /provisions
