@@ -45,6 +45,7 @@ class BuyPowerPaymentService
             amount: payment_processor_params[:amount],
             phone: payment_processor_params[:phone],
             biller: payment_processor_params[:biller],
+            description:  payment_processor_params[:description],
             ) || BillOrder.new(
                 meter_number: payment_processor_params[:billersCode],
                 meter_type: res&.dig("vendType") || "PREPAID",
@@ -55,7 +56,9 @@ class BuyPowerPaymentService
                 email: payment_processor_params[:email],
                 amount: payment_processor_params[:amount],
                 phone: payment_processor_params[:phone],
-                biller: payment_processor_params[:biller]
+                biller: payment_processor_params[:biller],
+                description:  payment_processor_params[:description],
+
               )
 
 
