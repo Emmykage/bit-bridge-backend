@@ -1,6 +1,6 @@
 class Api::V1::ProvisionsController < ApplicationController
   before_action :set_provision, only: %i[ show update destroy ]
-  skip_before_action :authenticate_user!, only: %i[index]
+  skip_before_action :authenticate_user!, only: %i[index show]
   # GET /provisions
   def index
     @provisions = Provision.all
@@ -9,7 +9,7 @@ class Api::V1::ProvisionsController < ApplicationController
 
   # GET /provisions/1
   def show
-    render json:{data: @provision}
+    render json:{data: ProvisionSerializer.new(@provision)}, status: :ok
   end
 
   # POST /provisions
