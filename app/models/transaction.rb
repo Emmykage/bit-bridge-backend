@@ -17,7 +17,6 @@ class Transaction < ApplicationRecord
 
 
   before_save :set_coupon_bonus, if: :coupon?
-
   before_save :check_method_payment
 
 
