@@ -8,10 +8,13 @@ class Transaction < ApplicationRecord
   enum :status, {pending: 0, approved: 1, declined: 2}
   # enum :coin_type, {usdt: 0, ngn: 1}
   enum :transaction_type, {deposit: 0, withdrawal: 1}
-  enum :coin_type, {usdt: 0, bitcoin: 1, dodgecoin: 2, bank: 3}
+  enum :coin_type, {bank: 0, bitcoin: 1, dodgecoin: 2, usdt: 3}
 
   default_scope { order(created_at: :desc)}
-  validate :validate_transaction, if: :withdrawal
+  validate :validate_transaction, if: :withdrawal_status_pending_or_approved?
+  validates :address, presence: true, if: :withdrawal?
+  validates :amount, presence: true, numericality: {greater_than: 0}
+
 
   before_save :set_coupon_bonus, if: :coupon?
 
@@ -69,10 +72,13 @@ class Transaction < ApplicationRecord
   end
 
     private
+      def withdrawal?
+        transaction_type == "withdrawal"
+      end
 
-  def withdrawal
-    transaction_type == "withdrawal" &&( status ==  "approved" || status == "pending")
-  end
+      def withdrawal_status_pending_or_approved?
+        transaction_type == "withdrawal" && ( status ==  "approved" || status == "pending")
+      end
 
 
 
