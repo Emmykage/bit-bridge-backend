@@ -22,8 +22,6 @@ class Api::V1::TransactionRecordsController < ApplicationController
    else
     render json: {message: response[:message]}, status: :bad_request
    end
-
-
   end
 
 
