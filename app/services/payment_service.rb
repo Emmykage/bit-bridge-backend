@@ -93,13 +93,12 @@ class PaymentService
             }.to_json
 
 
-            response =   self.class.post("/api/v1/merchant/transactions/init-transaction", headers: headers, body: body )
+            response =  self.class.post("/api/v1/merchant/transactions/init-transaction", headers: headers, body: body )
 
             if response.success?
                 return {response: response, status: :ok}
             else
                 raise  response["responseMessage"]
-
             end
             rescue StandardError => e
                 return {message: "#{e.message}"}

@@ -16,7 +16,7 @@ class Api::V1::TransactionRecordsController < ApplicationController
     if transaction_record.save
       render json:  response[:response], status: :ok
     else
-      render json: {message: transaction_record.errors.full_messages.to_sentence}, status: :unprocessable_entity
+      render json: {message: transaction_record.errors.full_messages.to_sentence, data: response }, status: :unprocessable_entity
 
     end
    else
