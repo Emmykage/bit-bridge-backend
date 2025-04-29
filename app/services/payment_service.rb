@@ -101,7 +101,7 @@ class PaymentService
                 raise  response["responseMessage"]
             end
             rescue StandardError => e
-                return {message: "#{e.message}", response: response}
+                return {message: "#{e.message}", response: response, body: body}
             end
         end
 
