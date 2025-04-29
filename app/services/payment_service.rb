@@ -10,15 +10,12 @@ class PaymentService
         # contract_code = ENV["MONNIFY_CONTRACT_CODE"]
 
 
-        # secret_key = "4J1X69XH1BT0Y85DJCE9HKDRDJL3LNDH"
-        # api_key = "MK_TEST_CQV87G8H1W"
-        # account_no = "3822733711"
-        # contract_code = "2301355481"
+        secret_key = "4J1X69XH1BT0Y85DJCE9HKDRDJL3LNDH"
+        api_key = "MK_TEST_CQV87G8H1W"
+        account_no = "3822733711"
+        contract_code = "2301355481"
 
-        secret_key = ""
-        api_key = ""
-        account_no = ""
-        contract_code = ""
+
 
         encode_64 = Base64.strict_encode64("#{api_key}:#{secret_key}")
 
@@ -64,7 +61,6 @@ class PaymentService
         return  monify.token
       end
         monify = authenticate_and_store
-
 
 
         if monify.is_a?(Hash) && monify[:status] == :bad_request
