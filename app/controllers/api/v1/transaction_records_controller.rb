@@ -20,7 +20,7 @@ class Api::V1::TransactionRecordsController < ApplicationController
 
     end
    else
-    render json: {message: response[:message], data: "hey you"}, status: :bad_request
+    render json: {message: response[:message], data: response[:response]}, status: :bad_request
    end
   end
 
