@@ -10,7 +10,6 @@ class BuyPowerPaymentService
         secret_token_prod  = ENV['SECRET_TOKEN_PROD']
         token =  Rails.env.production? ? secret_token_prod  : secret_token_dev
 
-
         @get_headers = {
             "Authorization" =>  "Bearer #{token}"
 
@@ -199,6 +198,10 @@ class BuyPowerPaymentService
 
 
                 end
+
+
+                binding.b
+
 
 
                    if response.success?

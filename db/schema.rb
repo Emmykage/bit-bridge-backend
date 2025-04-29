@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_04_18_121708) do
+ActiveRecord::Schema[7.1].define(version: 2025_04_28_205046) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -124,6 +124,13 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_18_121708) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "monify_tokens", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "token"
+    t.datetime "expires_in"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "order_details", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.decimal "total_amount"
     t.integer "status", default: 0
@@ -187,6 +194,20 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_18_121708) do
     t.decimal "value_range", default: [], array: true
     t.string "service_type"
     t.index ["product_id"], name: "index_provisions_on_product_id"
+  end
+
+  create_table "transaction_records", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "transaction_id"
+    t.string "status"
+    t.string "customer_name"
+    t.string "email"
+    t.string "reference"
+    t.string "event_type"
+    t.decimal "amount"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "description"
+    t.string "phone_number"
   end
 
   create_table "transactions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

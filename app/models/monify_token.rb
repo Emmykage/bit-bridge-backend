@@ -1,0 +1,2 @@
+class MonifyToken < ApplicationRecord
+end

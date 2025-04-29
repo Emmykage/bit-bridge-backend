@@ -25,6 +25,11 @@ Rails.application.routes.draw do
 
       # get "payment-processor/get-balance", to: "payment_processors#get_balance"
       # Define your API routes here
+      resources :transaction_records do
+        collection do
+         post :initialize_transaction
+        end
+      end
       resource :currencies do
         collection do
           get :get_currency
