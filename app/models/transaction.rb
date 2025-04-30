@@ -6,7 +6,7 @@ class Transaction < ApplicationRecord
 
   attr_accessor :coupon_code
 
-  enum :status, {pending: 0, approved: 1, declined: 2, initialize: 3, failed: 4}
+  enum :status, {pending: 0, approved: 1, declined: 2, initialized: 3, failed: 4}
   enum :transaction_type, {deposit: 0, withdrawal: 1}
   enum :coin_type, {bank: 0, bitcoin: 1, dodgecoin: 2, usdt: 3}
 
