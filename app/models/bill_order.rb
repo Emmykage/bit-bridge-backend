@@ -2,6 +2,7 @@ class BillOrder < ApplicationRecord
 
     belongs_to :user, optional: true
     has_one :wallet, through: :user
+    has_one :transaction_record
 
     enum :status, {initialized: 0, completed: 1, declined: 2, timedout: 3}
     enum :meter_type, {PREPAID: 0, POSTPAID: 1}

@@ -1,6 +1,6 @@
 class Api::V1::TransactionRecordsController < ApplicationController
   before_action :set_transaction_record, only: %i[ show update destroy ]
-  skip_before_action :authenticate_user!, only: %i[initialize_transaction]
+  # skip_before_action :authenticate_user!, only: %i[initialize_transaction]
   # GET /transaction_records
   def index
     @transaction_records = TransactionRecord.all
@@ -12,15 +12,29 @@ class Api::V1::TransactionRecordsController < ApplicationController
     initialize_payment = PaymentService.new
    response =  initialize_payment.init_transaction(transaction_record_params)
    if response[:status] == :ok
-    transaction_record =  TransactionRecord.new(reference: response[:response]["responseBody"]["paymentReference"])
-    if transaction_record.save
+
+    transaction = current_user.wallet.transactions.create(
+      status: transaction_record_params[:status],
+      transaction_type: transaction_record_params[:transaction_type],
+      amount: transaction_record_params[:amount]
+    )
+
+    if transaction.persisted?
+     transaction_record = TransactionRecord.new(exchange_id: transaction.id, reference: response[:response]["responseBody"]["paymentReference"])
+
+      if transaction_record.save
       render json:  response[:response], status: :ok
+      else
+        render json: {message: transaction_record.errors.full_messages.to_sentence }, status: :unprocessable_entity
+
+      end
+
     else
-      render json: {message: transaction_record.errors.full_messages.to_sentence, data: response }, status: :unprocessable_entity
+      render json: {message: transaction.errors.full_messages.to_sentence }, status: :unprocessable_entity
 
     end
    else
-    render json: {message: response[:message], data: response[:response], body: response[:body]}, status: :bad_request
+    render json: {message: response[:message]}, status: :bad_request
    end
   end
 
@@ -63,6 +77,6 @@ class Api::V1::TransactionRecordsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def transaction_record_params
-      params.require(:transaction_record).permit(:transaction_id, :status, :reference, :amount, :customer_name, :email, :description, :phone_number)
+      params.require(:transaction_record).permit(:transaction_id, :status, :reference, :amount, :customer_name, :email, :description, :phone_number, :redirect_url)
     end
 end

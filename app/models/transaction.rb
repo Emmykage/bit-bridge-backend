@@ -2,6 +2,7 @@ class Transaction < ApplicationRecord
   belongs_to :wallet
   has_one_attached :proof
   has_one :user, through: :wallet
+  has_one :transaction_record, foreign_key: "exchange_id"
 
   attr_accessor :coupon_code
 

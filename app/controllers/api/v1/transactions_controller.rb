@@ -21,24 +21,36 @@ class Api::V1::TransactionsController < ApplicationController
     render json: {data: TransactionSerializer.new(@transaction)}, status: :ok
   end
 
-  # POST /transactions
-  # def create
+  def initialize_transaction
+    initialize_payment = PaymentService.new
+   response =  initialize_payment.init_transaction(transaction_params)
+   if response[:status] == :ok
 
-  #   existing_wallet =  current_user.wallets.find_by(type: transaction_params[:currency])
+    transaction = current_user.wallet.transactions.create(
+      status: transaction_params[:status],
+      transaction_type: transaction_params[:transaction_type],
+      amount: transaction_params[:amount]
+    )
 
-  # if existing_wallet.nil?
-  #   # existing_wallet = current_user.initialize_wallet(transaction_params[:currency])
-  #   existing_wallet = initialize_wallet(transaction_params[:currency])
-  # end
-  #   @transaction = existing_wallet.transactions.new(transaction_params)
+    if transaction.persisted?
+     transaction_record = TransactionRecord.new(exchange_id: transaction.id, reference: response[:response]["responseBody"]["paymentReference"])
 
-  #   if @transaction.save
-  #     render json: {data: TransactionSerializer.new(@transaction), message: "Transaction created successfully" }, status: :created
+      if transaction_record.save
+      render json:  response[:response], status: :ok
+      else
+        render json: {message: transaction_record.errors.full_messages.to_sentence }, status: :unprocessable_entity
 
-  #   else
-  #     render json:{message: @transaction.errors.full_messages.to_sentence}, status: :unprocessable_entity
-  #   end
-  # end
+      end
+
+    else
+      render json: {message: transaction.errors.full_messages.to_sentence }, status: :unprocessable_entity
+
+    end
+   else
+    render json: {message: response[:message]}, status: :bad_request
+   end
+  end
+
 
   def create
 
@@ -80,7 +92,7 @@ class Api::V1::TransactionsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def transaction_params
-      params.require(:transaction).permit(:status, :amount, :address, :proof, :transaction_type, :currency, :coin_type, :bank, :wallet_id, :coupon_code)
+      params.require(:transaction).permit(:status, :amount, :address, :proof, :transaction_type, :currency, :coin_type, :bank, :wallet_id, :coupon_code, :customer_name, :email, :description, :payment_purpose)
     end
 
     def initialize_wallet(wallet_type)

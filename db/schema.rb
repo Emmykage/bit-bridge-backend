@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_04_29_041706) do
+ActiveRecord::Schema[7.1].define(version: 2025_04_29_161202) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -208,6 +208,10 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_29_041706) do
     t.datetime "updated_at", null: false
     t.string "description"
     t.string "phone_number"
+    t.uuid "bill_order_id"
+    t.uuid "exchange_id"
+    t.index ["bill_order_id"], name: "index_transaction_records_on_bill_order_id"
+    t.index ["exchange_id"], name: "index_transaction_records_on_exchange_id"
     t.index ["reference"], name: "index_transaction_records_on_reference", unique: true
   end
 
@@ -269,6 +273,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_29_041706) do
   add_foreign_key "order_items", "products"
   add_foreign_key "order_items", "provisions"
   add_foreign_key "provisions", "products"
+  add_foreign_key "transaction_records", "bill_orders"
+  add_foreign_key "transaction_records", "transactions", column: "exchange_id"
   add_foreign_key "transactions", "wallets"
   add_foreign_key "user_profiles", "users"
   add_foreign_key "wallets", "users"

@@ -25,6 +25,14 @@ Rails.application.routes.draw do
 
       # get "payment-processor/get-balance", to: "payment_processors#get_balance"
       # Define your API routes here
+
+      post "monnify/webhook", to: "webhooks#monnify"
+      # resources :webhooks do
+      #   collection do
+      #     post :monnify
+      #   end
+
+    # end
       resources :transaction_records do
         collection do
          post :initialize_transaction
@@ -65,7 +73,8 @@ Rails.application.routes.draw do
       resources :gift_cards
       resources :transactions do
         collection do
-        get :user
+          post :initialize_transaction
+          get :user
         end
       end
       resources :wallets do
@@ -87,6 +96,11 @@ Rails.application.routes.draw do
         collection do
           get :user
           get :user_recent
+        end
+
+        member do
+          get :initialize_confirm_payment
+
         end
       end
 

@@ -71,8 +71,7 @@ class PaymentService
 
     end
 
-    def init_transaction(transaction_record_params)
-
+    def init_transaction(record_params)
         begin
 
             headers = {
@@ -81,15 +80,19 @@ class PaymentService
             }
 
            body = {
-                "amount": transaction_record_params[:amount],
-                "customerName": transaction_record_params[:customer_name],
-                "customerEmail": transaction_record_params[:email],
-                "paymentReference": "bbg-#{Time.now.to_i}",
-                "paymentDescription": transaction_record_params[:description],
+                "amount": record_params[:amount],
+                "customerName": record_params[:customer_name] || record_params[:name],
+                "customerEmail": record_params[:email],
+                "paymentReference": (record_params[:type].present? && record_params[:type] == "bills") ? "bbg-#{Time.now.to_i}"  : "fbg-#{Time.now.to_i}",
+                "paymentDescription": record_params[:description],
                 "currencyCode": "NGN",
                 "contractCode": @contract_code,
-                "redirectUrl": transaction_record_params[:redirect_url] || "https://bitbridgeglobal.com/dashboard/transaction/confirm",
-                "paymentMethods":["CARD","ACCOUNT_TRANSFER"]
+                "redirectUrl": record_params[:redirect_url] || "https://bitbridgeglobal.com/dashboard/transaction/confirm",
+                "paymentMethods":["CARD","ACCOUNT_TRANSFER"],
+                "metadata": {
+                    "name": record_params[:customer_name] || record_params[:name],
+                    "paymentPurpose": record_params[:payment_purpose]
+                }
             }.to_json
 
 
@@ -101,7 +104,7 @@ class PaymentService
                 raise  response["responseMessage"]
             end
             rescue StandardError => e
-                return {message: "#{e.message}", response: response, body: body}
+                return {message: "#{e.message}", body: body}
             end
         end
 
