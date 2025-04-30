@@ -22,7 +22,6 @@ class Api::V1::BillOrdersController < ApplicationController
     if payment_method == "card"
 
         service = PaymentService.new
-        service_response = service.init_transaction(@bill_order.attributes.merge({type: "bills", payment_method: "card"}))
         service_response = service.init_transaction(@bill_order.attributes.symbolize_keys.merge({type: "bills", payment_method: "card" }))
 
 
@@ -33,7 +32,7 @@ class Api::V1::BillOrdersController < ApplicationController
           transaction_record = TransactionRecord.new(bill_order_id: @bill_order.id, reference: payment_reference)
 
           if transaction_record.save
-            binding.b
+            # binding.b
             render json: service_response[:response], status: :ok
           else
             render json: {message: transaction_record.errors.full_messages.to_sentence}

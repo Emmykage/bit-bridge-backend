@@ -25,7 +25,6 @@ class Api::V1::TransactionsController < ApplicationController
     initialize_payment = PaymentService.new
    response =  initialize_payment.init_transaction(transaction_params)
    if response[:status] == :ok
-
     transaction = current_user.wallet.transactions.create(
       status: transaction_params[:status],
       transaction_type: transaction_params[:transaction_type],
@@ -92,7 +91,7 @@ class Api::V1::TransactionsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def transaction_params
-      params.require(:transaction).permit(:status, :amount, :address, :proof, :transaction_type, :currency, :coin_type, :bank, :wallet_id, :coupon_code, :customer_name, :email, :description, :payment_purpose)
+      params.require(:transaction).permit(:status, :amount, :address, :proof, :transaction_type, :currency, :coin_type, :bank, :wallet_id, :coupon_code, :customer_name, :email, :description, :payment_purpose, :redirect_url)
     end
 
     def initialize_wallet(wallet_type)

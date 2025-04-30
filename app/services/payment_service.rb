@@ -56,7 +56,7 @@ class PaymentService
     end
 
     def get_token
-      monify =  MonifyToken.last
+      monify =  MonifyToken.first
       if monify.present? &&  monify.expires_in > Time.current
         return  monify.token
       end

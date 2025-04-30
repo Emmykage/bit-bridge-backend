@@ -2,6 +2,7 @@ class Api::V1::WebhooksController < ApplicationController
   skip_before_action :authenticate_user!
   def monnify
     data = JSON.parse(request.raw_post)
+    # binding.b
 
     Rails.logger.info("Monnify webhook raw post: #{request.raw_post}")
     Rails.logger.info("Monnify webhook json post: #{data}")
@@ -52,7 +53,6 @@ class Api::V1::WebhooksController < ApplicationController
 
 
   def handle_payment_confirmation(transaction_record)
-
   transaction =   transaction_record.exchange
   transaction.update(status: "approved")
 
