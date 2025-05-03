@@ -27,7 +27,7 @@ class Api::V1::TransactionsController < ApplicationController
    response =  initialize_payment.init_transaction(transaction_params)
 
 
-   Rails.logger.info "✅ User params: #{transaction_params[:status]}"
+
 
    if response[:status] == :ok
     transaction = current_user.wallet.transactions.create(

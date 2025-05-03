@@ -3,9 +3,9 @@ class Api::V1::WebhooksController < ApplicationController
   def monnify
     data = JSON.parse(request.raw_post)
     # binding.b
-
-    Rails.logger.info("Monnify webhook raw post: #{request.raw_post}")
-    Rails.logger.info("Monnify webhook json post: #{data}")
+  #  Rails.logger.info "✅ User params: #{transaction_params[:status]}"
+    Rails.logger.info("✅  Monnify webhook raw post: #{request.raw_post}")
+    Rails.logger.info("✅  Monnify webhook json post: #{data}")
 
 
     if data["eventType"] == "SUCCESSFUL_TRANSACTION"
