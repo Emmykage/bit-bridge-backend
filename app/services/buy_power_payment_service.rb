@@ -85,10 +85,12 @@ class BuyPowerPaymentService
 
     def verify_meter(verify_processor_params)
 
+
         meter_number = verify_processor_params[:billersCode]
         biller = verify_processor_params[:biller]
         meter_type = verify_processor_params[:meter_type]
         service_type = verify_processor_params[:service_type].upcase
+
 
 
         begin
@@ -198,7 +200,6 @@ class BuyPowerPaymentService
 
 
                 end
-
 
                    if response.success?
                     electric_bill_order.update(status: "completed", payment_method: payment_method, units: response["data"]["units"],  token: response["data"]["token"], transaction_id: response["data"]["id"])

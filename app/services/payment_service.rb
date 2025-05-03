@@ -23,7 +23,6 @@ class PaymentService
             "Authorization": "Basic #{encode_64}",
             "Content-Type": "application/json"
 
-
         }
 
     end
@@ -36,7 +35,7 @@ class PaymentService
         response = self.class.post("/api/v1/auth/login", headers: @headers)
 
         if response.success?
-          monifyToken =   MonifyToken.create(token: response["responseBody"]["accessToken"], expires_in: Time.current + response["responseBody"]["expiresIn"])
+          monifyToken = MonifyToken.create(token: response["responseBody"]["accessToken"], expires_in: Time.current + response["responseBody"]["expiresIn"])
             if monifyToken.save
                 return monifyToken
 

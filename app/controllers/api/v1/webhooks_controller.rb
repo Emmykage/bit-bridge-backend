@@ -2,10 +2,7 @@ class Api::V1::WebhooksController < ApplicationController
   skip_before_action :authenticate_user!
   def monnify
     data = JSON.parse(request.raw_post)
-    # binding.b
-
-    Rails.logger.info("Monnify webhook raw post: #{request.raw_post}")
-    Rails.logger.info("Monnify webhook json post: #{data}")
+    # Rails.logger.info("Monnify webhook json post: #{data}")
 
 
     if data["eventType"] == "SUCCESSFUL_TRANSACTION"
@@ -37,6 +34,7 @@ class Api::V1::WebhooksController < ApplicationController
    bill_order =  transaction_record.bill_order
    payment_service = BuyPowerPaymentService.new
    service_response = payment_service.confirm_subscription(bill_order, payment_method)
+  #  binding.b
 
   #  if service_response[:status] == "success"
   #   render json: {data: service_response[:response]}, status: :ok
