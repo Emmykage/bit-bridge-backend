@@ -29,6 +29,7 @@ class Api::V1::TransactionsController < ApplicationController
    if response[:status] == :ok
     transaction = current_user.wallet.transactions.create(
       status: "initialized",
+      coin_type: "mobile_bank",
       transaction_type: transaction_params[:transaction_type],
       amount: transaction_params[:amount]
     )

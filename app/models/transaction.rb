@@ -8,7 +8,7 @@ class Transaction < ApplicationRecord
 
   enum :status, {pending: 0, approved: 1, declined: 2, initialized: 3, failed: 4}
   enum :transaction_type, {deposit: 0, withdrawal: 1}
-  enum :coin_type, {bank: 0, bitcoin: 1, dodgecoin: 2, usdt: 3}
+  enum :coin_type, {bank: 0, bitcoin: 1, dodgecoin: 2, usdt: 3, mobile_bank: 4}
 
   default_scope { order(created_at: :desc)}
   validate :validate_transaction, if: :withdrawal_status_pending_or_approved?
