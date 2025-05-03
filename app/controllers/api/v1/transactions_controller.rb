@@ -23,9 +23,12 @@ class Api::V1::TransactionsController < ApplicationController
 
   def initialize_transaction
     initialize_payment = PaymentService.new
+
    response =  initialize_payment.init_transaction(transaction_params)
 
+
    Rails.logger.info "✅ User params: #{transaction_params[:status]}"
+
    if response[:status] == :ok
     transaction = current_user.wallet.transactions.create(
       status: "initialized",
@@ -38,7 +41,7 @@ class Api::V1::TransactionsController < ApplicationController
      transaction_record = TransactionRecord.new(exchange_id: transaction.id, reference: response[:response]["responseBody"]["paymentReference"])
 
       if transaction_record.save
-      render json:  response["responseBody"]["checkoutUrl"], status: :ok
+      render json: response[:response], status: :ok
       else
         render json: {message: transaction_record.errors.full_messages.to_sentence }, status: :unprocessable_entity
 

@@ -1,6 +1,7 @@
 class PaymentService
     include HTTParty
-    base_uri Rails.env.production? ? ENV["MONNIFY_BASE_URL_PROD"] : "https://sandbox.monnify.com"
+    # base_uri Rails.env.production? ? ENV["MONNIFY_BASE_URL_PROD"] : "https://sandbox.monnify.com"
+    base_uri  "https://sandbox.monnify.com"
 
     def initialize()
 
@@ -10,10 +11,10 @@ class PaymentService
         @contract_code = ENV["MONNIFY_CONTRACT_CODE"]
 
 
-        # secret_key = "4J1X69XH1BT0Y85DJCE9HKDRDJL3LNDH"
-        # api_key = "MK_TEST_CQV87G8H1W"
-        # account_no = "3822733711"
-        # @contract_code = "2301355481"
+        secret_key = "4J1X69XH1BT0Y85DJCE9HKDRDJL3LNDH"
+        api_key = "MK_TEST_CQV87G8H1W"
+        account_no = "3822733711"
+        @contract_code = "2301355481"
 
 
 
@@ -55,10 +56,10 @@ class PaymentService
     end
 
     def get_token
-      monify =  MonifyToken.first
-      if monify.present? &&  monify.expires_in > Time.current
-        return  monify.token
-      end
+    #   monify =  MonifyToken.first
+    #   if monify.present? &&  monify.expires_in > Time.current
+    #     return  monify.token
+    #   end
         monify = authenticate_and_store
 
 
