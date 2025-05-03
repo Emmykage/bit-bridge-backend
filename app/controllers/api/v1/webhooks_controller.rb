@@ -2,7 +2,10 @@ class Api::V1::WebhooksController < ApplicationController
   skip_before_action :authenticate_user!
   def monnify
     data = JSON.parse(request.raw_post)
-    # Rails.logger.info("Monnify webhook json post: #{data}")
+    # binding.b
+
+    Rails.logger.info("Monnify webhook raw post: #{request.raw_post}")
+    Rails.logger.info("Monnify webhook json post: #{data}")
 
 
     if data["eventType"] == "SUCCESSFUL_TRANSACTION"
