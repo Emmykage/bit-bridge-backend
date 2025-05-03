@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_04_29_161202) do
+ActiveRecord::Schema[7.1].define(version: 2025_05_02_233555) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -233,7 +233,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_29_161202) do
     t.string "first_name"
     t.string "last_name"
     t.string "phone_number"
-    t.uuid "user_id", null: false
+    t.uuid "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_user_profiles_on_user_id"
@@ -255,7 +255,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_29_161202) do
   end
 
   create_table "wallets", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "user_id", null: false
+    t.uuid "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "wallet_type", default: 0
@@ -265,7 +265,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_29_161202) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "bill_orders", "order_details"
-  add_foreign_key "bill_orders", "users"
+  add_foreign_key "bill_orders", "users", on_delete: :nullify
   add_foreign_key "card_tokens", "order_items"
   add_foreign_key "electric_bill_orders", "order_details"
   add_foreign_key "order_details", "users"
@@ -276,6 +276,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_29_161202) do
   add_foreign_key "transaction_records", "bill_orders"
   add_foreign_key "transaction_records", "transactions", column: "exchange_id"
   add_foreign_key "transactions", "wallets"
-  add_foreign_key "user_profiles", "users"
-  add_foreign_key "wallets", "users"
+  add_foreign_key "user_profiles", "users", on_delete: :nullify
+  add_foreign_key "wallets", "users", on_delete: :nullify
 end

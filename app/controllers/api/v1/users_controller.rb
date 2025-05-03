@@ -1,6 +1,6 @@
 class Api::V1::UsersController < ApplicationController
   before_action :set_user_params, only: %i[update_password]
-  before_action :set_user, only: %i[show]
+  before_action :set_user, only: %i[show update destroy]
   skip_before_action :authenticate_user!, only: %i[update_password password_reset]
   def user_profile
     if current_user.nil?
@@ -20,7 +20,25 @@ class Api::V1::UsersController < ApplicationController
     render json: {data: UserSerializer.new(@user)}, status: :ok
 
   end
+  def update
+    if @user.update(user_params)
+         render json: {data: UserSerializer.new(@user), message: "User updated"}, status: :ok
+      else
+      render json: {message: @user.errors.full_messages.to_sentence}, status: :unprocessable_entity
 
+    end
+
+  end
+
+  def destroy
+    if @user.destroy
+         render json: { message: "User deleted"}, status: :ok
+      else
+      render json: {message: @user.errors.full_messages.to_sentence}, status: :unprocessable_entity
+
+    end
+
+  end
 
   def update_password
 
@@ -48,7 +66,7 @@ class Api::V1::UsersController < ApplicationController
   end
 
   def set_user
-    @user = User.find(params[:id])
+    @user = User.find_by(id: params[:id])
   end
 
   def set_user_params
@@ -56,8 +74,11 @@ class Api::V1::UsersController < ApplicationController
     @user = User.find_by(email: email )
   end
 
+
+
+
   def user_params
-    params.require(:user).permit(:email, :password, :password_token, )
+    params.require(:user).permit(:email, :password, :password_token, user_profile_attributes: [:id, :first_name, :last_name, :phone_number])
   end
 
   def generate_reset_token(user)
