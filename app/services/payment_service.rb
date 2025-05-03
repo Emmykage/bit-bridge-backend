@@ -87,7 +87,7 @@ class PaymentService
                 "paymentDescription": record_params[:description],
                 "currencyCode": "NGN",
                 "contractCode": @contract_code,
-                "redirectUrl": record_params[:redirect_url] || "https://bitbridgeglobal.com/dashboard/transaction/confirm",
+                "redirectUrl": record_params[:redirect_url] || "https://bitbridgeglobal.com/app-redirect",
                 "paymentMethods":["CARD","ACCOUNT_TRANSFER"],
                 "metadata": {
                     "name": record_params[:customer_name] || record_params[:name],
