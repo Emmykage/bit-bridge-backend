@@ -38,7 +38,7 @@ class Api::V1::TransactionsController < ApplicationController
      transaction_record = TransactionRecord.new(exchange_id: transaction.id, reference: response[:response]["responseBody"]["paymentReference"])
 
       if transaction_record.save
-      render json:  transaction, status: :ok
+      render json:  response["responseBody"]["checkoutUrl"], status: :ok
       else
         render json: {message: transaction_record.errors.full_messages.to_sentence }, status: :unprocessable_entity
 
