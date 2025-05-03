@@ -41,7 +41,12 @@ class Api::V1::TransactionRecordsController < ApplicationController
 
   # GET /transaction_records/1
   def show
-    render json: @transaction_record
+
+    record_type = params[:id].split("-")
+
+    record_item = record_type == "bbg" ? @transaction_record.bill_order : @transaction_record.exchange
+    render json: {data: record_item}, status: :ok
+
   end
 
   # POST /transaction_records
@@ -72,7 +77,12 @@ class Api::V1::TransactionRecordsController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_transaction_record
-      @transaction_record = TransactionRecord.find(params[:id])
+      @transaction_record = TransactionRecord.find_by(reference: params[:id])
+
+      unless @transaction_record.present?
+        render json: { message: "Record does not exist" }, status: :not_found
+        return
+      end
     end
 
     # Only allow a list of trusted parameters through.
