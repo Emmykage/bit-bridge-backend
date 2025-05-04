@@ -33,11 +33,7 @@ Rails.application.routes.draw do
       #   end
 
     # end
-      resources :transaction_records do
-        collection do
-         post :initialize_transaction
-        end
-      end
+      resources :transaction_records
       resource :currencies do
         collection do
           get :get_currency
