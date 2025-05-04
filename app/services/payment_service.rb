@@ -1,20 +1,20 @@
 class PaymentService
     include HTTParty
-    # base_uri Rails.env.production? ? ENV["MONNIFY_BASE_URL_PROD"] : "https://sandbox.monnify.com"
-    base_uri "https://sandbox.monnify.com"
+    base_uri Rails.env.production? ? ENV["MONNIFY_BASE_URL_PROD"] : "https://sandbox.monnify.com"
+    # base_uri "https://sandbox.monnify.com"
 
     def initialize()
 
-        # secret_key = ENV["MONNIFY_SECRET_KEY"]
-        # api_key = ENV["MONNIFY_API_KEY"]
-        # account_no = ENV["MONNIFY_WALLET_ACCOUNT_NUMBER"]
-        # @contract_code = ENV["MONNIFY_CONTRACT_CODE"]
+        secret_key = ENV["MONNIFY_SECRET_KEY"]
+        api_key = ENV["MONNIFY_API_KEY"]
+        account_no = ENV["MONNIFY_WALLET_ACCOUNT_NUMBER"]
+        @contract_code = ENV["MONNIFY_CONTRACT_CODE"]
 
 
-        secret_key = "4J1X69XH1BT0Y85DJCE9HKDRDJL3LNDH"
-        api_key = "MK_TEST_CQV87G8H1W"
-        account_no = "3822733711"
-        @contract_code = "2301355481"
+        # secret_key = "4J1X69XH1BT0Y85DJCE9HKDRDJL3LNDH"
+        # api_key = "MK_TEST_CQV87G8H1W"
+        # account_no = "3822733711"
+        # @contract_code = "2301355481"
 
 
 

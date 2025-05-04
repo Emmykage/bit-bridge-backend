@@ -10,8 +10,11 @@ class Api::V1::TransactionsController < ApplicationController
 
   def user
     transaction_type = params[:transaction_type]
+    status = params[:status]
     @transactions = current_user.transactions.order(created_at: :desc)
     @transactions = @transactions.where(transaction_type: transaction_type) if transaction_type.present?
+    @transactions = @transactions.where(status: status) if status.present?
+
 
     render json:{data:  ActiveModelSerializers::SerializableResource.new(@transactions)}
   end
