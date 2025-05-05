@@ -20,6 +20,12 @@ class Wallet < ApplicationRecord
   end
 
 
+  def total_real_withdrawal
+    transactions.where(transaction_type: "withdrawal", status: "approved").sum(:amount)
+  end
+
+
+
 
   def withdrawn
     transactions.where(transaction_type: "withdrawal", status: "approved").sum(:amount)
@@ -35,4 +41,8 @@ class Wallet < ApplicationRecord
   def balance
      (total_deposit + user.total_sale) - (total_withdrawal + user.user_net_expense + total_bills)
   end
+
+  def real_balance
+    (total_deposit + user.total_sale) - (total_real_withdrawal + user.user_net_expense + total_bills)
+ end
 end

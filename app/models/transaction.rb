@@ -11,7 +11,8 @@ class Transaction < ApplicationRecord
   enum :coin_type, {bank: 0, bitcoin: 1, dodgecoin: 2, usdt: 3, mobile_bank: 4}
 
   default_scope { order(created_at: :desc)}
-  validate :validate_transaction, if: :withdrawal_status_pending_or_approved?
+  validate :validate_transaction_on_create, if: :withdrawal_status_pending_or_approved?, on: :create
+  validate :validate_transaction_on_update, if: :withdrawal_status_pending_or_approved?, on: :update
   validates :address, presence: true, if: :withdrawal?
   validates :amount, presence: true, numericality: {greater_than: 0}
 
@@ -20,13 +21,18 @@ class Transaction < ApplicationRecord
   before_save :check_method_payment
 
 
-  def validate_transaction
-
-    if  amount > wallet.balance && status !="declined"
+  def validate_transaction_on_create
+    if  (amount > wallet.balance) && status !="declined"
       errors.add(:amount, "insufficient balance")
 
     end
   end
+  def validate_transaction_on_update
+  if  (amount > wallet.real_balance) && status !="declined"
+    errors.add(:amount, "insufficient balance")
+
+  end
+end
   def check_method_payment
     if  coin_type === "bank" && transaction_type == "deposit"
       self.status = "approved"

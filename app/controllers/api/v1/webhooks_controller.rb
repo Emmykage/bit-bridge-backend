@@ -35,7 +35,6 @@ class Api::V1::WebhooksController < ApplicationController
    bill_order =  transaction_record.bill_order
    payment_service = BuyPowerPaymentService.new
    service_response = payment_service.confirm_subscription(bill_order, payment_method)
-  #  binding.b
 
   #  if service_response[:status] == "success"
   #   render json: {data: service_response[:response]}, status: :ok

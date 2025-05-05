@@ -32,7 +32,7 @@ class Api::V1::BillOrdersController < ApplicationController
           transaction_record = TransactionRecord.new(bill_order_id: @bill_order.id, reference: payment_reference)
 
           if transaction_record.save
-            # binding.b
+
             render json: service_response[:response], status: :ok
           else
             render json: {message: transaction_record.errors.full_messages.to_sentence}
@@ -84,7 +84,7 @@ end
       end
 
     # unique_amounts = bill_orders.map(&:amount).uniq.first(3)
-    # binding.b
+
     render json: {data: unique_orders.first(3)}, status: :ok
   end
 
