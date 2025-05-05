@@ -30,7 +30,7 @@ class BillOrder < ApplicationRecord
     private
 
     def net_total
-        amount + calc_service_charge
+        amount.to_i + calc_service_charge
     end
 
 
