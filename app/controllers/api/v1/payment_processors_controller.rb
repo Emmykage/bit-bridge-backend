@@ -93,6 +93,8 @@ end
 
        service = BuyPowerPaymentService.new
 
+
+
         service_response = service.process_payment(current_user, payment_processor_params)
 
         if service_response[:status] == "success"
