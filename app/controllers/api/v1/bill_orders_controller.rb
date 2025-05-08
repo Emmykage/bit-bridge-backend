@@ -64,7 +64,8 @@ end
 
   def user
 
-    bill_orders = current_user.bill_orders
+    # bill_orders = current_user.bill_orders.where(status: ["completed", "initialized"])
+    bill_orders = current_user.bill_orders.where(status: "completed")
     render json: {data: ActiveModelSerializers::SerializableResource.new(bill_orders)}, status: :ok
   end
 
