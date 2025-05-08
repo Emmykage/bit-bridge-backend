@@ -1,10 +1,10 @@
 class Api::V1::TransactionRecordsController < ApplicationController
   before_action :set_transaction_record, only: %i[ show update destroy ]
-  skip_before_action :authenticate_user!, only: %i[initialize_transaction]
+  skip_before_action :authenticate_user!, only: %i[index]
   # GET /transaction_records
   def index
-    @transaction_records = TransactionRecord.all
 
+    @transaction_records = TransactionRecord.all
     render json: @transaction_records
   end
 

@@ -52,6 +52,8 @@ Rails.application.routes.draw do
         end
         member do
           get :approve_data
+          get :update_status
+
           get :confirm_payment
           get :query_transaction
           get :repurchase

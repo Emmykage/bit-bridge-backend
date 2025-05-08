@@ -1,6 +1,6 @@
 class Api::V1::PaymentProcessorsController < ApplicationController
     before_action :set_bill_order, only: %i[ show confirm_payment repurchase ]
-    skip_before_action :authenticate_user!
+    # skip_before_action :authenticate_user!
     def verify_meter
         service = BuyPowerPaymentService.new
         service.verify_meter(verify_processor_params)
@@ -88,6 +88,30 @@ class Api::V1::PaymentProcessorsController < ApplicationController
 
 end
 
+def update_status
+
+    reference = params[:id]
+
+
+    transaction_record =TransactionRecord.find_by(reference: reference)
+    ref_type = reference.split("-").first
+
+
+    case ref_type
+    when "bbg"
+        transaction_record.bill_order.update(status: "declined")
+
+    when "fbg"
+        transaction_record.exchange.update(status: "declined")
+
+    else
+        render json: {message: "transaction_declined"}, status: :unprocessible_entity
+    end
+
+     render json: {message: "transaction_declined"}, status: :ok
+
+end
+
     def process_payment
 
 
@@ -159,7 +183,7 @@ end
 
 
     def payment_processor_params
-        params.permit(:billersCode, :amount, :request_id, :meter_type, :phone, :biller, :email, :status , :tariff_class, :service_type, :skip, :description)
+        params.permit(:billersCode, :amount, :request_id, :meter_type, :phone, :biller, :email, :status , :tariff_class, :service_type, :skip, :description, :type)
 
     end
 

@@ -60,6 +60,7 @@ class BillOrder < ApplicationRecord
     end
     def validate_order
 
+        # binding.b
         if wallet.balance < net_usd_conversion
 
             errors.add(:amount, "insufficient balance")
