@@ -20,6 +20,7 @@ class Api::V1::UsersController < ApplicationController
     render json: {data: UserSerializer.new(@user)}, status: :ok
 
   end
+
   def update
     if @user.update(user_params)
          render json: {data: UserSerializer.new(@user), message: "User updated"}, status: :ok
@@ -28,6 +29,15 @@ class Api::V1::UsersController < ApplicationController
 
     end
 
+  end
+
+   def user_update
+    if current_user.update(user_params)
+         render json: {data: UserSerializer.new(current_user), message: "User updated"}, status: :ok
+      else
+      render json: {message: current_user.errors.full_messages.to_sentence}, status: :unprocessable_entity
+
+    end
   end
 
   def destroy

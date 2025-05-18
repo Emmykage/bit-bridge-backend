@@ -123,6 +123,7 @@ Rails.application.routes.draw do
       resources :users do
         collection do
           get  :user_profile
+          patch  :user_update
           patch  :update_password
           get :password_reset
         end

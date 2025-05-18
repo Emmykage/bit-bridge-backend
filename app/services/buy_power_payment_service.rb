@@ -167,7 +167,7 @@ class BuyPowerPaymentService
         amount: electric_bill_order["amount"],
         orderId: electric_bill_order["id"],
         vendType: electric_bill_order["meter_type"],
-        phone: electric_bill_order["service_type"] == "ELECTRICITY" ? electric_bill_order["phone"]  : electric_bill_order["service_type"] == "TV"   ? "07064334160" : electric_bill_order["meter_number"],
+        phone: electric_bill_order["phone"] || electric_bill_order["service_type"] == "TV"   ? "07064334160" : electric_bill_order["meter_number"],
         disco: electric_bill_order["biller"],
         vertical: electric_bill_order["service_type"],
         paymentType: electric_bill_order["payment_type"],
@@ -180,10 +180,6 @@ class BuyPowerPaymentService
             begin
                 response = nil
                 if payment_method == "wallet"
-
-
-# binding.b
-
                   if  electric_bill_order.user.wallet.balance >= electric_bill_order[:usd_amount]
                     # Timeout.timeout(120) do
                         response = self.class.post("/vend", headers: @post_headers, body: body)
@@ -233,11 +229,6 @@ class BuyPowerPaymentService
 
 
             return response_service
-
-
-
-
-
 
         body = {
         meter: electric_bill_order["meter_number"],
