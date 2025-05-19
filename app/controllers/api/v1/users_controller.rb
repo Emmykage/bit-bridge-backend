@@ -31,6 +31,16 @@ class Api::V1::UsersController < ApplicationController
 
   end
 
+
+  def update_password
+  if @user.update(user_params)
+         render json: {data: UserSerializer.new(@user), message: "password updated"}, status: :ok
+      else
+      render json: {message: @user.errors.full_messages.to_sentence}, status: :unprocessable_entity
+
+    end
+  end
+
    def user_update
     if current_user.update(user_params)
          render json: {data: UserSerializer.new(current_user), message: "User updated"}, status: :ok
@@ -50,21 +60,24 @@ class Api::V1::UsersController < ApplicationController
 
   end
 
-  def update_password
-
-    if @user.update(password: user_params[:password]) &&  user_params[:password].present?
-         render json: {message: "pasword has been updated"}
+  def user_password_update
+    if current_user.valid_password?(user_params[:old_password])
+      if user_params[:password] == user_params[:confirm_password]
+        if current_user.update(user_params)
+           render json: {message: "pasword has been updated"}
+          else
+          render json: {message: "failed to update password:  #{current_user.errors.full_messages.to_sentence}"}, status: :unprocessable_entity
+        end
       else
-      render json: {message: "failed to update password:  #{@user.errors.full_messages.to_sentence}"}, status: :unprocessable_entity
-
+        render json: {message: "passwords do not match"}, status: :unprocessable_entity
+      end
+    else
+      render json: {message: "old password is incorrect"}, status: :unprocessable_entity
     end
 
   end
 
   def password_reset
-
-
-
     email = params[:email]
     @user = User.find_by(email: email )
     generate_reset_token(@user)
@@ -88,7 +101,7 @@ class Api::V1::UsersController < ApplicationController
 
 
   def user_params
-    params.require(:user).permit(:email, :password, :password_token, user_profile_attributes: [:id, :first_name, :last_name, :phone_number])
+    params.require(:user).permit(:email, :password, :old_password, :confirm_password, :password_token, user_profile_attributes: [:id, :first_name, :last_name, :phone_number])
   end
 
   def generate_reset_token(user)

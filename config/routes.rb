@@ -124,7 +124,8 @@ Rails.application.routes.draw do
         collection do
           get  :user_profile
           patch  :user_update
-          patch  :update_password
+          patch :update_password
+          patch  :user_password_update
           get :password_reset
         end
 
