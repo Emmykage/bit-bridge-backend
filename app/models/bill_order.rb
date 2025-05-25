@@ -1,5 +1,5 @@
 class BillOrder < ApplicationRecord
-
+    attr_accessor :demand_category
     belongs_to :user, optional: true
     has_one :wallet, through: :user
     has_one :transaction_record
@@ -15,6 +15,7 @@ class BillOrder < ApplicationRecord
 
     before_save :calculate_total
     before_save :set_usd_conversion
+    before_save :cal_unit, if: :is_electricty?
 
     default_scope {order(created_at: :desc)}
 
@@ -22,6 +23,29 @@ class BillOrder < ApplicationRecord
         self.service_charge = service_type == "VTU" || service_type == "DATA" ? 0 : 100
     end
 
+
+    def cal_unit
+
+        # NMD = 14.5 for 1000
+
+        rate = 0
+
+        case demand_category
+        when "NMD"
+            rate = 14.7
+        when "NMD_2"
+            rate = 14.7
+        when "NMD_3"
+            rate = 14.7
+        else
+            rate = 0.0
+        end
+        self.units = amount * (rate / 1000)
+    end
+
+    def is_electricty?
+        service_type == "ELECTRICITY"
+    end
 
 
 

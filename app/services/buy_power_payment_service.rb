@@ -45,6 +45,8 @@ class BuyPowerPaymentService
             phone: payment_processor_params[:phone],
             biller: payment_processor_params[:biller],
             description:  payment_processor_params[:description],
+            demand_category: res&.dig("demandCategory")
+
             ) || BillOrder.new(
                 meter_number: payment_processor_params[:billersCode],
                 meter_type: res&.dig("vendType") || "PREPAID",
@@ -57,6 +59,7 @@ class BuyPowerPaymentService
                 phone: payment_processor_params[:phone],
                 biller: payment_processor_params[:biller],
                 description:  payment_processor_params[:description],
+                demand_category: res&.dig("demandCategory")
 
               )
 
@@ -379,7 +382,7 @@ class BuyPowerPaymentService
         response = self.class.get("/transaction/#{order_id}", headers: @get_headers)
 
         if response.success?
-           return {response: response, status: "success"}
+           return {response: response, status: :ok}
 
         else
             raise response["message"]
@@ -388,7 +391,7 @@ class BuyPowerPaymentService
         end
 
         rescue
-            return {response: "#{e.message}", status: "error"}
+            return {response: "#{e.message}", status: :unprocessable_entity}
 
         end
     end

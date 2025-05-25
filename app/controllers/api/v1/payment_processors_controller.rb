@@ -1,5 +1,5 @@
 class Api::V1::PaymentProcessorsController < ApplicationController
-    before_action :set_bill_order, only: %i[ show confirm_payment repurchase ]
+    before_action :set_bill_order, only: %i[ show confirm_payment repurchase query_transaction ]
     # skip_before_action :authenticate_user!
     def verify_meter
         service = BuyPowerPaymentService.new
@@ -165,16 +165,15 @@ end
 
 
     def query_transaction
-        id = params[:id]
-
         service =  BuyPowerPaymentService.new
         response_service = service.re_query(@bill_order[:id])
-        if service_response[:status] == "success"
-            render json: {data: service_response[:response]}, status: :ok
+
+        if response_service[:status] == :ok
+            render json: {data: response_service[:response]["result"]["data"]}, status: :ok
 
         else
 
-        render json: {message: service_response[:response]}, status: :unprocessable_entity
+        render json: {message: response_service[:response]}, status: :unprocessable_entity
         end
     end
 
