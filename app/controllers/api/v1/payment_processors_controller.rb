@@ -1,5 +1,5 @@
 class Api::V1::PaymentProcessorsController < ApplicationController
-    before_action :set_bill_order, only: %i[ show confirm_payment repurchase query_transaction ]
+    before_action :set_bill_order, only: %i[ show confirm_payment repurchase query_transaction]
     # skip_before_action :authenticate_user!
     def verify_meter
         service = BuyPowerPaymentService.new
