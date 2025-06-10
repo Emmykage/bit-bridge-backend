@@ -1,7 +1,8 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.routes.default_url_options = {
-  host: 'http://localhost:3000'
+  host: 'localhost',
+  port: 3000
 }
 
 Rails.application.configure do
@@ -36,9 +37,7 @@ Rails.application.configure do
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :local
-
-  # Don't care if the mailer can't send.
-  config.action_mailer.raise_delivery_errors = false
+config.action_mailer.asset_host = 'http://localhost:3000'
 
   config.action_mailer.perform_caching = false
 
@@ -61,37 +60,13 @@ Rails.application.configure do
   config.active_job.verbose_enqueue_logs = true
 
 
-  # Raises error for missing translations.
-  # config.i18n.raise_on_missing_translations = true
-
-  # Annotate rendered view with file names.
-  # config.action_view.annotate_rendered_view_with_filenames = true
-
-  # Uncomment if you wish to allow Action Cable access from any origin.
-  # config.action_cable.disable_request_forgery_protection = true
-
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
 
   config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
   config.action_mailer.delivery_method = :letter_opener
   config.action_mailer.perform_deliveries = true
+  config.action_mailer.raise_delivery_errors = true
 
-
-
-  config.action_mailer.delivery_method = :smtp
-  host = 'http://localhost:3000' #replace with your own url
-  config.action_mailer.default_url_options = { host: 'localhost:3000', port: 3000 }
-  config.action_mailer.delivery_method = :letter_opener
-  config.action_mailer.perform_deliveries = true
-  # SMTP settings for gmail
-  config.action_mailer.smtp_settings = {
-    :address              => "premium165.web-hosting.com",
-    :port                 => 587,
-    :user_name            => "support@melisports.com",
-    :password             => "support-melisports-2024",
-    :authentication       => "plain",
-    :enable_starttls_auto => true
-  }
 
 end

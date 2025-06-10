@@ -17,10 +17,24 @@ class BillOrder < ApplicationRecord
     before_save :set_usd_conversion
     before_save :cal_unit, if: :is_electricty?
 
+    after_update :send_confirmation_mail, if: :is_completed?
+
+
+
     default_scope {order(created_at: :desc)}
 
     def calc_service_charge
         self.service_charge = service_type == "VTU" || service_type == "DATA" ? 0 : 100
+    end
+
+
+    def send_confirmation_mail
+
+        OrderMailer.purchase_confirmation(self).deliver_now
+    end
+
+    def is_completed?
+        status == "completed"
     end
 
 

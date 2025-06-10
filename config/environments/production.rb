@@ -6,7 +6,7 @@ Rails.application.routes.default_url_options = {
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
-
+config.action_mailer.asset_host = 'melisports-b5453615f37a.herokuapp.com'
 
   config.action_mailer.delivery_method = :smtp
   host = "bitbridgeglobal.com"
@@ -17,8 +17,8 @@ Rails.application.configure do
   config.action_mailer.smtp_settings = {
     :address              => "smtp.hostinger.com",
     :port                 => 587,
-    :user_name            =>  ENV["SMTP_USERNAME"],
-    :password             => ENV["SMTP_PASSWORD"],
+    :user_name            => "support@bitbridgeglobal.com",
+    :password             => "@Support-bitbridgeglobal-123",
     :authentication       => "plain",
     :enable_starttls_auto => true
   }

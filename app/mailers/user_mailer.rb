@@ -2,6 +2,7 @@ class UserMailer < ApplicationMailer
     def welcome_email (user)
         @user = user
         @url = "https://bitbridgeglobal.com"
+        @confirmation_url = confirm_url
         mail(to: @user.email, subject: "Welcome to Bit Bridge Globa")
 
     end
@@ -20,6 +21,10 @@ class UserMailer < ApplicationMailer
         "https://bitbridgeglobal.com/reset_password?password_token=#{token}&email=#{user.email}"
         # "localhost:5173/reset_password?password_token=#{token}&email=#{user.email}"
 
+    end
+
+    def confirm_url
+        "https://bitbridgeglobal.com/confirm_email"
     end
 
 

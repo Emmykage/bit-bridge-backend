@@ -24,6 +24,15 @@ class User < ApplicationRecord
 
   after_create :initialize_wallet
   after_create :send_email_confirmation
+  after_create :send_confirmation_mail
+
+
+
+  def send_confirmation_mail
+    UserMailer.welcome_email(self).deliver_now
+
+  end
+
 
 
   def user_net_expense

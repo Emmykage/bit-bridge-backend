@@ -91,8 +91,6 @@ end
 def update_status
 
     reference = params[:id]
-
-
     transaction_record =TransactionRecord.find_by(reference: reference)
     ref_type = reference.split("-").first
 

@@ -6,7 +6,6 @@ class Api::V1::BillOrdersController < ApplicationController
   # GET /bill_orders
   def index
     @bill_orders = BillOrder.all
-
     render json: {data: ActiveModelSerializers::SerializableResource.new(@bill_orders)}, status: :ok
   end
 
