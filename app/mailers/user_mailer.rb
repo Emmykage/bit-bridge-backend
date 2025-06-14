@@ -3,10 +3,15 @@ class UserMailer < ApplicationMailer
         @user = user
         @url = "https://bitbridgeglobal.com"
         @confirmation_url = confirm_url
-        mail(to: @user.email, subject: "Welcome to Bit Bridge Globa")
+        mail(to: @user.email, subject: "Welcome to Bit Bridge Global")
 
     end
 
+      def login_alert(user)
+        @user = user
+        mail(to: @user.email, subject: "Login Alert to BitBridge Global")
+
+    end
 
     def send_password_reset(user, token)
         @user = user

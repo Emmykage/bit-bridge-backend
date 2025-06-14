@@ -45,30 +45,23 @@
     </style>
 </head>
 
-<body>
-    <div class="header">
-        <h1>Welcome to Bitbridge Global </h1>
-    </div>
+<body style="font-family: Arial, sans-serif; color: #333;">
+    <h2>New Login Detected</h2>
+    <p>Hello <%= @user.user_profile.last_name || @user.email %>,</p>
 
-    <div class="content">
-        <p>Hello <%= @user.user_profile.first_name %>,</p>
+    <p>We noticed a new login to your <strong>BitBridge Global</strong> account:</p>
 
-        <p>Thank you for registering with Bitbridge Global. Please confirm your email address to complete your account setup.</p>
 
-        <p>
-            <a href="<%= @confirmation_url %>" class="button">Confirm My Email</a>
-        </p>
 
-        <p>If the button above doesn't work, copy and paste the following link into your browser:</p>
-        <p><%= @confirmation_url %></p>
+    <p>If this was you, no further action is needed.</p>
 
-        <p>If you didn't request this, please ignore this email.</p>
-    </div>
+    <p>If you don’t recognize this activity, we recommend that you contanct support and review your account’s security settings.</p>
 
-    <div class="footer">
-        <p>&copy; <%= Time.current.year %> <%= @app_name %>. All rights reserved.</p>
+    <p>Thank you,<br />
+        The BitBridge Global Team
 
-    </div>
+    </p>
+     
 </body>
 
 </html>
