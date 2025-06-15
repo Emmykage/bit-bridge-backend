@@ -35,6 +35,10 @@
             margin: 20px 0;
         }
 
+        .logo {
+            object-fit: cover;
+        }
+
         .footer {
             margin-top: 20px;
             padding-top: 20px;
@@ -51,7 +55,7 @@
 
     <p>Hello <%= @user.user_profile.last_name || @user.email %>,</p>
 
-    <p>We noticed a new login to your <strong>BitBridge Global</strong> account:</p>
+    <p>We noticed a new login to your <strong>BitBridge Global</strong>:</p>
 
 
 
