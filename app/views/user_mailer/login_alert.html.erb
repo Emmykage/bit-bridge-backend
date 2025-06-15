@@ -47,6 +47,8 @@
 
 <body style="font-family: Arial, sans-serif; color: #333;">
     <h2>New Login Detected</h2>
+    <%= image_tag attachments["logo"].url, class: "logo", style:"height: 80px; display: block;",  alt: "Company Logo"  %>
+
     <p>Hello <%= @user.user_profile.last_name || @user.email %>,</p>
 
     <p>We noticed a new login to your <strong>BitBridge Global</strong> account:</p>
