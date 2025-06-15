@@ -1,6 +1,8 @@
 class UserMailer < ApplicationMailer
     def welcome_email (user)
         @user = user
+        attachments.inline['logo'] = File.read(Rails.root.join('app/assets/images/logo1.png'))
+
         @url = "https://bitbridgeglobal.com"
         @confirmation_url = confirm_url
         mail(to: @user.email, subject: "Welcome to Bit Bridge Global")
