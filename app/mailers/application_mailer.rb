@@ -1,4 +1,4 @@
 class ApplicationMailer < ActionMailer::Base
-  default from: "no-reply@bitbridgeglobal.com"
+  default from: "support@bitbridgeglobal.com"
   layout "mailer"
 end
