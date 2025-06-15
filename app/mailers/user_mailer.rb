@@ -8,8 +8,7 @@ class UserMailer < ApplicationMailer
     end
 
       def login_alert(user)
-        attachments.inline['logo'] = File.read(Rails.root.join('app/assets/images/logo.png'))
-
+        attachments.inline['logo'] = File.read(Rails.root.join('app/assets/images/logo1.png'))
         @user = user
         mail(to: @user.email, subject: "Login Alert to BitBridge Global")
 
