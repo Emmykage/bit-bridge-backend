@@ -33,7 +33,7 @@ class Users::SessionsController < Devise::SessionsController
   private
   def respond_with(resource, _opts = {})
 
-  # UserMailer.login_alert(resource).deliver_now
+  UserMailer.login_alert(resource).deliver_now
   render json: {
     status: {code: 200, message: 'Logged in sucessfully.'},
      message: 'Logged in sucessfully.',
