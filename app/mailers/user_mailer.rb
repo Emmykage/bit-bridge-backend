@@ -32,7 +32,7 @@ class UserMailer < ApplicationMailer
     end
 
     def confirm_url
-        "https://bitbridgeglobal.com/confirm_email"
+        "https://bitbridgeglobal.com/login"
     end
 
 

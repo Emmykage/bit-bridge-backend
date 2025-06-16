@@ -24,6 +24,8 @@
 
         .logo {
             max-width: 180px;
+            width: 100%;
+            height: 80px;
         }
 
         .content {
@@ -67,7 +69,7 @@
 
 <body>
     <div class="header">
-        <%= image_tag 'bitbridge_logo.png', alt: 'BitBridge Global', class: 'logo' %>
+        <%= image_tag 'logo', alt: 'BitBridge Global', class: 'logo' %>
         <h1>Purchase Confirmation</h1>
     </div>
 
@@ -101,8 +103,6 @@
 
         </div>
 
-        <p>Your order will be processed shortly. You can track your order status by clicking the button below:</p>
-
 
         <p>For any questions about your order, please contact our support team at <a href="mailto:support@bitbridgeglobal.com">support@bitbridgeglobal.com</a>.</p>
 
@@ -113,8 +113,6 @@
         <p>&copy; <%= Time.current.year %> BitBridge Global. All rights reserved.</p>
         <p>
             BitBridge Global Inc.<br>
-            123 Financial District, Suite 456<br>
-            New York, NY 10005, USA
         </p>
         <p>
             <a href="https://www.bitbridgeglobal.com">www.bitbridgeglobal.com</a> |

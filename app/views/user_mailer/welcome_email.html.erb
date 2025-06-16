@@ -51,7 +51,7 @@
     </div>
 
     <div class="content">
-        <%= image_tag attachments["logo"].url, class: "logo", style:"height: 80px; display: block;",  alt: "Company Logo"  %>
+        <%= image_tag attachments["logo"].url, class: "logo", style:"height: 140px; object-fit: cover; display: block;",  alt: "Company Logo"  %>
 
         <p>Hello <%= @user.user_profile.first_name %>,</p>
 

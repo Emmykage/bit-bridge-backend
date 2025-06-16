@@ -1,8 +1,9 @@
 class OrderMailer < ApplicationMailer
-  default from: 'orders@bitbridgeglobal.com'
 
   def purchase_confirmation(order)
     @order = order
+    attachments.inline['logo'] = File.read(Rails.root.join('app/assets/images/logo1.png'))
+
     mail(
       to: @order.email,
       subject: "BitBridge Global - Purchase Confirmation (Order ##{@order.transaction_id})"
