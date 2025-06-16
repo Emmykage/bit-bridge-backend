@@ -5,6 +5,7 @@ class TransactionMailer < ApplicationMailer
   #
   #   en.transaction_mailer.send_notification.subject
   #
+
   def send_notification
     @greeting = "Hi"
 

@@ -15,7 +15,6 @@
         }
 
         .header {
-            background-color: #0056b3;
             padding: 20px;
             text-align: center;
             color: white;
@@ -69,7 +68,8 @@
 
 <body>
     <div class="header">
-        <%= image_tag 'logo', alt: 'BitBridge Global', class: 'logo' %>
+        <%= image_tag attachments["logo"].url, class: "logo", style:"height: 80px; display: block;",  alt: "Company Logo"  %>
+
         <h1>Purchase Confirmation</h1>
     </div>
 
@@ -81,7 +81,8 @@
         <div class="order-details">
             <h3>Order #<%= @order.transaction_id %></h3>
             <p><strong>Date:</strong> <%= @order.created_at.strftime("%B %d, %Y %H:%M") %></p>
-            <p><strong>Total Amount:</strong> <%= number_to_currency(@order.amount) %></p>
+            <p><strong>Total Amount:</strong> <%= number_to_currency(@order.total_amount, unit: "₦", delimiter: ",", precision: 2) %></p>
+
             <p><strong>Payment Method:</strong> <%= @order.payment_method %></p>
 
             <h1>
