@@ -1,6 +1,6 @@
 New Login Detected
 
-Hello <%= @user.user_profile.last_name || @user.email%>,
+Hello <%= @user.user_profile&.last_name || @user.email%>,
 
 We noticed a new login to your BitBridge Global account
 Confirm your email by visiting this link:
