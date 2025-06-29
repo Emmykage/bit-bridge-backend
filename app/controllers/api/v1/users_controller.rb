@@ -1,7 +1,7 @@
 class Api::V1::UsersController < ApplicationController
   before_action :set_user_params, only: %i[update_password]
   before_action :set_user, only: %i[show update destroy]
-  skip_before_action :authenticate_user!, only: %i[update_password password_reset]
+  skip_before_action :authenticate_user!, only: %i[update_password password_reset activate_user resend_confirmation_token ]
   def user_profile
     if current_user.nil?
       render json: { error: 'User not found or not authenticated' }, status: :unauthorized
@@ -18,7 +18,6 @@ class Api::V1::UsersController < ApplicationController
 
   def show
     render json: {data: UserSerializer.new(@user)}, status: :ok
-
   end
 
   def update
@@ -30,6 +29,31 @@ class Api::V1::UsersController < ApplicationController
     end
 
   end
+def resend_confirmation_token
+  user = User.find_by(email: params[:email])
+  return render json: { message: "User not found" }, status: :not_found unless user
+
+  if user.confirmed?
+    return render json: { message: "User already confirmed" }.as_json, status: :unprocessable_entity
+  end
+
+  user.send_confirmation_instructions
+  render json: { message: "Confirmation token resent", data: user }, status: :ok
+end
+
+    def activate_user
+      if current_user.admin?
+        user = User.find_by(email: params[:email])
+       if @user.update(user_params)
+         render json: {data: UserSerializer.new(@user), message: "User updated"}, status: :ok
+        else
+         render json: {message: @user.errors.full_messages.to_sentence}, status: :unprocessable_entity
+      end
+      else
+          render json: {message: "You are not authorized to perform this operation"}, status: :unprocessable_entity
+
+      end
+    end
 
 
   def update_password

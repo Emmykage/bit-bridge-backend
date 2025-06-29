@@ -18,10 +18,17 @@ class BillOrder < ApplicationRecord
     before_save :cal_unit, if: :is_electricty?
 
     after_update :send_confirmation_mail, if: :is_completed?
+    validate :user_must_be_active
 
 
 
     default_scope {order(created_at: :desc)}
+
+
+    def user_must_be_active
+        errors.add(:base, "User has been disabled") unless user&.active?
+    end
+
 
     def calc_service_charge
         self.service_charge = service_type == "VTU" || service_type == "DATA" ? 0 : 100
@@ -106,5 +113,6 @@ class BillOrder < ApplicationRecord
         end
 
     end
+
 
 end

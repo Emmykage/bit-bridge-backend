@@ -127,6 +127,8 @@ Rails.application.routes.draw do
           patch :update_password
           patch  :user_password_update
           get :password_reset
+          patch :activate_user
+          get :resend_confirmation_token
         end
 
       end

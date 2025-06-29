@@ -3,8 +3,8 @@ class User < ApplicationRecord
   attr_accessor :old_password, :confirm_password
   include Devise::JWT::RevocationStrategies::JTIMatcher
   # Include default devise modules. Others available are:
-  # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
-  devise :database_authenticatable, :registerable,
+  # :lockable, :timeoutable, :trackable and :omniauthable
+  devise :database_authenticatable, :registerable, :confirmable,
         :recoverable, :rememberable, :validatable, :jwt_authenticatable, jwt_revocation_strategy: self
 
         has_one :wallet, class_name: "Wallet"
@@ -23,8 +23,8 @@ class User < ApplicationRecord
 
 
   after_create :initialize_wallet
-  after_create :send_email_confirmation
-  after_create :send_confirmation_mail
+  # after_create :send_email_confirmation
+  # after_create :send_confirmation_mail
 
 
 
