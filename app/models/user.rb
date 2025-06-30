@@ -16,22 +16,10 @@ class User < ApplicationRecord
         has_many :bill_orders
 
 
+        accepts_nested_attributes_for :user_profile
 
+        after_create :initialize_wallet
 
-  accepts_nested_attributes_for :user_profile
-
-
-
-  after_create :initialize_wallet
-  # after_create :send_email_confirmation
-  # after_create :send_confirmation_mail
-
-
-
-  def send_confirmation_mail
-    UserMailer.welcome_email(self).deliver_now
-
-  end
 
 
 
@@ -57,11 +45,6 @@ class User < ApplicationRecord
 
   end
 
-  def send_email_confirmation
-    UserMailer.welcome_email(self).deliver_later
-    # SendConfirmationEmailInstructionJob.perform_later
-
-  end
 
 
 end
