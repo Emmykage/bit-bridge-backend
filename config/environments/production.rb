@@ -1,12 +1,12 @@
 require "active_support/core_ext/integer/time"
 Rails.application.routes.default_url_options = {
-  host: 'melisports-b5453615f37a.herokuapp.com'
+  host: 'bitbridgeglobal-fa54ecb89f7d.herokuapp.com'
 }
 
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
-config.action_mailer.asset_host = 'melisports-b5453615f37a.herokuapp.com'
+config.action_mailer.asset_host = 'bitbridgeglobal-fa54ecb89f7d.herokuapp.com'
 
   config.action_mailer.delivery_method = :smtp
   host = "bitbridgeglobal.com"
