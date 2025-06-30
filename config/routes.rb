@@ -11,7 +11,7 @@ Rails.application.routes.draw do
     registration: "signup"
   }, controllers: {
     sessions: "users/sessions",
-    confirmations: "users/confirmations"
+    confirmations: "users/confirmations",
     registrations: "users/registrations"
   }
 
