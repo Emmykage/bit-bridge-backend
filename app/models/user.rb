@@ -23,6 +23,7 @@ class User < ApplicationRecord
 
 
 
+
   def user_net_expense
     order_details.sum(:total_amount)
   end

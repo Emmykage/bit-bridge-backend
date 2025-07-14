@@ -41,19 +41,19 @@ def resend_confirmation_token
   render json: { message: "Confirmation token resent", data: user }, status: :ok
 end
 
-    def activate_user
-      if current_user.admin?
-        user = User.find_by(email: params[:email])
-       if @user.update(user_params)
-         render json: {data: UserSerializer.new(@user), message: "User updated"}, status: :ok
-        else
-         render json: {message: @user.errors.full_messages.to_sentence}, status: :unprocessable_entity
-      end
+  def activate_user
+    if current_user.admin?
+      user = User.find_by(email: params[:email])
+      if @user.update(user_params)
+        render json: {data: UserSerializer.new(@user), message: "User updated"}, status: :ok
       else
-          render json: {message: "You are not authorized to perform this operation"}, status: :unprocessable_entity
-
-      end
+        render json: {message: @user.errors.full_messages.to_sentence}, status: :unprocessable_entity
     end
+    else
+        render json: {message: "You are not authorized to perform this operation"}, status: :unprocessable_entity
+
+    end
+  end
 
 
   def update_password

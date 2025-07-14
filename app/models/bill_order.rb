@@ -26,7 +26,7 @@ class BillOrder < ApplicationRecord
 
 
     def user_must_be_active
-        errors.add(:base, "User has been disabled") unless user&.active?
+        errors.add(:base, "User Not Active") unless user&.active?
     end
 
 
