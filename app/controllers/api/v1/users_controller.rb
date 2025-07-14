@@ -125,7 +125,7 @@ end
 
 
   def user_params
-    params.require(:user).permit(:email, :password, :old_password, :confirm_password, :password_token, user_profile_attributes: [:id, :first_name, :last_name, :phone_number])
+    params.require(:user).permit(:email, :acive, :password, :old_password, :confirm_password, :password_token, user_profile_attributes: [:id, :first_name, :last_name, :phone_number])
   end
 
   def generate_reset_token(user)
