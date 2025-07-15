@@ -36,7 +36,6 @@ class BillOrder < ApplicationRecord
 
 
     def send_confirmation_mail
-
         OrderMailer.purchase_confirmation(self).deliver_now
     end
 

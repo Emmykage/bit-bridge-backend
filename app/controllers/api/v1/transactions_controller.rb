@@ -78,6 +78,17 @@ class Api::V1::TransactionsController < ApplicationController
     end
   end
 
+  def create_user
+    @transaction = Transactions.new(transaction_params)
+
+    if @transaction.save
+      render json: {data: TransactionSerializer.new(@transaction), message: "Transaction created successfully" }, status: :created
+
+    else
+      render json:{message: @transaction.errors.full_messages.to_sentence}, status: :unprocessable_entity
+    end
+  end
+
   # PATCH/PUT /transactions/1
   def update
     if @transaction.update(transaction_params)

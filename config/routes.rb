@@ -73,13 +73,13 @@ Rails.application.routes.draw do
       resources :transactions do
         collection do
           post :initialize_transaction
+          post :create_user
           get :user
         end
       end
       resources :wallets do
         collection do
           get :user
-
         end
 
       end
