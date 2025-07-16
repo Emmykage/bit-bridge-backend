@@ -183,14 +183,13 @@ class BuyPowerPaymentService
             begin
                 response = nil
                 if payment_method == "wallet"
-                    unless electric_bill_order.user.active
+                    unless electric_bill_order.user&.active
                          raise 'user is inactive'
 
                     end
-                     if electric_bill_order.user.active
-                         raise 'user is inactive'
 
-                    end
+                    #update the order before transaction so you can update after transaction then check the previous transaction to ensure none was made at the same time
+
                   if  electric_bill_order.user.wallet.balance >= electric_bill_order[:usd_amount]
                     # Timeout.timeout(120) do
                         response = self.class.post("/vend", headers: @post_headers, body: body)
