@@ -183,7 +183,7 @@ class BuyPowerPaymentService
             begin
                 response = nil
                 if payment_method == "wallet"
-                    unless electric_bill_order.user.active
+                    if electric_bill_order.user.active
                          raise 'user is inactive'
 
                     end
