@@ -184,7 +184,7 @@ class BuyPowerPaymentService
                 response = nil
                 if payment_method == "wallet"
                     unless electric_bill_order.user.active
-                         raise 'Insufficient funds'
+                         raise 'user is inactive'
 
                     end
                   if  electric_bill_order.user.wallet.balance >= electric_bill_order[:usd_amount]
