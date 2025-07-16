@@ -187,6 +187,10 @@ class BuyPowerPaymentService
                          raise 'user is inactive'
 
                     end
+                     if electric_bill_order.user.active
+                         raise 'user is inactive'
+
+                    end
                   if  electric_bill_order.user.wallet.balance >= electric_bill_order[:usd_amount]
                     # Timeout.timeout(120) do
                         response = self.class.post("/vend", headers: @post_headers, body: body)
