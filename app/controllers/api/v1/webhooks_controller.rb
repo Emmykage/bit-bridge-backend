@@ -50,9 +50,12 @@ class Api::V1::WebhooksController < ApplicationController
       return
     end
 
-    Rails.logger.info("✅  Monnify webhook raw post: #{transaction_record}")
+
 
   payment_info = event_data["paymentSourceInformation"].first
+
+      Rails.logger.info("✅  Monnify webhook raw payment_info data: #{payment_info}")
+
 
 
     transaction_params = {
