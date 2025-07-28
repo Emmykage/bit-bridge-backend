@@ -185,37 +185,46 @@ def get_wallet_account(accountReference)
 
 
 
-        def get_reserved_account(accountReference)
-            user = User.find_by(id: accountReference)
+        def get_reserved_account(account_reference)
+                user = User.find_by(id: account_reference)
 
+                return { message: "User not found" } unless user
 
-            begin
-             response = self.class.get("/api/v1/bank-transfer/reserved-accounts/#{accountReference}", headers: headers)
-                if response.success?
+                # Return early if user already has an account
+                return { message: "Account already exists" } if user.account.present?
 
-                    unless user.account.present?
-                        account =  Account.new(account_number: response["responseBody"]["accountNumber"], bank_code: response["responseBody"]["bankCode"], account_name: response["responseBody"]["accountName"], vendor: account_params[:vendor] || "monnify", user_id: account_params[:user_id], bvn: account_params[:bvn], currency: account_params[:currency] || "NGN")
-                     if account.save
-                        return {response: response, status: :ok}
+                begin
+                    response = self.class.get(
+                    "/api/v1/bank-transfer/reserved-accounts/#{account_reference}",
+                    headers: headers
+                    )
+
+                    if response.success?
+                    body = response["responseBody"]
+
+                    account = Account.new(
+                        account_number: body["accountNumber"],
+                        bank_code: body["bankCode"],
+                        account_name: body["accountName"],
+                        vendor: "monnify",
+                        user_id: user.id,
+                        bvn: user.bvn,
+                        currency: "NGN"
+                    )
+
+                    if account.save
+                        return { response: response, status: :ok }
                     else
                         raise account.errors.full_messages.to_sentence
                     end
-                end
-
-                                   end
-
-                    return {response: response, status: :ok}
-                else
+                    else
                     raise response["responseMessage"]
+                    end
+                rescue StandardError => e
+                    return { message: e.message }
+                end
                 end
 
-            rescue StandardError => e
-                return {message: "#{e.message}"}
-            end
-
-
-
-        end
 
 
 
