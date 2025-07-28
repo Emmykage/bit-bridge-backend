@@ -33,11 +33,13 @@ class Users::SessionsController < Devise::SessionsController
   private
   def respond_with(resource, _opts = {})
 
-  # UserMailer.login_alert(resource).deliver_now
   SecureRandom.hex(32).tap do |token|
     resource.update!(refresh_token: token, refresh_token_expires_at: 30.minutes.from_now)
     response.set_header('X-Refresh-Token', "Bearer #{token}")
   end
+
+    UserMailer.login_alert(resource).deliver_now
+
   render json: {
     status: {code: 200, message: 'Logged in sucessfully.'},
      message: 'Logged in sucessfully.',
