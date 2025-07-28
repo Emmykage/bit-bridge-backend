@@ -82,11 +82,11 @@ class AccountService
     def create_wallet_account(account_params)
              body= {
                 # "accountReference": "ref-#{Time.now.to_i}",
-                "accountReference": "account_params[:user_id]+#{Time.now.to_i}",
+                "accountReference": account_params[:user_id],
                 "accountName": account_params[:account_name] || account_params[:customer_name],
                 "currencyCode": account_params[:currency].upcase,
                 "contractCode": @contract_code,
-                "customerEmail": "emeka8@gmail.com",
+                "customerEmail": account_params[:email],
                 "customerName": account_params[:customer_name] || account_params[:name],
                 "bvn": account_params[:bvn],
                 "getAllAvailableBanks":true,
