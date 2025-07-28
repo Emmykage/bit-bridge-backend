@@ -10,10 +10,24 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_07_14_191214) do
+ActiveRecord::Schema[7.1].define(version: 2025_07_28_145309) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
+
+  create_table "accounts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "vendor"
+    t.string "bvn"
+    t.uuid "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "account_number"
+    t.string "bank_code"
+    t.string "bank_name"
+    t.string "account_name"
+    t.string "currency"
+    t.index ["user_id"], name: "index_accounts_on_user_id"
+  end
 
   create_table "active_storage_attachments", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "name", null: false
@@ -226,6 +240,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_14_191214) do
     t.integer "coin_type", default: 0
     t.string "bank"
     t.decimal "bonus", default: "0.0"
+    t.string "sender"
+    t.string "bank_code"
     t.index ["wallet_id"], name: "index_transactions_on_wallet_id"
   end
 
@@ -254,10 +270,20 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_14_191214) do
     t.datetime "confirmed_at"
     t.datetime "confirmation_sent_at"
     t.string "unconfirmed_email"
+    t.string "refresh_token"
+    t.datetime "refresh_token_expires_at"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["jti"], name: "index_users_on_jti", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+  end
+
+  create_table "vendors", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "bvn"
+    t.uuid "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_vendors_on_user_id"
   end
 
   create_table "wallets", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -268,6 +294,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_14_191214) do
     t.index ["user_id"], name: "index_wallets_on_user_id"
   end
 
+  add_foreign_key "accounts", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "bill_orders", "order_details"
@@ -283,5 +310,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_14_191214) do
   add_foreign_key "transaction_records", "transactions", column: "exchange_id"
   add_foreign_key "transactions", "wallets"
   add_foreign_key "user_profiles", "users", on_delete: :nullify
+  add_foreign_key "vendors", "users"
   add_foreign_key "wallets", "users", on_delete: :nullify
 end

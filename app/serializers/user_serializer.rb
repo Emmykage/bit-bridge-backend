@@ -4,4 +4,5 @@ class UserSerializer < ActiveModel::Serializer
   has_many :bill_orders
   has_one :user_profile
   has_many :transactions
+  has_one :account
 end

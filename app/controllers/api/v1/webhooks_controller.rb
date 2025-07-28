@@ -19,7 +19,8 @@ class Api::V1::WebhooksController < ApplicationController
       when "fbg"
         handle_payment_confirmation(transaction_record)
       else
-        Rails.logger.warn("Unknown refernce type: #{reference_type}")
+        handleTransactiomnConfirmation(transaction_reference)
+        # Rails.logger.warn("Unknown refernce type: #{reference_type}")
       end
 
       head :ok
@@ -29,12 +30,39 @@ class Api::V1::WebhooksController < ApplicationController
 
 
 
+  def handleTransactiomnConfirmation(transaction_record)
+    user_id = transaction_record["eventData"]["product"]["reference"]
+     user = User.find_by(id: user_id)
+
+    transaction_params = {
+      wallet_id: user.wallet.id,
+      amount: transaction_record["paymentSourceInformation"]["amountPaid"],
+      address: transaction_record["paymentSourceInformation"]["accountNumber"],
+      sender: transaction_record["paymentSourceInformation"]["accountName"],
+      bank_code: transaction_record["paymentSourceInformation"]["bankCode"],
+      transaction_type: "deposit",
+      status: "approved",
+      coin_type: "bank",
+    }
+
+    transaction = Transaction.create(transaction_params )
+
+    if transaction.save?
+      render json: {message: "Transaction confirmed successfully"}, status: :ok
+    else
+      render json: {message: transaction.errors.full_messages.to_sentence}, status: :unprocessable_entity
+    end
+
+  end
+
+
+
 
   def handle_bills_confirmation(transaction_record)
     payment_method = "card"
-   bill_order =  transaction_record.bill_order
-   payment_service = BuyPowerPaymentService.new
-   service_response = payment_service.confirm_subscription(bill_order, payment_method)
+    bill_order =  transaction_record.bill_order
+    payment_service = BuyPowerPaymentService.new
+    service_response = payment_service.confirm_subscription(bill_order, payment_method)
 
   #  if service_response[:status] == "success"
   #   render json: {data: service_response[:response]}, status: :ok

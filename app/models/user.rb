@@ -14,6 +14,7 @@ class User < ApplicationRecord
         has_many :card_tokens, through: :order_items
         has_one :user_profile
         has_many :bill_orders
+        has_one :account
 
 
         accepts_nested_attributes_for :user_profile
@@ -21,6 +22,9 @@ class User < ApplicationRecord
         after_create :initialize_wallet
 
 
+ def full_name
+  "#{user_profile.first_name} #{user_profile.last_name}"
+ end
 
 
 

@@ -185,7 +185,6 @@ class BuyPowerPaymentService
                 if payment_method == "wallet"
                     unless electric_bill_order.user&.active
                          raise 'user is inactive'
-
                     end
 
                     #update the order before transaction so you can update after transaction then check the previous transaction to ensure none was made at the same time

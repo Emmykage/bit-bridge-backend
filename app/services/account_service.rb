@@ -1,11 +1,10 @@
-class PaymentService
+class AccountService
     include HTTParty
     base_uri Rails.env.production? ? ENV["MONNIFY_BASE_URL_PROD"] : "https://sandbox.monnify.com"
-    # base_uri "https://sandbox.monnify.com"
 
     def initialize()
 
-        secret_key = ENV["MONNIFY_SECRET_KEY"]
+        secret_key =  ENV["MONNIFY_SECRET_KEY"]
         api_key = ENV["MONNIFY_API_KEY"]
         account_no = ENV["MONNIFY_WALLET_ACCOUNT_NUMBER"]
         @contract_code = ENV["MONNIFY_CONTRACT_CODE"]
@@ -82,33 +81,39 @@ class PaymentService
 
     def create_wallet_account(account_params)
              body= {
-                "accountReference": "ref-#{Time.now.to_i}",
-                "accountName": account_params[:account_name],
-                "currencyCode":"NGN",
+                # "accountReference": "ref-#{Time.now.to_i}",
+                "accountReference": "account_params[:user_id]+#{Time.now.to_i}",
+                "accountName": account_params[:account_name] || account_params[:customer_name],
+                "currencyCode": account_params[:currency].upcase,
                 "contractCode": @contract_code,
-                "customerEmail": account_params[:email],
+                "customerEmail": "emeka8@gmail.com",
                 "customerName": account_params[:customer_name] || account_params[:name],
                 "bvn": account_params[:bvn],
                 "getAllAvailableBanks":true,
-                "incomeSplitConfig": [
-                    {
-                        "subAccountCode": "MFY_SUB_322165393053",
-                        "feePercentage": 10.5,
-                        "splitAmount": 20,
-                        "feeBearer": true
-                    }
-                ],
-                "metaData": {
-                    "ipAddress": "127.0.0.1",
-                    "deviceType": "mobile"
-                }
-            }
+                # "incomeSplitConfig": [
+                #     {
+                #         "subAccountCode": "MFY_SUB_322165393053",
+                #         "feePercentage": 10.5,
+                #         "splitAmount": 20,
+                #         "feeBearer": true
+                #     }
+                # ]
+
+            }.to_json
 
         begin
-         response = self.class.post("api/v1/bank-transfer/reserved-accounts", headers: @header, body: body)
+
+         response = self.class.post("/api/v1/bank-transfer/reserved-accounts", headers: headers, body: body)
+
             if response.success?
+              account =  Account.new(account_number: response["responseBody"]["accountNumber"], bank_code: response["responseBody"]["bankCode"], account_name: response["responseBody"]["accountName"], vendor: account_params[:vendor] || "monnify", user_id: account_params[:user_id], bvn: account_params[:bvn], currency: account_params[:currency] || "NGN")
+                if account.save
                 return {response: response, status: :ok}
+                else
+                    raise account.errors.full_messages.to_sentence
+                end
             else
+
                 raise response["responseMessage"]
             end
 
