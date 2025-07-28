@@ -21,6 +21,9 @@ class User < ApplicationRecord
 
         after_create :initialize_wallet
 
+      default_scope {order(created_at: :desc)}
+
+
 
  def full_name
   "#{user_profile.first_name} #{user_profile.last_name}"
