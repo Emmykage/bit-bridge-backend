@@ -34,8 +34,11 @@ class Api::V1::WebhooksController < ApplicationController
 
 
   def handleTransactionConfirmation(event_data)
+    Rails.logger.info("✅  Monnify webhook raw event data: #{event_data}")
     user_id = event_data["product"]["reference"]
-     user = User.find_by(id: user_id)
+    user = User.find_by(id: user_id)
+
+
 
      unless user
       Rails.logger.error("❌ User with ID #{user_id} not found")
