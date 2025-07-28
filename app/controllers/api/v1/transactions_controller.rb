@@ -79,10 +79,8 @@ class Api::V1::TransactionsController < ApplicationController
   end
 
   def create_user
-        binding.b
 
     @transaction = Transaction.new(transaction_params)
-    binding.b
 
     if @transaction.save
       render json: {data: TransactionSerializer.new(@transaction), message: "Transaction created successfully" }, status: :created
