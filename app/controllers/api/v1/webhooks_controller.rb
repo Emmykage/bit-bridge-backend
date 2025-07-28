@@ -6,6 +6,7 @@ class Api::V1::WebhooksController < ApplicationController
 
 
     if data["eventType"] == "SUCCESSFUL_TRANSACTION"
+      event_data = data["eventData"]
       transaction_reference = data["eventData"]["product"]["reference"]
       transaction_record = TransactionRecord.find_by(reference: transaction_reference)
 
@@ -21,7 +22,7 @@ class Api::V1::WebhooksController < ApplicationController
       when "fbg"
         handle_payment_confirmation(transaction_record)
       else
-        handleTransactionConfirmation(transaction_reference)
+        handleTransactionConfirmation(event_data)
         # Rails.logger.warn("Unknown refernce type: #{reference_type}")
       end
 
@@ -32,31 +33,43 @@ class Api::V1::WebhooksController < ApplicationController
 
 
 
-  def handleTransactionConfirmation(transaction_record)
-    user_id = transaction_record["eventData"]["product"]["reference"]
+  def handleTransactionConfirmation(event_data)
+    user_id = event_data["product"]["reference"]
      user = User.find_by(id: user_id)
 
-         Rails.logger.info("✅  Monnify webhook raw post: #{transaction_record}")
+     unless user
+      Rails.logger.error("❌ User with ID #{user_id} not found")
+      return
+    end
+
+    unless user.wallet
+      Rails.logger.error("❌ Wallet not found for user #{user.id}")
+      return
+    end
+
+    Rails.logger.info("✅  Monnify webhook raw post: #{transaction_record}")
+
+  payment_info = event_data["paymentSourceInformation"].first
 
 
     transaction_params = {
       wallet_id: user.wallet.id,
-      amount: transaction_record["paymentSourceInformation"]["amountPaid"],
-      address: transaction_record["paymentSourceInformation"]["accountNumber"],
-      sender: transaction_record["paymentSourceInformation"]["accountName"],
-      bank_code: transaction_record["paymentSourceInformation"]["bankCode"],
+      amount: payment_info["amountPaid"],
+      address: payment_info["accountNumber"],
+      sender: payment_info["accountName"],
+      bank_code: payment_info["bankCode"],
       transaction_type: "deposit",
       status: "approved",
       coin_type: "bank",
     }
 
-    transaction = Transaction.create(transaction_params )
+   transaction = Transaction.new(transaction_params)
 
-    if transaction.save?
-      render json: {message: "Transaction confirmed successfully"}, status: :ok
-    else
-      render json: {message: transaction.errors.full_messages.to_sentence}, status: :unprocessable_entity
-    end
+  if transaction.save
+    Rails.logger.info("✅ Transaction saved: #{transaction.inspect}")
+  else
+    Rails.logger.error("❌ Transaction failed: #{transaction.errors.full_messages.to_sentence}")
+  end
 
   end
 
