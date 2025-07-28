@@ -2,7 +2,7 @@ class Api::V1::WebhooksController < ApplicationController
   skip_before_action :authenticate_user!
   def monnify
     data = JSON.parse(request.raw_post)
-    Rails.logger.info("✅  Monnify webhook json post: #{data}")
+    # Rails.logger.info("✅  Monnify webhook json post: #{data}")
 
 
     if data["eventType"] == "SUCCESSFUL_TRANSACTION"
@@ -10,6 +10,9 @@ class Api::V1::WebhooksController < ApplicationController
       transaction_record = TransactionRecord.find_by(reference: transaction_reference)
 
       reference_type = transaction_reference.split("-")[0]
+
+          Rails.logger.info("✅  Monnify webhook reference post: #{transaction_reference}")
+
 
       case reference_type
 
