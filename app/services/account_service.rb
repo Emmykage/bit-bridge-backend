@@ -173,12 +173,50 @@ def get_wallet_account(accountReference)
             if response.success?
                 return {response: response, status: :ok}
             else
+
+                binding.b
+
                 raise  response["responseMessage"]
             end
             rescue StandardError => e
                 return {message: "#{e.message}", body: body}
             end
         end
+
+
+
+        def get_reserved_account(accountReference)
+            user = User.find_by(id: accountReference)
+
+
+            begin
+             response = self.class.get("/api/v1/bank-transfer/reserved-accounts/#{accountReference}", headers: headers)
+                if response.success?
+
+                    unless user.account.present?
+                        account =  Account.new(account_number: response["responseBody"]["accountNumber"], bank_code: response["responseBody"]["bankCode"], account_name: response["responseBody"]["accountName"], vendor: account_params[:vendor] || "monnify", user_id: account_params[:user_id], bvn: account_params[:bvn], currency: account_params[:currency] || "NGN")
+                     if account.save
+                        return {response: response, status: :ok}
+                    else
+                        raise account.errors.full_messages.to_sentence
+                    end
+                end
+
+                                   end
+
+                    return {response: response, status: :ok}
+                else
+                    raise response["responseMessage"]
+                end
+
+            rescue StandardError => e
+                return {message: "#{e.message}"}
+            end
+
+
+
+        end
+
 
 
 

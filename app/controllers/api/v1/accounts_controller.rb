@@ -38,6 +38,23 @@ before_action :set_account, only: %i[show update destroy]
         end
     end
 
+    def get_account(user_id = null)
+
+        accout_ref = params[:accountReference]  || user_id
+
+
+        service = AccountService.new
+        service_response = service.get_reserved_account(accout_ref)
+
+        if service_response[:status] == :ok
+            render json: {data: service_response[:response]}, status: :ok
+        else
+            render json: {message: service_response[:message]}, status: :unprocessable_entity
+        end
+
+    end
+
+
 
 
     def set_account

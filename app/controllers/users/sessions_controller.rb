@@ -38,7 +38,7 @@ class Users::SessionsController < Devise::SessionsController
     response.set_header('X-Refresh-Token', "Bearer #{token}")
   end
 
-    UserMailer.login_alert(resource).deliver_now
+    # UserMailer.login_alert(resource).deliver_now
 
   render json: {
     status: {code: 200, message: 'Logged in sucessfully.'},
