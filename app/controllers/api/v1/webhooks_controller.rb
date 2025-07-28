@@ -2,7 +2,6 @@ class Api::V1::WebhooksController < ApplicationController
   skip_before_action :authenticate_user!
   def monnify
     data = JSON.parse(request.raw_post)
-    Rails.logger.info("✅  Monnify webhook raw post: #{request.raw_post}")
     Rails.logger.info("✅  Monnify webhook json post: #{data}")
 
 
@@ -19,7 +18,7 @@ class Api::V1::WebhooksController < ApplicationController
       when "fbg"
         handle_payment_confirmation(transaction_record)
       else
-        handleTransactiomnConfirmation(transaction_reference)
+        handleTransactionConfirmation(transaction_reference)
         # Rails.logger.warn("Unknown refernce type: #{reference_type}")
       end
 
@@ -30,9 +29,12 @@ class Api::V1::WebhooksController < ApplicationController
 
 
 
-  def handleTransactiomnConfirmation(transaction_record)
+  def handleTransactionConfirmation(transaction_record)
     user_id = transaction_record["eventData"]["product"]["reference"]
      user = User.find_by(id: user_id)
+
+         Rails.logger.info("✅  Monnify webhook raw post: #{transaction_record}")
+
 
     transaction_params = {
       wallet_id: user.wallet.id,
