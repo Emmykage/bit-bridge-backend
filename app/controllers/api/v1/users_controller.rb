@@ -30,7 +30,8 @@ class Api::V1::UsersController < ApplicationController
 
   end
 def resend_confirmation_token
-  user = User.find_by(email: params[:email])
+  user = User.find_by(email: params[:email].downcase.strip) if params[:email].present?
+
   return render json: { message: "User not found" }, status: :not_found unless user
 
   if user.confirmed?
@@ -43,7 +44,7 @@ end
 
   def activate_user
     if current_user.admin?
-      user = User.find_by(email: params[:email])
+      user = User.find_by(email: params[:email].downcase.strip)
       if @user.update(user_params)
         render json: {data: UserSerializer.new(@user), message: "User updated"}, status: :ok
       else
