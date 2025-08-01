@@ -21,7 +21,7 @@ before_action :set_account, only: %i[show update destroy]
         service_response = service.create_wallet_account(account_info)
 
         if service_response[:status] == :ok
-            render json: {data: service_response[:response]}, status: :ok
+            render json: {data: service_response[:response], message: "Account created successfully"}, status: :ok
         else
             render json: {message: service_response[:message]}, status: :unprocessable_entity
         end
