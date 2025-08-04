@@ -110,6 +110,36 @@ def update_status
 
 end
 
+def get_ref_order
+
+    order = nil
+
+    reference = params[:id]
+
+    transaction_record = TransactionRecord.find_by(reference: reference)
+
+    unless  transaction_record.present?
+        return render json: {message: "transaction not found"}, status: :unprocessable_entity
+    end
+
+    ref_type = reference.split("-").first
+
+
+    case ref_type
+    when "bbg"
+      order = transaction_record.bill_order
+
+    when "fbg"
+      order =  transaction_record.exchange
+
+    else
+        render json: {message: "transaction not found"}, status: :unprocessable_entity
+    end
+
+     render json: {data: order}, status: :ok
+
+end
+
     def process_payment
 
 

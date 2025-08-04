@@ -57,6 +57,7 @@ Rails.application.routes.draw do
         member do
           get :approve_data
           get :update_status
+          get :get_ref_order
 
           get :confirm_payment
           get :query_transaction
