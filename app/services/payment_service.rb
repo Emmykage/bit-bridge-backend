@@ -145,8 +145,7 @@ def get_wallet_account(accountReference)
                 "Authorization": "Bearer #{get_token}",
                 "Content-Type": "application/json"
             }
-
-           body = {
+            body = {
                 "amount": record_params[:amount],
                 "customerName": record_params[:customer_name] || record_params[:name],
                 "customerEmail": record_params[:email],

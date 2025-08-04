@@ -17,11 +17,12 @@ class Api::V1::BillOrdersController < ApplicationController
   def initialize_confirm_payment
 
     payment_method = params[:payment_method]
+    redirect_url = params[:redirect_url]
 
     if payment_method == "card"
 
         service = PaymentService.new
-        service_response = service.init_transaction(@bill_order.attributes.symbolize_keys.merge({type: "bills", payment_method: "card" }))
+        service_response = service.init_transaction(@bill_order.attributes.symbolize_keys.merge({type: "bills", payment_method: "card", redirect_url: redirect_url }))
 
 
 

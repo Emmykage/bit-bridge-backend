@@ -27,7 +27,7 @@ class Api::V1::TransactionsController < ApplicationController
   def initialize_transaction
     initialize_payment = PaymentService.new
 
-   response =  initialize_payment.init_transaction(transaction_params)
+    response =  initialize_payment.init_transaction(transaction_params)
 
 
 
