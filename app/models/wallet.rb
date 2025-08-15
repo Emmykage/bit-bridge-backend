@@ -11,7 +11,7 @@ class Wallet < ApplicationRecord
 
 
   def total_bills
-    bill_orders.where(status: "completed", payment_method: "wallet").sum(:total_amount)
+    bill_orders.where(status: ["completed", "timedout"], payment_method: "wallet").sum(:total_amount)
   end
 
   def total_withdrawal

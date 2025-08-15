@@ -189,14 +189,14 @@ class BuyPowerPaymentService
 
                     #update the order before transaction so you can update after transaction then check the previous transaction to ensure none was made at the same time
 
-                  if  electric_bill_order.user.wallet.balance >= electric_bill_order[:usd_amount]
-                    # Timeout.timeout(120) do
-                        response = self.class.post("/vend", headers: @post_headers, body: body)
-                    # end
-                    else
-                    raise 'Insufficient funds'
+                    if  electric_bill_order.user.wallet.balance >= electric_bill_order[:usd_amount]
+                        Timeout.timeout(120) do
+                            response = self.class.post("/vend", headers: @post_headers, body: body)
+                        end
+                        else
+                        raise 'Insufficient funds'
 
-                 end
+                    end
 
                 elsif payment_method == "card"
                         Timeout.timeout(120) do
@@ -218,7 +218,7 @@ class BuyPowerPaymentService
                  end
 
                 rescue Timeout::Error
-                    electric_bill_order.update(status: "timedout")
+                    electric_bill_order.update(status: "timedout", payment_method: payment_method)
                  {response: "The request timed out. Please try again", code: 504, status: "TIMEOUT"}
 
 
