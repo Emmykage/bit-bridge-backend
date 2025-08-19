@@ -180,54 +180,48 @@ class BuyPowerPaymentService
      }.transform_values {|v| v.is_a?(String) ? v.strip : v }
 
 
-            begin
+        begin
+            user.with_lock do
                 response = nil
                 if payment_method == "wallet"
                     unless electric_bill_order.user&.active
-                         raise 'user is inactive'
+                            raise 'user is inactive'
                     end
 
                     #update the order before transaction so you can update after transaction then check the previous transaction to ensure none was made at the same time
-
-                    if  electric_bill_order.user.wallet.balance >= electric_bill_order[:usd_amount]
-                        Timeout.timeout(120) do
+                        wallet = electric_bill_order.user.wallet
+                        if  wallet.balance >= electric_bill_order[:usd_amount]
+                        Timeout.timeout(180) do
                             response = self.class.post("/vend", headers: @post_headers, body: body)
                         end
                         else
-                        raise 'Insufficient funds'
-
-                    end
+                            raise 'Insufficient funds'
+                        end
 
                 elsif payment_method == "card"
-                        Timeout.timeout(120) do
+                    Timeout.timeout(180) do
                         response = self.class.post("/vend", headers: @post_headers, body: body)
                     end
                 else
                     raise "no payment method selected"
-
-
                 end
 
-                   if response.success?
+                if response.success?
                     electric_bill_order.update(status: "completed", payment_method: payment_method, units: response["data"]["units"],  token: response["data"]["token"], transaction_id: response["data"]["id"])
                     return { response: electric_bill_order, status: "success" }
+                else
+                    response["message"]
+                end
 
-                 else
-                    raise response["message"]
-
-                 end
-
-                rescue Timeout::Error
-                    electric_bill_order.update(status: "timedout", payment_method: payment_method)
-                 {response: "The request timed out. Please try again", code: 504, status: "TIMEOUT"}
-
+            rescue Timeout::Error
+                electric_bill_order.update(status: "timedout", payment_method: payment_method)
+            raise ActiveRecord::Rollback, "Transaction TimedOut"
 
             rescue StandardError => e
                 return {response: "#{e.message}", status: "error"}
 
             end
-
-
+        end
 
     end
 

@@ -15,6 +15,10 @@ Rails.application.routes.draw do
     registrations: "users/registrations"
   }
 
+  devise_scope :user do
+    post "refresh", to: "users/sessions#refresh_token"
+  end
+
   get "tokens", to: "api/v1/tokens#token"
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
@@ -36,6 +40,11 @@ Rails.application.routes.draw do
       #   end
 
     # end
+    resources :refresh_token do
+      collection do
+        get :refresh
+      end
+    end
     resources :accounts
       resources :transaction_records
       resource :currencies do

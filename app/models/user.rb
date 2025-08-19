@@ -54,5 +54,28 @@ class User < ApplicationRecord
   end
 
 
+  def generate_refresh_token
+    token = SecureRandom.hex(32)
+      update!(refresh_token: token, refresh_token_expires_at: 30.minutes.from_now)
+  end
+
+
+  def validate_refresh_token(raw)
+    return false unless refresh_token && refresh_token_expires_at && refresh_token_expires_at > Time.current
+    return false unless raw == refresh_token
+
+    true
+
+  end
+
+
+  def revoke_refresh_token!
+    update!(refresh_token: nil, refresh_token_expires_at: nil)
+
+  end
+
+
+
+
 
 end

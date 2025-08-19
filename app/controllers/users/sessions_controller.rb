@@ -30,14 +30,33 @@ class Users::SessionsController < Devise::SessionsController
   #   devise_parameter_sanitizer.permit(:sign_in, keys: [:attribute])
   # end
 
-  private
-  def respond_with(resource, _opts = {})
 
-  SecureRandom.hex(32).tap do |token|
-    resource.update!(refresh_token: token, refresh_token_expires_at: 30.minutes.from_now)
-    response.set_header('X-Refresh-Token', "Bearer #{token}")
+  def refresh
+    raw = cookies.encrypted[:refresh_token] || request.headers['Bit-Refresh-Token']
+    return render json: {message: "no refresh token"}, status: :unauthorized unless raw
+
+    user = current_user  || User.find_by(refresh_token: raw)
+    return render json: { error: "invalid_refresh" }, status: :unauthorized unless user.validate_refresh_token(raw)
+
+    user.revoke_refresh_token!
+    new_refresh_token = user.generate_refresh_token
+    access_token, _payload = Warden::JWTAuth::UserEncoder.new.call(user, :user, nil)
+    render json:  { access_token: access_token, refresh_token: new_refresh_token }, status: :ok
   end
 
+
+  private
+  def respond_with(resource, _opts = {})
+  refresh_token = resource.generate_refresh_token
+
+  resource.update!(refresh_token: token, refresh_token_expires_at: 30.minutes.from_now)
+    response.set_header('Bit-Refresh-Token', "Bearer #{refresh_token}")
+    cookies.encrypted[:refresh_token] = {
+      value: refresh_token,
+      httponly: true,
+      secure: Rails.env.production?,
+      expires: 30.minutes.from_now
+    }
     # UserMailer.login_alert(resource).deliver_now
 
   render json: {
