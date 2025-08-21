@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateElectricBillOrders < ActiveRecord::Migration[7.1]
   def change
     create_table :electric_bill_orders, id: :uuid do |t|

@@ -1,117 +1,108 @@
+# frozen_string_literal: true
+
 class BillOrder < ApplicationRecord
-    attr_accessor :demand_category
-    belongs_to :user, optional: true
-    has_one :wallet, through: :user
-    has_one :transaction_record
+  attr_accessor :demand_category
 
-    enum :status, {initialized: 0, completed: 1, declined: 2, timedout: 3}
-    enum :meter_type, {PREPAID: 0, POSTPAID: 1}
-    enum :payment_type, {online: 0, B2B: 1}
-    enum :payment_method, {wallet: 0, card: 1}
+  belongs_to :user, optional: true
+  has_one :wallet, through: :user
+  has_one :transaction_record
 
-    validates :amount, presence: true
-    validate :validate_order, if: -> {persisted? && wallet_payment?}
+  enum :status, { initialized: 0, completed: 1, declined: 2, timedout: 3 }
+  enum :meter_type, { PREPAID: 0, POSTPAID: 1 }
+  enum :payment_type, { online: 0, B2B: 1 }
+  enum :payment_method, { wallet: 0, card: 1 }
 
-
-    before_save :calculate_total
-    before_save :set_usd_conversion
-    before_save :cal_unit, if: :is_electricty?
-
-    after_update :send_confirmation_mail, if: :is_completed?
-    validate :user_must_be_active
+  validates :amount, presence: true
+  validate :validate_order, if: -> { persisted? && wallet_payment? }
 
 
+  before_save :calculate_total
+  before_save :set_usd_conversion
+  before_save :cal_unit, if: :is_electricty?
 
-    default_scope {order(created_at: :desc)}
-
-
-    def user_must_be_active
-        errors.add(:base, "User Not Active") unless user&.active?
-    end
-
-
-    def calc_service_charge
-        self.service_charge = service_type == "VTU" || service_type == "DATA" ? 0 : 100
-    end
+  after_update :send_confirmation_mail, if: :is_completed?
+  validate :user_must_be_active
 
 
-    def send_confirmation_mail
-        OrderMailer.purchase_confirmation(self).deliver_now
-    end
 
-    def is_completed?
-        status == "completed"
-    end
+  default_scope { order(created_at: :desc) }
 
 
-    def cal_unit
+  def user_must_be_active
+    errors.add(:base, 'User Not Active') unless user&.active?
+  end
 
-        # NMD = 14.5 for 1000
+  def calc_service_charge
+    self.service_charge = %w[VTU DATA].include?(service_type) ? 0 : 100
+  end
 
-        rate = 0
+  def send_confirmation_mail
+    OrderMailer.purchase_confirmation(self).deliver_now
+  end
 
-        case demand_category
-        when "NMD"
-            rate = 14.7
-        when "NMD_2"
-            rate = 14.7
-        when "NMD_3"
-            rate = 14.7
-        else
-            rate = 0.0
-        end
-        self.units = amount * (rate / 1000)
-    end
+  def is_completed?
+    status == 'completed'
+  end
 
-    def is_electricty?
-        service_type == "ELECTRICITY"
-    end
+  def cal_unit
+    # NMD = 14.5 for 1000
+
+    rate = case demand_category
+           when 'NMD'
+             14.7
+           when 'NMD_2'
+             14.7
+           when 'NMD_3'
+             14.7
+           else
+             0.0
+           end
+    self.units = amount * (rate / 1000)
+  end
+
+  def is_electricty?
+    service_type == 'ELECTRICITY'
+  end
 
 
 
 
 
-    private
+  private
 
-    def net_total
-        amount.to_i + calc_service_charge
-    end
+  def net_total
+    amount.to_i + calc_service_charge
+  end
 
+  def commission
+    self.amount * 0.01
 
-    def calculate_total
-
-        self.total_amount = net_total
-    end
-
-    def net_usd_conversion
-        currency = CurrencyService.new("ngn", "ngn")
-
-        amount_in_usd = currency.get_calculated_rate(net_total, "ngn", "ngn")
-        usd_amount = amount_in_usd[:rate]
-
-    end
-
-    def set_usd_conversion
+  end
 
 
+  def calculate_total
+    self.total_amount = net_total
+  end
 
-        self.usd_amount = net_usd_conversion
+  def net_usd_conversion
+    currency = CurrencyService.new('ngn', 'ngn')
 
-    end
+    amount_in_usd = currency.get_calculated_rate(net_total, 'ngn', 'ngn')
+    amount_in_usd[:rate]
+  end
 
-    def wallet_payment?
-        payment_method === "wallet"
-    end
-    def validate_order
+  def set_usd_conversion
+    self.usd_amount = net_usd_conversion
+  end
 
-        # binding.b
-        if wallet.balance < net_usd_conversion
+  def wallet_payment?
+    payment_method === 'wallet'
+  end
 
-            errors.add(:amount, "insufficient balance")
+  def validate_order
+    # binding.b
+    return unless wallet.balance < net_usd_conversion
 
-        end
-
-    end
-
-
+    errors.add(:amount, 'insufficient balance')
+  end
 end

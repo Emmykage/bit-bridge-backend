@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateBillOrders < ActiveRecord::Migration[7.1]
   def change
     create_table :bill_orders, id: :uuid do |t|
@@ -13,7 +15,6 @@ class CreateBillOrders < ActiveRecord::Migration[7.1]
       t.string :email
       t.string :tariff_class
       t.string :name
-
 
       t.references :order_detail, null: true, foreign_key: true, type: :uuid
       t.timestamps

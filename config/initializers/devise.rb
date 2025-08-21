@@ -98,7 +98,7 @@ Devise.setup do |config|
   # may want to disable generating routes to Devise's sessions controller by
   # passing skip: :sessions to `devise_for` in your config/routes.rb
   config.skip_session_storage = [:http_auth]
-  config.mailer = "CustomDeviseMailer"
+  config.mailer = 'CustomDeviseMailer'
 
   # By default, Devise cleans up the CSRF token on authentication to
   # avoid CSRF token fixation attacks. This means that, when using AJAX
@@ -306,7 +306,6 @@ Devise.setup do |config|
   config.responder.error_status = :unprocessable_entity
   config.responder.redirect_status = :see_other
 
-
   config.jwt do |jwt|
     jwt.secret = Rails.application.credentials.fetch(:secret_key_base)
     jwt.dispatch_requests = [
@@ -317,7 +316,6 @@ Devise.setup do |config|
     ]
     jwt.expiration_time = 2.minutes.to_i
   end
-
 
   # ==> Configuration for :registerable
 

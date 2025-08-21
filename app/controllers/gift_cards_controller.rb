@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 class GiftCardsController < ApplicationController
-  before_action :set_gift_card, only: %i[ show update destroy ]
+  before_action :set_gift_card, only: %i[show update destroy]
 
   # GET /gift_cards
   def index
@@ -39,13 +41,15 @@ class GiftCardsController < ApplicationController
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_gift_card
-      @gift_card = GiftCard.find(params[:id])
-    end
 
-    # Only allow a list of trusted parameters through.
-    def gift_card_params
-      params.require(:gift_card).permit(:provider, :provision, :value, :header_info, :description, :rating, :notice_info, :alert_info, :value_max, :value_min)
-    end
+  # Use callbacks to share common setup or constraints between actions.
+  def set_gift_card
+    @gift_card = GiftCard.find(params[:id])
+  end
+
+  # Only allow a list of trusted parameters through.
+  def gift_card_params
+    params.require(:gift_card).permit(:provider, :provision, :value, :header_info, :description, :rating,
+                                      :notice_info, :alert_info, :value_max, :value_min)
+  end
 end

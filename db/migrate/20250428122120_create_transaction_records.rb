@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateTransactionRecords < ActiveRecord::Migration[7.1]
   def change
     create_table :transaction_records, id: :uuid do |t|
@@ -8,7 +10,6 @@ class CreateTransactionRecords < ActiveRecord::Migration[7.1]
       t.string :reference
       t.string :event_type
       t.decimal :amount
-
 
       t.timestamps
     end

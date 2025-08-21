@@ -1,5 +1,6 @@
-class TransactionMailer < ApplicationMailer
+# frozen_string_literal: true
 
+class TransactionMailer < ApplicationMailer
   # Subject can be set in your I18n file at config/locales/en.yml
   # with the following lookup:
   #
@@ -7,8 +8,8 @@ class TransactionMailer < ApplicationMailer
   #
 
   def send_notification
-    @greeting = "Hi"
+    @greeting = 'Hi'
 
-    mail to: "to@example.org"
+    mail to: 'to@example.org'
   end
 end

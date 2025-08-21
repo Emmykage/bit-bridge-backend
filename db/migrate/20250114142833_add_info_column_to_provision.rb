@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddInfoColumnToProvision < ActiveRecord::Migration[7.1]
   def change
     add_column :provisions, :info, :text

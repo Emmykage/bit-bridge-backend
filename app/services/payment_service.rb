@@ -1,180 +1,138 @@
+# frozen_string_literal: true
+
 class PaymentService
-    include HTTParty
-    base_uri Rails.env.production? ? ENV["MONNIFY_BASE_URL_PROD"] : "https://sandbox.monnify.com"
-    # base_uri "https://sandbox.monnify.com"
+  include HTTParty
+  base_uri Rails.env.production? ? ENV['MONNIFY_BASE_URL_PROD'] : 'https://sandbox.monnify.com'
+  # base_uri "https://sandbox.monnify.com"
 
-    def initialize()
-
-        secret_key = ENV["MONNIFY_SECRET_KEY"]
-        api_key = ENV["MONNIFY_API_KEY"]
-        account_no = ENV["MONNIFY_WALLET_ACCOUNT_NUMBER"]
-        @contract_code = ENV["MONNIFY_CONTRACT_CODE"]
-
-
-        # secret_key = "4J1X69XH1BT0Y85DJCE9HKDRDJL3LNDH"
-        # api_key = "MK_TEST_CQV87G8H1W"
-        # account_no = "3822733711"
-        # @contract_code = "2301355481"
+  def initialize
+    secret_key = ENV['MONNIFY_SECRET_KEY']
+    api_key = ENV['MONNIFY_API_KEY']
+    ENV['MONNIFY_WALLET_ACCOUNT_NUMBER']
+    @contract_code = ENV['MONNIFY_CONTRACT_CODE']
 
 
+    # secret_key = "4J1X69XH1BT0Y85DJCE9HKDRDJL3LNDH"
+    # api_key = "MK_TEST_CQV87G8H1W"
+    # account_no = "3822733711"
+    # @contract_code = "2301355481"
 
-        encode_64 = Base64.strict_encode64("#{api_key}:#{secret_key}")
 
-        @headers = {
-            "Authorization": "Basic #{encode_64}",
-            "Content-Type": "application/json"
 
+    encode_64 = Base64.strict_encode64("#{api_key}:#{secret_key}")
+
+    @headers = {
+      "Authorization": "Basic #{encode_64}",
+      "Content-Type": 'application/json'
+
+    }
+  end
+
+  def authenticate_and_store
+    response = self.class.post('/api/v1/auth/login', headers: @headers)
+
+    raise response['responseMessage'] || 'bad request' unless response.success?
+
+    monifyToken = MonifyToken.create(token: response['responseBody']['accessToken'],
+                                     expires_in: Time.current + response['responseBody']['expiresIn'])
+    raise monifyToken.errors.full_messages.to_sentence unless monifyToken.save
+
+    monifyToken
+  rescue StandardError => e
+    { response: e.message.to_s, status: :bad_request }
+  end
+
+  def get_token
+    monify = MonifyToken.first
+    return monify.token if monify.present? && monify.expires_in > Time.current
+
+    monify = authenticate_and_store
+
+
+    raise "Token authentication failed: #{monify[:response]}" if monify.is_a?(Hash) && monify[:status] == :bad_request
+
+    monify.token
+  end
+
+  def headers
+    {
+      "Authorization": "Bearer #{get_token}",
+      "Content-Type": 'application/json'
+    }
+  end
+
+  def create_wallet_account(account_params)
+    body = {
+      "accountReference": "ref-#{Time.now.to_i}",
+      "accountName": account_params[:account_name],
+      "currencyCode": 'NGN',
+      "contractCode": @contract_code,
+      "customerEmail": account_params[:email],
+      "customerName": account_params[:customer_name] || account_params[:name],
+      "bvn": account_params[:bvn],
+      "getAllAvailableBanks": true,
+      "incomeSplitConfig": [
+        {
+          "subAccountCode": 'MFY_SUB_322165393053',
+          "feePercentage": 10.5,
+          "splitAmount": 20,
+          "feeBearer": true
         }
+      ],
+      "metaData": {
+        "ipAddress": '127.0.0.1',
+        "deviceType": 'mobile'
+      }
+    }
 
+    begin
+      response = self.class.post('api/v1/bank-transfer/reserved-accounts', headers: @header, body: body)
+      raise response['responseMessage'] unless response.success?
+
+      { response: response, status: :ok }
+    rescue StandardError => e
+      { message: e.message.to_s, body: body }
     end
+  end
 
-    def authenticate_and_store
+  def get_wallet_account(accountReference)
+    response = self.class.get("api/v1/bank-transfer/reserved-accounts/#{accountReference}", headers: headers,
+                                                                                            body: body)
+    raise response['responseMessage'] unless response.success?
 
-        begin
+    { response: response, status: :ok }
+  rescue StandardError => e
+    { message: e.message.to_s, body: body }
+  end
 
-
-        response = self.class.post("/api/v1/auth/login", headers: @headers)
-
-        if response.success?
-          monifyToken = MonifyToken.create(token: response["responseBody"]["accessToken"], expires_in: Time.current + response["responseBody"]["expiresIn"])
-            if monifyToken.save
-                return monifyToken
-
-            else
-                raise monifyToken.errors.full_messages.to_sentence
-            end
-        else
-            raise response["responseMessage"] || "bad request"
-
-        end
-
-        rescue StandardError => e
-
-            return {response: "#{e.message}", status: :bad_request}
-
-            end
-        end
-
-    def get_token
-      monify =  MonifyToken.first
-      if monify.present? &&  monify.expires_in > Time.current
-        return  monify.token
-      end
-        monify = authenticate_and_store
+  def init_transaction(record_params)
+    headers = {
+      "Authorization": "Bearer #{get_token}",
+      "Content-Type": 'application/json'
+    }
+    body = {
+      "amount": record_params[:amount],
+      "customerName": record_params[:customer_name] || record_params[:name],
+      "customerEmail": record_params[:email],
+      "paymentReference": record_params[:type].present? && record_params[:type] == 'bills' ? "bbg-#{Time.now.to_i}" : "fbg-#{Time.now.to_i}",
+      "paymentDescription": record_params[:description],
+      "currencyCode": 'NGN',
+      "contractCode": @contract_code,
+      "redirectUrl": record_params[:redirect_url] || 'https://bitbridgeglobal.com/app-redirect',
+      "paymentMethods": %w[CARD ACCOUNT_TRANSFER],
+      "metadata": {
+        "name": record_params[:customer_name] || record_params[:name],
+        "paymentPurpose": record_params[:payment_purpose]
+      }
+    }.to_json
 
 
-        if monify.is_a?(Hash) && monify[:status] == :bad_request
-            raise "Token authentication failed: #{monify[:response]}"
-        end
+    response = self.class.post('/api/v1/merchant/transactions/init-transaction', headers: headers, body: body)
 
-        monify.token
+    raise response['responseMessage'] unless response.success?
 
-    end
-
-
-    def headers
-          headers = {
-                "Authorization": "Bearer #{get_token}",
-                "Content-Type": "application/json"
-            }
-
-    end
-
-    def create_wallet_account(account_params)
-             body= {
-                "accountReference": "ref-#{Time.now.to_i}",
-                "accountName": account_params[:account_name],
-                "currencyCode":"NGN",
-                "contractCode": @contract_code,
-                "customerEmail": account_params[:email],
-                "customerName": account_params[:customer_name] || account_params[:name],
-                "bvn": account_params[:bvn],
-                "getAllAvailableBanks":true,
-                "incomeSplitConfig": [
-                    {
-                        "subAccountCode": "MFY_SUB_322165393053",
-                        "feePercentage": 10.5,
-                        "splitAmount": 20,
-                        "feeBearer": true
-                    }
-                ],
-                "metaData": {
-                    "ipAddress": "127.0.0.1",
-                    "deviceType": "mobile"
-                }
-            }
-
-        begin
-         response = self.class.post("api/v1/bank-transfer/reserved-accounts", headers: @header, body: body)
-            if response.success?
-                return {response: response, status: :ok}
-            else
-                raise response["responseMessage"]
-            end
-
-        rescue StandardError => e
-            return {message: "#{e.message}", body: body}
-        end
-
-
-    end
-def get_wallet_account(accountReference)
-
-        begin
-         response = self.class.get("api/v1/bank-transfer/reserved-accounts/#{accountReference}", headers: headers,  body: body)
-            if response.success?
-                return {response: response, status: :ok}
-            else
-                raise response["responseMessage"]
-            end
-
-        rescue StandardError => e
-            return {message: "#{e.message}", body: body}
-        end
-
-
-    end
-
-
-
-
-    def init_transaction(record_params)
-        begin
-
-            headers = {
-                "Authorization": "Bearer #{get_token}",
-                "Content-Type": "application/json"
-            }
-            body = {
-                "amount": record_params[:amount],
-                "customerName": record_params[:customer_name] || record_params[:name],
-                "customerEmail": record_params[:email],
-                "paymentReference": (record_params[:type].present? && record_params[:type] == "bills") ? "bbg-#{Time.now.to_i}"  : "fbg-#{Time.now.to_i}",
-                "paymentDescription": record_params[:description],
-                "currencyCode": "NGN",
-                "contractCode": @contract_code,
-                "redirectUrl": record_params[:redirect_url] || "https://bitbridgeglobal.com/app-redirect",
-                "paymentMethods":["CARD","ACCOUNT_TRANSFER"],
-                "metadata": {
-                    "name": record_params[:customer_name] || record_params[:name],
-                    "paymentPurpose": record_params[:payment_purpose]
-                }
-            }.to_json
-
-
-            response =  self.class.post("/api/v1/merchant/transactions/init-transaction", headers: headers, body: body )
-
-            if response.success?
-                return {response: response, status: :ok}
-            else
-                raise  response["responseMessage"]
-            end
-            rescue StandardError => e
-                return {message: "#{e.message}", body: body}
-            end
-        end
-
-
-
-
+    { response: response, status: :ok }
+  rescue StandardError => e
+    { message: e.message.to_s, body: body }
+  end
 end

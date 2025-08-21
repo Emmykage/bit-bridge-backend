@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 class ElectricBillOrdersController < ApplicationController
-  before_action :set_electric_bill_order, only: %i[ show update destroy ]
+  before_action :set_electric_bill_order, only: %i[show update destroy]
 
   # GET /electric_bill_orders
   def index
@@ -39,13 +41,15 @@ class ElectricBillOrdersController < ApplicationController
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_electric_bill_order
-      @electric_bill_order = ElectricBillOrder.find(params[:id])
-    end
 
-    # Only allow a list of trusted parameters through.
-    def electric_bill_order_params
-      params.require(:electric_bill_order).permit(:billersCode, :amount, :request_id, :variation_code, :phone, :serviceID, :email, :type)
-    end
+  # Use callbacks to share common setup or constraints between actions.
+  def set_electric_bill_order
+    @electric_bill_order = ElectricBillOrder.find(params[:id])
+  end
+
+  # Only allow a list of trusted parameters through.
+  def electric_bill_order_params
+    params.require(:electric_bill_order).permit(:billersCode, :amount, :request_id, :variation_code, :phone,
+                                                :serviceID, :email, :type)
+  end
 end

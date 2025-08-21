@@ -1,60 +1,64 @@
-class Api::V1::WalletsController < ApplicationController
-  before_action :set_wallet, only: %i[ show update destroy ]
+# frozen_string_literal: true
 
-  # GET /wallets
-  def index
-    @wallets = Wallet.all
+module Api
+  module V1
+    class WalletsController < ApplicationController
+      before_action :set_wallet, only: %i[show update destroy]
 
-    render json: @wallets
-  end
+      # GET /wallets
+      def index
+        @wallets = Wallet.all
 
-  # GET /wallets/1
-  def show
-    render json: @wallet
-  end
+        render json: @wallets
+      end
 
-  def user
+      # GET /wallets/1
+      def show
+        render json: @wallet
+      end
 
-    @wallet = current_user.wallet
-    # render json: {data: WalletSerializer.new(@wallet)}, status: :ok
-    render json: {data: WalletSerializer.new(@wallet).as_json}, status: :ok
+      def user
+        @wallet = current_user.wallet
+        # render json: {data: WalletSerializer.new(@wallet)}, status: :ok
+        render json: { data: WalletSerializer.new(@wallet).as_json }, status: :ok
+      end
 
-  end
+      # POST /wallets
+      def create
+        @wallet = Wallet.new(wallet_params)
 
+        if @wallet.save
+          render json: @wallet, status: :created, location: @wallet
+        else
+          render json: @wallet.errors, status: :unprocessable_entity
+        end
+      end
 
-  # POST /wallets
-  def create
-    @wallet = Wallet.new(wallet_params)
+      # PATCH/PUT /wallets/1
+      def update
+        if @wallet.update(wallet_params)
+          render json: @wallet
+        else
+          render json: @wallet.errors, status: :unprocessable_entity
+        end
+      end
 
-    if @wallet.save
-      render json: @wallet, status: :created, location: @wallet
-    else
-      render json: @wallet.errors, status: :unprocessable_entity
+      # DELETE /wallets/1
+      def destroy
+        @wallet.destroy!
+      end
+
+      private
+
+      # Use callbacks to share common setup or constraints between actions.
+      def set_wallet
+        @wallet = Wallet.find(params[:id])
+      end
+
+      # Only allow a list of trusted parameters through.
+      def wallet_params
+        params.require(:wallet).permit(:user_id)
+      end
     end
   end
-
-  # PATCH/PUT /wallets/1
-  def update
-    if @wallet.update(wallet_params)
-      render json: @wallet
-    else
-      render json: @wallet.errors, status: :unprocessable_entity
-    end
-  end
-
-  # DELETE /wallets/1
-  def destroy
-    @wallet.destroy!
-  end
-
-  private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_wallet
-      @wallet = Wallet.find(params[:id])
-    end
-
-    # Only allow a list of trusted parameters through.
-    def wallet_params
-      params.require(:wallet).permit(:user_id)
-    end
 end

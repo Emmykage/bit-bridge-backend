@@ -1,11 +1,14 @@
-class Users::UsersController < ApplicationController
-  def index
-    render json: {data: current_user}, status: :ok
-  end
+# frozen_string_literal: true
 
-  def update
-  end
+module Users
+  class UsersController < ApplicationController
+    def index
+      render json: { data: current_user }, status: :ok
+    end
 
-  # def delete
-  # end
+    def update; end
+
+    # def delete
+    # end
+  end
 end

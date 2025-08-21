@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateOrderDetails < ActiveRecord::Migration[7.1]
   def change
     create_table :order_details, id: :uuid do |t|
@@ -8,7 +10,6 @@ class CreateOrderDetails < ActiveRecord::Migration[7.1]
       t.decimal :net_total
 
       t.references :user, null: false, foreign_key: true, type: :uuid
-
 
       t.timestamps
     end

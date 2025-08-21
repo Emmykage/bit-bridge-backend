@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class OrderItemSerializer < ActiveModel::Serializer
   attributes :id, :quantity, :amount, :provision, :product, :card_token
   belongs_to :product

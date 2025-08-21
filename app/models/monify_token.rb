@@ -1,4 +1,5 @@
-class MonifyToken < ApplicationRecord
+# frozen_string_literal: true
 
-    default_scope {order(created_at: :desc)}
+class MonifyToken < ApplicationRecord
+  default_scope { order(created_at: :desc) }
 end

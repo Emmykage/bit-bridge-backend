@@ -1,12 +1,16 @@
-class Api::V1::StatisticsController < ApplicationController
+# frozen_string_literal: true
 
-    def index
+module Api
+  module V1
+    class StatisticsController < ApplicationController
+      def index
         stats = Statistics.new
         render json: {
-            data: {users: stats.total_users,total_withdrawals:  stats.total_withdrawals,  total_deposits: stats.total_deposits}
-        },
-        status: :ok
-
+                 data: { users: stats.total_users, total_withdrawals: stats.total_withdrawals,
+                         total_deposits: stats.total_deposits }
+               },
+               status: :ok
+      end
     end
-
+  end
 end
