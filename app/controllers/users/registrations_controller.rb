@@ -69,7 +69,7 @@ module Users
 
     def respond_with(resource, _opts = {})
       if request.method == 'POST' && resource.persisted?
-        UserMailer.welcome_email(resource).deliver_now
+        # UserMailer.welcome_email(resource).deliver_now
         render json: {
           status: { code: 200, message: 'Signed up sucessfully.' },
           data: UserSerializer.new(resource).as_json

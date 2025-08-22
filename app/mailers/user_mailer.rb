@@ -29,7 +29,6 @@ class UserMailer < ApplicationMailer
     # "localhost:5173/reset_password?password_token=#{token}&email=#{user.email}"
   end
 
-  def confirm_url
-    'https://bitbridgeglobal.com/login'
-  end
+  def confirm_url(token)
+"https://bitbridgeglobal.com/confirmation?confirmation_token=#{token}"  end
 end

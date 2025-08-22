@@ -2,6 +2,7 @@
 
 class BillOrder < ApplicationRecord
   attr_accessor :demand_category
+attr_accessor :use_commission
 
   belongs_to :user, optional: true
   has_one :wallet, through: :user
@@ -20,13 +21,26 @@ class BillOrder < ApplicationRecord
   before_save :set_usd_conversion
   before_save :cal_unit, if: :is_electricty?
 
-  after_update :send_confirmation_mail, if: :is_completed?
   validate :user_must_be_active
+
+  before_update  :apply_commission, if: :is_commission?
 
 
 
   default_scope { order(created_at: :desc) }
 
+
+  def apply_commission
+    commission_balance = wallet.commission || 0
+    amount_to_pay = amount - commission_balance
+    # return if commission_amount <= 0
+
+    new_amount = amount_to_pay > 0 ? amount_to_pay : 0
+    new_commission_balance = new_amount == 0 ?  amount_to_pay.abs : commission_balance - amount_to_pay.abs
+    update(amount: new_amount)
+    wallet.update(commission: new_commission_balance) if commission_amount >= 0
+
+  end
 
   def user_must_be_active
     errors.add(:base, 'User Not Active') unless user&.active?
@@ -65,6 +79,12 @@ class BillOrder < ApplicationRecord
   end
 
 
+  def commission
+    return 0 if service_type == 'ELECTRICITY'
+
+    (amount * 0.01).round(2)
+
+  end
 
 
 
@@ -74,9 +94,10 @@ class BillOrder < ApplicationRecord
     amount.to_i + calc_service_charge
   end
 
-  def commission
+  def save_commission
     self.amount * 0.01
-
+    wallet.commission = wallet.commission + commission
+    wallet.save
   end
 
 
@@ -98,6 +119,12 @@ class BillOrder < ApplicationRecord
   def wallet_payment?
     payment_method === 'wallet'
   end
+
+  def is_commission?
+    use_commission == true
+
+  end
+
 
   def validate_order
     # binding.b

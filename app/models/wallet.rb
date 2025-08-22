@@ -16,6 +16,14 @@ class Wallet < ApplicationRecord
     bill_orders.where(status: %w[completed timedout], payment_method: 'wallet').sum(:total_amount)
   end
 
+  def total_commission
+    bill_orders.where(status: 'completed', payment_method: 'wallet').sum(:commission)
+  end
+
+  def net_commission
+    bill_orders.where(status: 'completed', payment_method: 'wallet').sum(:commission)
+  end
+
   def total_withdrawal
     # transactions.where(transaction_type: "withdrawal", status: "approved").sum(:amount)
     transactions.where(transaction_type: 'withdrawal', status: %w[approved pending]).sum(:amount)

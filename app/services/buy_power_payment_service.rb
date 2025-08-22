@@ -141,13 +141,23 @@ class BuyPowerPaymentService
       if payment_method == 'wallet'
         raise 'user is inactive' unless electric_bill_order.user&.active
 
+
         # update the order before transaction so you can update after transaction then check the previous transaction to ensure none was made at the same time
         wallet = electric_bill_order.user.wallet
-        raise 'Insufficient funds' unless wallet.balance >= electric_bill_order[:usd_amount]
+        amount = electric_bill_order[:usd_amount] || electric_bill_order[:amount]
+        use_commission = electric_bill_order[:use_commission] || false
 
-        Timeout.timeout(180) do
+
+        available_balance = wallet.balance.to_f
+        commission_balance = wallet.commission.to_f || 0
+
+        has_money = available_balance >= amount || (use_commission && (commission_balance + available_balance) >= amount )
+
+
+        raise 'Insufficient funds' unless has_money
+        # Timeout.timeout(180) do
           response = self.class.post('/vend', headers: @post_headers, body: body)
-        end
+        # end
 
 
 

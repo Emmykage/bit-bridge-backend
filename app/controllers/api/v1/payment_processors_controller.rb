@@ -184,7 +184,7 @@ module Api
 
       def payment_processor_params
         params.permit(:billersCode, :amount, :request_id, :meter_type, :phone, :biller, :email, :status,
-                      :tariff_class, :service_type, :skip, :description, :type)
+                      :tariff_class, :service_type, :skip, :description, :type, :use_commission)
       end
 
       def verify_processor_params

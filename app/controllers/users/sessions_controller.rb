@@ -52,7 +52,7 @@ module Users
       refresh_token = resource.generate_refresh_token
 
       resource.update!(refresh_token: refresh_token, refresh_token_expires_at: 30.minutes.from_now)
-      response.set_header('Bit-Refresh-Token',  refresh_token)
+      response.set_header('Bit-Refresh-Token', refresh_token)
 
       # UserMailer.login_alert(resource).deliver_now
 
