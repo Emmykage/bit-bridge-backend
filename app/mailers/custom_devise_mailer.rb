@@ -22,7 +22,7 @@ class CustomDeviseMailer < Devise::Mailer
   #       HTML
   #     end
   #   end
-  # end
+   end
 
   def reset_password_instructions(record, token, opts = {})
     @token = token
