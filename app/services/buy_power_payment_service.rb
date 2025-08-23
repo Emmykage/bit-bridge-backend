@@ -134,17 +134,20 @@ class BuyPowerPaymentService
       tariffClass: electric_bill_order['tariff_class']
     }.transform_values { |v| v.is_a?(String) ? v.strip : v }
 
-
+    user = electric_bill_order.user
+    raise 'No user associated with this order' unless user
 
     user.with_lock do
+
       response = nil
       if payment_method == 'wallet'
+
         raise 'user is inactive' unless electric_bill_order.user&.active
 
 
         # update the order before transaction so you can update after transaction then check the previous transaction to ensure none was made at the same time
-        wallet = electric_bill_order.user.wallet
-        amount = electric_bill_order[:usd_amount] || electric_bill_order[:amount]
+        wallet = user.wallet
+        amount = electric_bill_order[:total_amount]
         use_commission = electric_bill_order[:use_commission] || false
 
 
@@ -155,13 +158,10 @@ class BuyPowerPaymentService
 
 
         raise 'Insufficient funds' unless has_money
+
         # Timeout.timeout(180) do
           response = self.class.post('/vend', headers: @post_headers, body: body)
         # end
-
-
-
-
       elsif payment_method == 'card'
         Timeout.timeout(180) do
           response = self.class.post('/vend', headers: @post_headers, body: body)
@@ -173,14 +173,17 @@ class BuyPowerPaymentService
       if response.success?
         electric_bill_order.update(status: 'completed', payment_method: payment_method,
                                    units: response['data']['units'], token: response['data']['token'], transaction_id: response['data']['id'])
+
+
         return { response: electric_bill_order, status: 'success' }
       else
-        response['message']
+        raise  response['message']
       end
     rescue Timeout::Error
       electric_bill_order.update(status: 'timedout', payment_method: payment_method)
       raise ActiveRecord::Rollback, 'Transaction TimedOut'
     rescue StandardError => e
+
       return { response: e.message.to_s, status: 'error' }
     end
   end

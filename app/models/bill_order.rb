@@ -109,11 +109,13 @@ attr_accessor :use_commission
     currency = CurrencyService.new('ngn', 'ngn')
 
     amount_in_usd = currency.get_calculated_rate(net_total, 'ngn', 'ngn')
+              binding.b
+
     amount_in_usd[:rate]
   end
 
   def set_usd_conversion
-    self.usd_amount = net_usd_conversion
+    self.usd_amount = net_total
   end
 
   def wallet_payment?
@@ -127,8 +129,8 @@ attr_accessor :use_commission
 
 
   def validate_order
-    # binding.b
-    return unless wallet.balance < net_usd_conversion
+    # return unless wallet.balance < net_usd_conversion
+    return unless wallet.balance < net_total
 
     errors.add(:amount, 'insufficient balance')
   end

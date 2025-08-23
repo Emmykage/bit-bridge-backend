@@ -2,6 +2,8 @@
 
 # require "uri"
 # require 'json'
+require 'ostruct'
+
 
 class CurrencyService
   include HTTParty
@@ -19,9 +21,6 @@ class CurrencyService
 
     begin
       if currency.present?
-
-
-
         if Time.now - Time.parse(currency['rate_time_stamp']) > 3.minutes
 
           response = self.class.get('/exchange_rates')
@@ -30,11 +29,8 @@ class CurrencyService
           currency.update(currency_rates: response, rate_time_stamp: time)
 
           json_parse = JSON.parse(currency['currency_rates'])
-
           from_rate = json_parse['rates'][@from_curr]['value']
           to_rate = json_parse['rates'][@to_curr]['value']
-
-
           OpenStruct.new(from_rate: from_rate, to_rate: to_rate)
 
           # return {response: conversion.table}
