@@ -138,7 +138,6 @@ class BuyPowerPaymentService
     raise 'No user associated with this order' unless user
 
     user.with_lock do
-
       response = nil
       if payment_method == 'wallet'
 
@@ -154,13 +153,13 @@ class BuyPowerPaymentService
         available_balance = wallet.balance.to_f
         commission_balance = wallet.commission.to_f || 0
 
-        has_money = available_balance >= amount || (use_commission && (commission_balance + available_balance) >= amount )
+        has_money = available_balance >= amount || (use_commission && (commission_balance + available_balance) >= amount)
 
 
         raise 'Insufficient funds' unless has_money
 
         # Timeout.timeout(180) do
-          response = self.class.post('/vend', headers: @post_headers, body: body)
+        response = self.class.post('/vend', headers: @post_headers, body: body)
         # end
       elsif payment_method == 'card'
         Timeout.timeout(180) do
@@ -170,20 +169,17 @@ class BuyPowerPaymentService
         raise 'no payment method selected'
       end
 
-      if response.success?
-        electric_bill_order.update(status: 'completed', payment_method: payment_method,
-                                   units: response['data']['units'], token: response['data']['token'], transaction_id: response['data']['id'])
+      raise response['message'] unless response.success?
+
+      electric_bill_order.update(status: 'completed', payment_method: payment_method,
+                                 units: response['data']['units'], token: response['data']['token'], transaction_id: response['data']['id'])
 
 
-        return { response: electric_bill_order, status: 'success' }
-      else
-        raise  response['message']
-      end
+      return { response: electric_bill_order, status: 'success' }
     rescue Timeout::Error
       electric_bill_order.update(status: 'timedout', payment_method: payment_method)
       raise ActiveRecord::Rollback, 'Transaction TimedOut'
     rescue StandardError => e
-
       return { response: e.message.to_s, status: 'error' }
     end
   end

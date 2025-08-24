@@ -30,5 +30,6 @@ class UserMailer < ApplicationMailer
   end
 
   def confirm_url(token)
-"https://bitbridgeglobal.com/confirmation?confirmation_token=#{token}"  end
+    "https://bitbridgeglobal.com/confirmation?confirmation_token=#{token}"
+  end
 end

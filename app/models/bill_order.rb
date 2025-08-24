@@ -25,6 +25,8 @@ attr_accessor :use_commission
 
   before_update  :apply_commission, if: :is_commission?
 
+  after_update :save_commission, if: :should_apply_commission?
+
 
 
   default_scope { order(created_at: :desc) }
@@ -95,14 +97,18 @@ attr_accessor :use_commission
   end
 
   def save_commission
-    self.amount * 0.01
-    wallet.commission = wallet.commission + commission
+    commission = self.amount * 0.01
+    wallet.commission = (wallet.commission || 0) + commission
     wallet.save
   end
 
 
   def calculate_total
     self.total_amount = net_total
+  end
+
+  def should_apply_commission?
+    saved_change_to_status? && status == 'completed' && transaction_id.present?
   end
 
   def net_usd_conversion
