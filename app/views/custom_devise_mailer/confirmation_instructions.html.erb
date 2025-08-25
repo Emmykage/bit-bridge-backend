@@ -53,7 +53,7 @@
     <div class="content">
         <%= image_tag attachments["logo"].url, class: "logo", style:"height: 140px; object-fit: cover; display: block;",  alt: "Company Logo"  %>
 
-        <p>Hello <%= @user.user_profile.first_name %>,</p>
+        <p>Hello <%= @user.user_profile&.first_name || @user&.email%>,</p>
 
         <p>Thank you for registering with Bitbridge Global. Please confirm your email address to complete your account setup.</p>
 

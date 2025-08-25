@@ -49,6 +49,14 @@ class User < ApplicationRecord
     create_wallet
   end
 
+  # def send_confirmation_instructions
+  #   generate_confirmation_token! unless @raw_confirmation_token
+  #   opts = pending_reconfirmation? ? { to: unconfirmed_email } : { to: email }
+  #   send_devise_notification(:confirmation_instructions, @raw_confirmation_token, opts)
+
+  # end
+
+
   def generate_refresh_token
     token = SecureRandom.hex(32)
     update!(refresh_token: token, refresh_token_expires_at: 30.minutes.from_now)
