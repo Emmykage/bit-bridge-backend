@@ -61,7 +61,7 @@ module Api
       end
 
       def update_password
-        if @user.update(user_params)
+        if @user.update(password: user_params[:password])
           render json: { data: UserSerializer.new(@user), message: 'password updated' }, status: :ok
         else
           render json: { message: @user.errors.full_messages.to_sentence }, status: :unprocessable_entity
