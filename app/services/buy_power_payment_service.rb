@@ -33,9 +33,9 @@ class BuyPowerPaymentService
       name: res&.dig('name') || payment_processor_params[:billersCode],
       tariff_class: payment_processor_params[:tariff_class],
       service_type: payment_processor_params[:service_type],
-      email: payment_processor_params[:email],
+      email: current_user.email || payment_processor_params[:email],
       amount: payment_processor_params[:amount],
-      phone: payment_processor_params[:phone],
+      phone: current_user.user_profile&.phone_number || payment_processor_params[:phone],
       biller: payment_processor_params[:biller],
       description: payment_processor_params[:description],
       demand_category: res&.dig('demandCategory')
@@ -46,9 +46,9 @@ class BuyPowerPaymentService
       name: res&.dig('name') || payment_processor_params[:billersCode],
       tariff_class: payment_processor_params[:tariff_class],
       service_type: payment_processor_params[:service_type],
-      email: payment_processor_params[:email],
+      email:  payment_processor_params[:email],
       amount: payment_processor_params[:amount],
-      phone: payment_processor_params[:phone],
+      phone:  payment_processor_params[:phone],
       biller: payment_processor_params[:biller],
       description: payment_processor_params[:description],
       demand_category: res&.dig('demandCategory')
@@ -161,6 +161,7 @@ class BuyPowerPaymentService
         # Timeout.timeout(180) do
         response = self.class.post('/vend', headers: @post_headers, body: body)
         # end
+
       elsif payment_method == 'card'
         Timeout.timeout(180) do
           response = self.class.post('/vend', headers: @post_headers, body: body)
@@ -169,12 +170,34 @@ class BuyPowerPaymentService
         raise 'no payment method selected'
       end
 
-      raise response['message'] unless response.success?
+      if response.success?
+        payment_method = payment_method
+        units = response&.dig('data', 'units')
+        token = response&.dig('data', 'token')
+        transaction_id = response&.dig('data', 'id')
 
-      electric_bill_order.update(status: 'completed', payment_method: payment_method,
-                                 units: response['data']['units'], token: response['data']['token'], transaction_id: response['data']['id'])
+        if response['error']
+          electric_bill_order.update(status: 'disputed', payment_method: payment_method)
+          raise response['message']
 
+        else
+          electric_bill_order.update(status: 'completed', payment_method: payment_method,
+                                     units: units, token: token, transaction_id: transaction_id)
 
+        end
+
+      elsif response['error']
+        code = response['responseCode']
+        case code
+        when 400, 422, 409, 500, 501, 502, 503
+        else
+          electric_bill_order.update(status: 'disputed', payment_method: payment_method)
+        end
+        raise response['message']
+
+      else
+        raise response['message']
+      end
       return { response: electric_bill_order, status: 'success' }
     rescue Timeout::Error
       electric_bill_order.update(status: 'timedout', payment_method: payment_method)

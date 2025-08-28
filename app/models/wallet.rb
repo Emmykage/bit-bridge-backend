@@ -13,7 +13,7 @@ class Wallet < ApplicationRecord
 
 
   def total_bills
-    bill_orders.where(status: %w[completed timedout], payment_method: 'wallet').sum(:total_amount)
+    bill_orders.where(status: %w[completed timedout disputed], payment_method: 'wallet').sum(:total_amount)
   end
 
   def total_commission

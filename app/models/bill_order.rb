@@ -1,14 +1,13 @@
 # frozen_string_literal: true
 
 class BillOrder < ApplicationRecord
-  attr_accessor :demand_category
-attr_accessor :use_commission
+  attr_accessor :demand_category, :use_commission
 
   belongs_to :user, optional: true
   has_one :wallet, through: :user
   has_one :transaction_record
 
-  enum :status, { initialized: 0, completed: 1, declined: 2, timedout: 3 }
+  enum :status, { initialized: 0, completed: 1, declined: 2, timedout: 3, disputed: 4 }
   enum :meter_type, { PREPAID: 0, POSTPAID: 1 }
   enum :payment_type, { online: 0, B2B: 1 }
   enum :payment_method, { wallet: 0, card: 1 }
@@ -23,7 +22,7 @@ attr_accessor :use_commission
 
   validate :user_must_be_active
 
-  before_update  :apply_commission, if: :is_commission?
+  before_update :apply_commission, if: :is_commission?
 
   after_update :save_commission, if: :should_apply_commission?
 
@@ -37,11 +36,10 @@ attr_accessor :use_commission
     amount_to_pay = amount - commission_balance
     # return if commission_amount <= 0
 
-    new_amount = amount_to_pay > 0 ? amount_to_pay : 0
-    new_commission_balance = new_amount == 0 ?  amount_to_pay.abs : commission_balance - amount_to_pay.abs
+    new_amount = amount_to_pay.positive? ? amount_to_pay : 0
+    new_commission_balance = new_amount.zero? ? amount_to_pay.abs : commission_balance - amount_to_pay.abs #should be zero
     update(amount: new_amount)
     wallet.update(commission: new_commission_balance) if commission_amount >= 0
-
   end
 
   def user_must_be_active
@@ -80,12 +78,10 @@ attr_accessor :use_commission
     service_type == 'ELECTRICITY'
   end
 
-
   def commission
     return 0 if service_type == 'ELECTRICITY'
 
     (amount * 0.01).round(2)
-
   end
 
 
@@ -97,11 +93,10 @@ attr_accessor :use_commission
   end
 
   def save_commission
-    commission = self.amount * 0.01
+    commission = amount * 0.01
     wallet.commission = (wallet.commission || 0) + commission
     wallet.save
   end
-
 
   def calculate_total
     self.total_amount = net_total
@@ -115,7 +110,7 @@ attr_accessor :use_commission
     currency = CurrencyService.new('ngn', 'ngn')
 
     amount_in_usd = currency.get_calculated_rate(net_total, 'ngn', 'ngn')
-              binding.b
+    binding.b
 
     amount_in_usd[:rate]
   end
@@ -130,9 +125,7 @@ attr_accessor :use_commission
 
   def is_commission?
     use_commission == true
-
   end
-
 
   def validate_order
     # return unless wallet.balance < net_usd_conversion
