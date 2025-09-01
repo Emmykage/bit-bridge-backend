@@ -84,6 +84,8 @@ module Api
       def create_user
         @transaction = Transaction.new(transaction_params)
 
+        return render json: {message: "Not authorized "} unless current_user.role === 'admin' || current_user.role == "super_admin"
+
         if @transaction.save
           render json: { data: TransactionSerializer.new(@transaction), message: 'Transaction created successfully' },
                  status: :created

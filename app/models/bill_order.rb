@@ -37,9 +37,9 @@ class BillOrder < ApplicationRecord
     # return if commission_amount <= 0
 
     new_amount = amount_to_pay.positive? ? amount_to_pay : 0
-    new_commission_balance = new_amount.zero? ? amount_to_pay.abs : commission_balance - amount_to_pay.abs #should be zero
+    new_commission_balance = new_amount.zero? ? amount_to_pay.abs : 0 #commission_balance - amount_to_pay.abs #should be zero
     update(amount: new_amount)
-    wallet.update(commission: new_commission_balance) if commission_amount >= 0
+    wallet.update(commission: new_commission_balance)
   end
 
   def user_must_be_active
@@ -103,14 +103,13 @@ class BillOrder < ApplicationRecord
   end
 
   def should_apply_commission?
-    saved_change_to_status? && status == 'completed' && transaction_id.present?
+    saved_change_to_status? && status == 'completed' && transaction_id.present? && (service_type == 'VTU' || service_type == 'DATA')
   end
 
   def net_usd_conversion
     currency = CurrencyService.new('ngn', 'ngn')
 
     amount_in_usd = currency.get_calculated_rate(net_total, 'ngn', 'ngn')
-    binding.b
 
     amount_in_usd[:rate]
   end
