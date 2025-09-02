@@ -189,15 +189,15 @@ class BuyPowerPaymentService
       elsif response['error']
         code = response['responseCode']
         case code
-        when 400, 422, 409, 500, 501, 502, 503
-        else
-          electric_bill_order.update(status: 'disputed', payment_method: payment_method)
+        when 400, 422, 409, 500, 501, 502, 503, 403
+          electric_bill_order.update(status: 'declined', payment_method: payment_method, reason: response['message'])
+          raise response['message']
         end
-        raise response['message']
 
       else
         raise response['message']
       end
+
       return { response: electric_bill_order, status: 'success' }
     rescue Timeout::Error
       electric_bill_order.update(status: 'timedout', payment_method: payment_method)
