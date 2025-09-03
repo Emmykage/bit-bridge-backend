@@ -178,14 +178,14 @@ class BuyPowerPaymentService
         units = response&.dig('data', 'units')
         token = response&.dig('data', 'token')
         transaction_id = response&.dig('data', 'id')
-
+        message = response['message']
         if response['error']
-          electric_bill_order.update(status: 'disputed', payment_method: payment_method)
+          electric_bill_order.update(status: 'disputed', payment_method: payment_method, reason: message)
           raise response['message']
 
         else
           electric_bill_order.update(status: 'completed', payment_method: payment_method, use_commission: use_commission,
-                                     units: units, token: token, transaction_id: transaction_id)
+                                     units: units, token: token, transaction_id: transaction_id, reason: message)
 
         end
 
