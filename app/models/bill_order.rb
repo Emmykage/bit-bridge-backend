@@ -137,7 +137,7 @@ class BillOrder < ApplicationRecord
   end
 
   def is_commission?
-    use_commission == true
+    use_commission == true && status == 'completed'
   end
 
   def validate_order
