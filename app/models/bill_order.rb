@@ -30,15 +30,7 @@ class BillOrder < ApplicationRecord
 
   default_scope { order(created_at: :desc) }
 
-
-  # @commission_balance = wallet.commission || 0
-
-  def assign_commission
-
-  end
-
-
-  def apply_commission
+ def apply_commission
     commission_balance = wallet.commission || 0
     amount_to_pay = amount - commission_balance
     # return if commission_amount <= 0
