@@ -37,7 +37,6 @@ class BillOrder < ApplicationRecord
 
     new_amount = amount_to_pay.positive? ? amount_to_pay : 0
     @commission_balance = new_amount.zero? ? amount_to_pay.abs : 0 #commission_balance - amount_to_pay.abs #should be zero
-    binding.b
     self.amount = new_amount
     self.total_amount = new_amount
   end
