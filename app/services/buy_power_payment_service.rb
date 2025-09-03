@@ -171,6 +171,9 @@ class BuyPowerPaymentService
       end
 
       if response.success?
+
+        Rails.logger.info("✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅Wallet transaction sucess: #{response}")
+
         payment_method = payment_method
         units = response&.dig('data', 'units')
         token = response&.dig('data', 'token')
