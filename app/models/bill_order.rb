@@ -55,7 +55,7 @@ class BillOrder < ApplicationRecord
 
 
   def bill_commission
-    commission_balance = wallet.commission || 0
+    commission_balance = wallet&.commission || 0
     amount_to_pay = amount - commission_balance
     new_amount = amount_to_pay.positive? ? amount_to_pay : 0
 
