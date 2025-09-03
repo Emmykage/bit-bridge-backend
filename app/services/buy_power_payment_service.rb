@@ -119,7 +119,7 @@ class BuyPowerPaymentService
     end
   end
 
-  def confirm_subscription(electric_bill_order, payment_method = 'wallet')
+  def confirm_subscription(electric_bill_order, payment_method = 'wallet', use_commission = false)
     body = {
       meter: electric_bill_order['meter_number'],
       amount: electric_bill_order['amount'],
@@ -147,7 +147,7 @@ class BuyPowerPaymentService
         # update the order before transaction so you can update after transaction then check the previous transaction to ensure none was made at the same time
         wallet = user.wallet
         amount = electric_bill_order[:total_amount]
-        use_commission = electric_bill_order[:use_commission] || false
+        use_commission = use_commission
 
 
         available_balance = wallet.balance.to_f
@@ -181,7 +181,7 @@ class BuyPowerPaymentService
           raise response['message']
 
         else
-          electric_bill_order.update(status: 'completed', payment_method: payment_method,
+          electric_bill_order.update(status: 'completed', payment_method: payment_method, use_commission: use_commission,
                                      units: units, token: token, transaction_id: transaction_id)
 
         end

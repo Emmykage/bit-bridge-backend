@@ -5,7 +5,7 @@
 module Api
   module V1
     class BillOrdersController < ApplicationController
-      before_action :set_bill_order, only: %i[show update destroy initialize_confirm_payment]
+      before_action :set_bill_order, only: %i[show update destroy initialize_confirm_payment confirm_bill_payment]
 
       # GET /bill_orders
       def index
@@ -51,9 +51,15 @@ module Api
         end
       end
 
-      def confirm_payment(payment_method)
+
+
+       def confirm_bill_payment
+        payment_method = bill_order_params[:payment_method]
+
+        use_commission = bill_order_params[:use_commission]
+
         service = BuyPowerPaymentService.new
-        service_response = service.confirm_subscription(@bill_order, payment_method)
+        service_response = service.confirm_subscription(@bill_order, payment_method, use_commission)
         if service_response[:status] == 'success'
           render json: { success: true, data: service_response[:response], message: 'payment confirmed' }, status: :ok
         else
@@ -122,11 +128,22 @@ module Api
         @bill_order = BillOrder.find(params[:id])
       end
 
+      def confirm_payment(payment_method)
+        service = BuyPowerPaymentService.new
+        service_response = service.confirm_subscription(@bill_order, payment_method)
+        if service_response[:status] == 'success'
+          render json: { success: true, data: service_response[:response], message: 'payment confirmed' }, status: :ok
+        else
+          render json: { success: false, message: service_response[:response] }, status: :unprocessable_entity
+        end
+      end
+
       # Only allow a list of trusted parameters through.
       def bill_order_params
-        params.require(:bill_order).permit(:status, :meter_number, :amount, :meter_type, :phone, :service_type,
-                                           :payment_type, :email, :tariff_class, :description, :name)
+        params.require(:bill_order).permit(:status, :meter_number, :amount, :meter_type, :phone, :service_type, :use_commission,
+                                           :payment_type, :email, :tariff_class, :description, :name, :payment_method)
       end
     end
   end
+
 end

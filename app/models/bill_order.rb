@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class BillOrder < ApplicationRecord
-  attr_accessor :demand_category, :use_commission
+  attr_accessor :demand_category, :use_commission, :commission_balance
 
   belongs_to :user, optional: true
   has_one :wallet, through: :user
@@ -17,7 +17,7 @@ class BillOrder < ApplicationRecord
 
 
   before_save :calculate_total
-  before_save :set_usd_conversion
+  # before_save :set_usd_conversion
   before_save :cal_unit, if: :is_electricty?
 
   validate :user_must_be_active
@@ -31,15 +31,35 @@ class BillOrder < ApplicationRecord
   default_scope { order(created_at: :desc) }
 
 
+  # @commission_balance = wallet.commission || 0
+
+  def assign_commission
+
+  end
+
+
   def apply_commission
     commission_balance = wallet.commission || 0
     amount_to_pay = amount - commission_balance
     # return if commission_amount <= 0
 
     new_amount = amount_to_pay.positive? ? amount_to_pay : 0
-    new_commission_balance = new_amount.zero? ? amount_to_pay.abs : 0 #commission_balance - amount_to_pay.abs #should be zero
-    update(amount: new_amount)
-    wallet.update(commission: new_commission_balance)
+    @commission_balance = new_amount.zero? ? amount_to_pay.abs : 0 #commission_balance - amount_to_pay.abs #should be zero
+
+    self.amount = new_amount
+    self.total_amount = new_amount
+  end
+
+
+
+
+
+  def bill_commission
+    commission_balance = wallet.commission || 0
+    amount_to_pay = amount - commission_balance
+    new_amount = amount_to_pay.positive? ? amount_to_pay : 0
+
+   service_type == "VTU" || service_type == "DATA"  ? new_amount : nil
   end
 
   def user_must_be_active
@@ -93,10 +113,12 @@ class BillOrder < ApplicationRecord
   end
 
   def save_commission
-    commission = amount * 0.01
-    wallet.commission = (wallet.commission || 0) + commission
+    commission_percent = amount * 0.01
+    wallet.commission = use_commission ? @commission_balance : wallet.commission + commission_percent
     wallet.save
   end
+
+
 
   def calculate_total
     self.total_amount = net_total

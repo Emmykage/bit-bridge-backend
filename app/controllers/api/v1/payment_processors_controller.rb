@@ -11,7 +11,7 @@ module Api
       end
 
       def show
-        render json: { data: @bill_order }
+        render json: { data: BillOrderSerializer.new(@bill_order) }
       end
 
       # def approve_payment
