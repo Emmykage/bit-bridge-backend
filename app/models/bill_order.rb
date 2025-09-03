@@ -13,7 +13,7 @@ class BillOrder < ApplicationRecord
   enum :payment_method, { wallet: 0, card: 1 }
 
   validates :amount, presence: true
-  validate :validate_order, if: -> { persisted? && wallet_payment? }
+  # validate :validate_order, if: -> { persisted? && wallet_payment? }
 
 
   before_save :calculate_total
@@ -37,7 +37,7 @@ class BillOrder < ApplicationRecord
 
     new_amount = amount_to_pay.positive? ? amount_to_pay : 0
     @commission_balance = new_amount.zero? ? amount_to_pay.abs : 0 #commission_balance - amount_to_pay.abs #should be zero
-
+    binding.b
     self.amount = new_amount
     self.total_amount = new_amount
   end
@@ -141,7 +141,6 @@ class BillOrder < ApplicationRecord
   end
 
   def validate_order
-    # return unless wallet.balance < net_usd_conversion
     return unless wallet.balance < net_total
 
     errors.add(:amount, 'insufficient balance')

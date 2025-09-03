@@ -155,7 +155,6 @@ class BuyPowerPaymentService
 
         has_money = available_balance >= amount || (use_commission && (commission_balance + available_balance) >= amount)
 
-
         raise 'Insufficient funds' unless has_money
 
         # Timeout.timeout(180) do
