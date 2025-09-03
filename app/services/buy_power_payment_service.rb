@@ -317,9 +317,8 @@ class BuyPowerPaymentService
   def re_query(order_id)
     response = self.class.get("/transaction/#{order_id}", headers: @get_headers)
 
-    raise response['message'] unless response.success?
-
-    { response: response, status: :ok }
+    raise response['message'] || response unless response.success?
+   { response: response, status: :ok }
   rescue StandardError => e
     { response: e.message.to_s, status: :unprocessable_entity }
   end
