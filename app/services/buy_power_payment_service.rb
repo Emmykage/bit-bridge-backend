@@ -189,9 +189,7 @@ class BuyPowerPaymentService
             electric_bill_order.update(status: 'disputed', reason: electric_bill_order&.full_messages.to_sentence || message)
             raise electric_bill_order.full_messages.to_sentence
           end
-
-
-
+        end
       else
         errorCode = response['error']
         code = response['responseCode']
