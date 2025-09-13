@@ -183,26 +183,30 @@ class BuyPowerPaymentService
           raise response['message']
 
         else
-        if  electric_bill_order.update(status: 'completed', payment_method: payment_method, use_commission: use_commission,
-                                     units: units, token: token, transaction_id: transaction_id, reason: message)
-        else
-          electric_bill_order.update(status: 'disputed', reason: electric_bill_order&.full_messages&.to_sentence || message)
-          raise electric_bill_order.full_messages.to_sentence
-        end
+          if  electric_bill_order.update(status: 'completed', payment_method: payment_method, use_commission: use_commission,
+                                      units: units, token: token, transaction_id: transaction_id, reason: message)
+          else
+            electric_bill_order.update(status: 'disputed', reason: electric_bill_order&.full_messages.to_sentence || message)
+            raise electric_bill_order.full_messages.to_sentence
+          end
 
-      elsif response['error']
+
+
+      else
+        errorCode = response['error']
         code = response['responseCode']
         case code
         when 400, 422, 409, 500, 501, 502, 503, 403
           electric_bill_order.update(status: 'declined', payment_method: payment_method, reason: response['message'])
           raise response['message']
-        end
-
-      else
+        else
+          electric_bill_order.update(status: 'declined', payment_method: payment_method, reason: response['message'])
         raise response['message']
+
+        end
       end
 
-      return { response: electric_bill_order, status: 'success' }
+     return { response: electric_bill_order, status: 'success' }
 
     rescue ActiveRecord::RecordInvalid => e
       Rails.logger.error("Update failed: #{e.record.errors.full_messages.join(', ')}")
