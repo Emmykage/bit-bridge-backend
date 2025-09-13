@@ -111,7 +111,7 @@ class PaymentService
       "Content-Type": 'application/json'
     }
     body = {
-      "amount": record_params[:amount],
+      "amount": record_params[:total_amount],
       "customerName": record_params[:customer_name] || record_params[:name],
       "customerEmail": record_params[:email],
       "paymentReference": record_params[:type].present? && record_params[:type] == 'bills' ? "bbg-#{Time.now.to_i}" : "fbg-#{Time.now.to_i}",

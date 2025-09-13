@@ -177,15 +177,17 @@ class BuyPowerPaymentService
         units = response&.dig('data', 'units')
         token = response&.dig('data', 'token')
         transaction_id = response&.dig('data', 'id')
-        message = response['message']
+        message = response['message'] || "No error message"
         if response['error']
           electric_bill_order.update(status: 'disputed', payment_method: payment_method, reason: message)
           raise response['message']
 
         else
-          electric_bill_order.update(status: 'completed', payment_method: payment_method, use_commission: use_commission,
+        if  electric_bill_order.update(status: 'completed', payment_method: payment_method, use_commission: use_commission,
                                      units: units, token: token, transaction_id: transaction_id, reason: message)
-
+        else
+          electric_bill_order.update(status: 'disputed', reason: electric_bill_order&.full_messages&.to_sentence || message)
+          raise electric_bill_order.full_messages.to_sentence
         end
 
       elsif response['error']
@@ -201,6 +203,10 @@ class BuyPowerPaymentService
       end
 
       return { response: electric_bill_order, status: 'success' }
+
+    rescue ActiveRecord::RecordInvalid => e
+      Rails.logger.error("Update failed: #{e.record.errors.full_messages.join(', ')}")
+    return { status: 'error', message: e.record.errors.full_messages.to_sentence }
     rescue Timeout::Error
       electric_bill_order.update(status: 'timedout', payment_method: payment_method)
       raise ActiveRecord::Rollback, 'Transaction TimedOut'
