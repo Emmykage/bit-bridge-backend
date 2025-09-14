@@ -18,7 +18,7 @@ class BillOrder < ApplicationRecord
 
   before_save :calculate_total
   # before_save :set_usd_conversion
-  before_save :cal_unit, if: :is_electricty?
+  # before_save :cal_unit, if: :is_electricty?
 
   validate :user_must_be_active
 
