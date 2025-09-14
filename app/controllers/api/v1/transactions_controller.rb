@@ -29,12 +29,10 @@ module Api
       end
 
       def initialize_transaction
+
         initialize_payment = PaymentService.new
 
         response = initialize_payment.init_transaction(transaction_params)
-
-
-
 
         if response[:status] == :ok
           transaction = current_user.wallet.transactions.create(
