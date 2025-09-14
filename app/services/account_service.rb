@@ -135,9 +135,6 @@ class AccountService
     if response.success?
       { response: response, status: :ok }
     else
-
-      binding.b
-
       raise response['responseMessage']
     end
   rescue StandardError => e
