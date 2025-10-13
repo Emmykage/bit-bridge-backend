@@ -21,12 +21,13 @@ module Api
       def initialize_confirm_payment
         payment_method = params[:payment_method]
         redirect_url = params[:redirect_url]
+        use_commission = params[:use_commission] || false
 
         if payment_method == 'card'
 
           service = PaymentService.new
           service_response = service.init_transaction(@bill_order.attributes.symbolize_keys.merge({ type: 'bills',
-                                                                                                    payment_method: 'card', redirect_url: redirect_url }))
+                                                                                                    payment_method: 'card', redirect_url: redirect_url, use_commission: use_commission }))
 
           if service_response[:status] == :ok
             payment_reference = service_response[:response]['responseBody']['paymentReference']
@@ -51,9 +52,7 @@ module Api
         end
       end
 
-
-
-       def confirm_bill_payment
+      def confirm_bill_payment
         payment_method = bill_order_params[:payment_method]
 
         use_commission = bill_order_params[:use_commission]
@@ -141,9 +140,8 @@ module Api
       # Only allow a list of trusted parameters through.
       def bill_order_params
         params.require(:bill_order).permit(:status, :meter_number, :amount, :meter_type, :phone, :service_type, :use_commission,
-                                           :payment_type, :email, :tariff_class, :description, :name, :payment_method)
+                                           :payment_type, :email, :tariff_class, :description, :name, :payment_method, :redirect_url)
       end
     end
   end
-
 end

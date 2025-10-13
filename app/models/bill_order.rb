@@ -30,27 +30,23 @@ class BillOrder < ApplicationRecord
 
   default_scope { order(created_at: :desc) }
 
- def apply_commission
+  def apply_commission
     commission_balance = wallet.commission || 0
     amount_to_pay = amount - commission_balance
     # return if commission_amount <= 0
 
     new_amount = amount_to_pay.positive? ? amount_to_pay : 0
-    @commission_balance = new_amount.zero? ? amount_to_pay.abs : 0 #commission_balance - amount_to_pay.abs #should be zero
+    @commission_balance = new_amount.zero? ? amount_to_pay.abs : 0 # commission_balance - amount_to_pay.abs #should be zero
     self.amount = new_amount
     self.total_amount = new_amount
   end
-
-
-
-
 
   def bill_commission
     commission_balance = wallet&.commission || 0
     amount_to_pay = amount - commission_balance
     new_amount = amount_to_pay.positive? ? amount_to_pay : 0
 
-   service_type == "VTU" || service_type == "DATA"  ? new_amount : nil
+    %w[VTU DATA].include?(service_type) ? new_amount : nil
   end
 
   def user_must_be_active
@@ -109,14 +105,13 @@ class BillOrder < ApplicationRecord
     wallet.save
   end
 
-
-
   def calculate_total
     self.total_amount = net_total
   end
 
   def should_apply_commission?
-    saved_change_to_status? && status == 'completed' && transaction_id.present? && (service_type == 'VTU' || service_type == 'DATA')
+    saved_change_to_status? && status == 'completed' && transaction_id.present? && %w[VTU
+                                                                                      DATA].include?(service_type)
   end
 
   def net_usd_conversion

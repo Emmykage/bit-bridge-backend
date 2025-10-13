@@ -174,7 +174,7 @@ module Api
         response_service = service.re_query(@bill_order[:id])
 
         if response_service[:status] == :ok
-          data = response_service[:response]&.dig('result', 'data' ) ||  response_service[:response]&.dig('data' )
+          data = response_service[:response]&.dig('result', 'data') || response_service[:response]&.dig('data')
           render json: { data: data }, status: :ok
 
         else

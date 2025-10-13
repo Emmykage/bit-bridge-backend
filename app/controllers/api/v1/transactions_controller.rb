@@ -29,7 +29,6 @@ module Api
       end
 
       def initialize_transaction
-
         initialize_payment = PaymentService.new
 
         response = initialize_payment.init_transaction(transaction_params)
@@ -82,7 +81,9 @@ module Api
       def create_user
         @transaction = Transaction.new(transaction_params)
 
-        return render json: {message: "Not authorized "} unless current_user.role === 'admin' || current_user.role == "super_admin"
+        unless current_user.role === 'admin' || current_user.role == 'super_admin'
+          return render json: { message: 'Not authorized ' }
+        end
 
         if @transaction.save
           render json: { data: TransactionSerializer.new(@transaction), message: 'Transaction created successfully' },

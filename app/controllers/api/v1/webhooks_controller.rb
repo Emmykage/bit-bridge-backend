@@ -34,6 +34,17 @@ module Api
         head :ok
       end
 
+      def anchor
+        data = JSON.parse(request.raw_post)
+        Rails.logger.info("✅  Anchor webhook json post: #{data}")
+
+        # Process the webhook data as needed
+        head :ok
+      end
+
+
+      private
+
       def handleTransactionConfirmation(event_data)
         Rails.logger.info("✅  Monnify webhook raw event data: #{event_data}")
         user_id = event_data['product']['reference']

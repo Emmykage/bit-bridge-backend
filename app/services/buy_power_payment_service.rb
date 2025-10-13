@@ -5,7 +5,7 @@ class BuyPowerPaymentService
   include HTTParty
 
   base_uri Rails.env.production? ? 'https://api.buypower.ng/v2' : 'https://idev.buypower.ng/v2'
-
+  # base_uri 'https://api.buypower.ng/v2'
   def initialize
     secret_token_dev = ENV['SECRET_TOKEN_DEV']
     secret_token_prod = ENV['SECRET_TOKEN_PROD']
@@ -46,9 +46,9 @@ class BuyPowerPaymentService
       name: res&.dig('name') || payment_processor_params[:billersCode],
       tariff_class: payment_processor_params[:tariff_class],
       service_type: payment_processor_params[:service_type],
-      email:  payment_processor_params[:email],
+      email: payment_processor_params[:email],
       amount: payment_processor_params[:amount],
-      phone:  payment_processor_params[:phone],
+      phone: payment_processor_params[:phone],
       biller: payment_processor_params[:biller],
       description: payment_processor_params[:description],
       demand_category: res&.dig('demandCategory')
@@ -177,38 +177,35 @@ class BuyPowerPaymentService
         units = response&.dig('data', 'units')
         token = response&.dig('data', 'token')
         transaction_id = response&.dig('data', 'id')
-        message = response['message'] || "No error message"
+        message = response['message'] || 'No error message'
         if response['error']
           electric_bill_order.update(status: 'disputed', payment_method: payment_method, reason: message)
           raise response['message']
 
-        else
-          if  electric_bill_order.update(status: 'completed', payment_method: payment_method, use_commission: use_commission,
-                                      units: units, token: token, transaction_id: transaction_id, reason: message)
-          else
-            electric_bill_order.update(status: 'disputed', reason: electric_bill_order&.full_messages.to_sentence || message)
+        elsif electric_bill_order.update(status: 'completed', payment_method: payment_method, use_commission: use_commission,
+                                            units: units, token: token, transaction_id: transaction_id, reason: message)
+          unless electric_bill_order.update(status: 'completed', payment_method: payment_method, use_commission: use_commission,
+                                            units: units, token: token, transaction_id: transaction_id, reason: message)
+            electric_bill_order.update(status: 'disputed',
+                                                                              reason: electric_bill_order&.full_messages&.to_sentence || message)
             raise electric_bill_order.full_messages.to_sentence
-          end
         end
       else
-        errorCode = response['error']
+        response['error']
         code = response['responseCode']
-        case code
+        electric_bill_order.update(status: 'declined', payment_method: payment_method, reason: response['message'])
+case code
         when 400, 422, 409, 500, 501, 502, 503, 403
-          electric_bill_order.update(status: 'declined', payment_method: payment_method, reason: response['message'])
-          raise response['message']
         else
-          electric_bill_order.update(status: 'declined', payment_method: payment_method, reason: response['message'])
-        raise response['message']
 
         end
+raise response['message']
       end
 
-     return { response: electric_bill_order, status: 'success' }
-
+      return { response: electric_bill_order, status: 'success' }
     rescue ActiveRecord::RecordInvalid => e
       Rails.logger.error("Update failed: #{e.record.errors.full_messages.join(', ')}")
-    return { status: 'error', message: e.record.errors.full_messages.to_sentence }
+      return { status: 'error', message: e.record.errors.full_messages.to_sentence }
     rescue Timeout::Error
       electric_bill_order.update(status: 'timedout', payment_method: payment_method)
       raise ActiveRecord::Rollback, 'Transaction TimedOut'
@@ -325,7 +322,8 @@ class BuyPowerPaymentService
     response = self.class.get("/transaction/#{order_id}", headers: @get_headers)
 
     raise response['message'] || response unless response.success?
-   { response: response, status: :ok }
+
+    { response: response, status: :ok }
   rescue StandardError => e
     { response: e.message.to_s, status: :unprocessable_entity }
   end

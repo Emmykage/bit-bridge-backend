@@ -109,8 +109,8 @@ Rails.application.routes.draw do
 
         member do
           get :initialize_confirm_payment
+          patch :initialize_confirm_payment
           patch :confirm_bill_payment
-
         end
       end
 

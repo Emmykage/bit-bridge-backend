@@ -16,7 +16,7 @@ class User < ApplicationRecord
   has_many :card_tokens, through: :order_items
   has_one :user_profile
   has_many :bill_orders
-  has_one :account
+  has_many :accounts
 
 
   accepts_nested_attributes_for :user_profile

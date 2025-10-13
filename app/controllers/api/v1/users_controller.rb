@@ -61,21 +61,34 @@ module Api
       end
 
       def update_password
+        raw_token = user_params[:password_token]
+        digested  = Devise.token_generator.digest(User, :reset_password_token, raw_token)
+
+        user = User.find_by(reset_password_token: digested)
+
+
+        if user&.reset_password_period_valid?
+
+
         if @user.update(password: user_params[:password])
           render json: { data: UserSerializer.new(@user), message: 'password updated' }, status: :ok
         else
           render json: { message: @user.errors.full_messages.to_sentence }, status: :unprocessable_entity
 
         end
+        else
+          render json: { message: 'Invalid or expired token' }, status: :unauthorized
+        end
       end
 
       def user_update
-        if current_user.update(user_params)
-          render json: { data: UserSerializer.new(current_user), message: 'User updated' }, status: :ok
-        else
-          render json: { message: current_user.errors.full_messages.to_sentence }, status: :unprocessable_entity
 
-        end
+          if user.update(user_update_params) # don’t pass token itself
+            render json: { data: UserSerializer.new(user), message: 'User updated' }, status: :ok
+          else
+            render json: { message: user.errors.full_messages.to_sentence }, status: :unprocessable_entity
+          end
+
       end
 
       def destroy

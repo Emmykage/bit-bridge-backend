@@ -11,22 +11,40 @@ module Api
                         status: :unprocessable_entity
         end
 
-        service = AccountService.new
+        if account_params[:vendor] == 'anchor'
+          create_anchor_account
+        else
+          create_monify_account
+        end
+      end
 
-        account_info = {
-          vendor: account_params[:vendor] || 'monnify',
-          bvn: account_params[:bvn],
-          user_id: current_user.id,
-          email: current_user.email,
-          account_name: account_params[:account_name] || current_user.full_name,
-          customer_name: current_user.full_name,
-          currency: account_params[:currency] || 'NGN'
-        }
+      def verify_kyc
 
-        service_response = service.create_wallet_account(account_info)
 
+        account = Account.find_by(user_id: current_user.id, vendor: 'anchor')
+        return { message: 'No Anchor Account Present', status: :not_found } unless account
+
+        service = AnchorService.new
+        service_response = service.user_kyc_verification(account_params, account)
+        service_response[:response]
         if service_response[:status] == :ok
-          render json: { data: service_response[:response], message: 'Account created successfully' }, status: :ok
+          render json: { data: service_response[:response], messsage: service_response[:message] }, status: :ok
+        else
+          render json: { message: service_response[:message] }, status: :unprocessable_entity
+        end
+      end
+
+      def get_account_number
+        # return {message: "No Anchor Account Present"} unless current_user.accounts.where(vendor: "anchor").present?
+        account = Account.find_by(user_id: current_user.id, vendor: 'anchor')
+
+        return { message: 'No Anchor Account Present', status: :not_found } unless account
+
+        service = AnchorService.new
+        service_response = service.create_account_number(type: account.account_type.to_sym, id: account.account_id)
+        service_response[:response]
+        if service_response[:status] == :ok
+          render json: { data: service_response[:response], messsage: 'Account created' }, status: :ok
         else
           render json: { message: service_response[:message] }, status: :unprocessable_entity
         end
@@ -86,9 +104,50 @@ module Api
         end
       end
 
+
+      private
+
+
+      def create_anchor_account
+        service = AnchorService.new
+
+        account_info = current_user.attributes.symbolize_keys.merge(account_params.to_h.symbolize_keys)
+        user_data = current_user.user_profile.attributes.symbolize_keys
+        account_info = account_info.merge(user_data)
+        service_response = service.create_individual_account(account_info)
+
+        if service_response[:status] == :ok
+          render json: { data: service_response[:response], message: 'User Onboarded successfully' }, status: :ok
+        else
+          render json: { message: service_response[:message] }, status: :unprocessable_entity
+        end
+      end
+
+      def create_monify_account
+        service = AccountService.new
+
+        account_info = {
+          vendor: account_params[:vendor] || 'monnify',
+          bvn: account_params[:bvn],
+          user_id: current_user.id,
+          email: current_user.email,
+          account_name: account_params[:account_name] || current_user.full_name,
+          customer_name: current_user.full_name,
+          currency: account_params[:currency] || 'NGN'
+        }
+
+        service_response = service.create_wallet_account(account_info)
+
+        if service_response[:status] == :ok
+          render json: { data: service_response[:response], message: 'Account created successfully' }, status: :ok
+        else
+          render json: { message: service_response[:message] }, status: :unprocessable_entity
+        end
+      end
+
       # POST /accounts
       def account_params
-        params.require(:account).permit(:vendor, :bvn, :currency, :account_name)
+        params.require(:account).permit(:vendor, :bvn, :currency, :account_name, :account_type, :address, :city, :state, :postal_code, :country, :active, :status, :gender, :dob)
       end
     end
   end

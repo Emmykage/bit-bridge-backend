@@ -25,7 +25,7 @@ class UserMailer < ApplicationMailer
   def pawword_reset_url(user, token)
     # "#{Rails.application.config.action_mailer.default_url_options[:host]}/reset_password?password_token=#{token}&email=#{user.email}"
 
-    "https://bitbridgeglobal.com/reset_password?password_token=#{token}&email=#{user.email}"
+    "https://bitbridgeglobal.com/reset_password?password_token=#{token}&email=#{user.email}".html_safe
     # "localhost:5173/reset_password?password_token=#{token}&email=#{user.email}"
   end
 

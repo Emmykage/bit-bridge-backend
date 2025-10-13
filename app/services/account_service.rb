@@ -132,11 +132,9 @@ class AccountService
 
     response = self.class.post('/api/v1/merchant/transactions/init-transaction', headers: headers, body: body)
 
-    if response.success?
-      { response: response, status: :ok }
-    else
-      raise response['responseMessage']
-    end
+    raise response['responseMessage'] unless response.success?
+
+    { response: response, status: :ok }
   rescue StandardError => e
     { message: e.message.to_s, body: body }
   end
