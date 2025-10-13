@@ -1,5 +1,5 @@
 class AnchorService
-    inclued HTTParty
+    include HTTParty
 
     base_uri = "https://api.sandbox.getanchor.co/api/v1/"
     header_api_key =  ENV['ANCHOR_API_KEY'] || '9P6wC.4aed16aee26886c2480fbe21d174d2a1973dddaa3d3cac7d5b8908b4e24999d841b8491ff77c8f6a6d9a278483363a2312aa'
