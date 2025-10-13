@@ -13,7 +13,17 @@ class AnchorService
     def create_individual_account(user_data)
 
         # user_data => {first_name:, last_name:, id:, email:, postal_code:,  bvn:, city:, dob:, phone_number:, address_line1:}
-        { first_name:, last_name:, id:, email:, postal_code:, bvn:, city:, state:, dob:, phone_number:, address_line1: } = user_data
+        first_name     = user_data[:first_name]
+        last_name      = user_data[:last_name]
+        id             = user_data[:id]
+        email          = user_data[:email]
+        postal_code    = user_data[:postal_code]
+        bvn            = user_data[:bvn]
+        city           = user_data[:city]
+        state          = user_data[:state]
+        dob            = user_data[:dob]
+        phone_number   = user_data[:phone_number]
+        address_line1  = user_data[:address_line1]
 
            body ={ "data": {
                 type: "individualCustomer",
