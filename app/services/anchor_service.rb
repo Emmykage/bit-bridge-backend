@@ -12,7 +12,9 @@ class AnchorService
 
     def create_individual_account(user_data)
 
-        user_data => {first_name:, last_name:, id:, email:, postal_code:,  bvn:, city:, dob:, phone_number:, address_line1:}
+        # user_data => {first_name:, last_name:, id:, email:, postal_code:,  bvn:, city:, dob:, phone_number:, address_line1:}
+        { first_name:, last_name:, id:, email:, postal_code:, bvn:, city:, state:, dob:, phone_number:, address_line1: } = user_data
+
            body ={ "data": {
                 type: "individualCustomer",
                 attributes: {
@@ -26,37 +28,37 @@ class AnchorService
                     state: state,
                     country: "NG",
                     postalCode: postal_code
-                }
+                },
                 email: email,
                 phoneNumber: phone_number,
                 metadata: {
                     my_customerID: id
                 }
             }
-
-    }}.to_json
-
-    begin
-        response = self.class.post("/customers", headers: @headers, body: body)
+        }}.to_json
 
 
-        if response.success?
-            account_id = response["data"]["id"]
-            user_data.merge(account_id: account_id)
-             new_Account = Account.create(user_data)
-             if new_Account.persisted?
-                return {response: response["data"], status: :ok}
-             else
-                raise new_Account.errors.full_messages.to_sentence || 'bad request'
-             end
-        else
-            raise response['message'] || 'bad request'
+        begin
+            response = self.class.post("/customers", headers: @headers, body: body)
+
+
+            if response.success?
+                account_id = response["data"]["id"]
+                user_data = user_data.merge(account_id: account_id)
+                new_Account = Account.create(user_data)
+                if new_Account.persisted?
+                    return {response: response["data"], status: :ok}
+                else
+                    raise new_Account.errors.full_messages.to_sentence || 'bad request'
+                end
+            else
+                raise response['message'] || 'bad request'
+            end
+            rescue StandardError => e
+            { response: e.message || 'bad request', status: :bad_request }
+
+
         end
-        rescue StandardError => e
-        { response: e.message || 'bad request', status: :bad_request }
-
-
-    end
     end
 
     def user_kyc_verification(kyc_data, account)
