@@ -95,7 +95,7 @@ class AnchorService
 end
 
 
-def create_account_number(productType = "SAVINGS", type: :individual,  account)
+def create_account_number(productType = "SAVINGS", type= :individual,  account)
 
     account_type = {:individual => "IndividualCustomer", :corporate => "CorporateCustomer"}
     body = {
