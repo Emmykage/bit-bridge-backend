@@ -1,129 +1,146 @@
 class AnchorService
     include HTTParty
 
-    base_uri = "https://api.sandbox.getanchor.co/api/v1/"
-    header_api_key =  ENV['ANCHOR_API_KEY'] || '9P6wC.4aed16aee26886c2480fbe21d174d2a1973dddaa3d3cac7d5b8908b4e24999d841b8491ff77c8f6a6d9a278483363a2312aa'
+    base_uri  ENV["DEV_ANCHOR_BASE_URL"] || "https://api.sandbox.getanchor.co/"
     def initialize
+            header_api_key =  ENV['ANCHOR_API_KEY'] || '9P6wC.4aed16aee26886c2480fbe21d174d2a1973dddaa3d3cac7d5b8908b4e24999d841b8491ff77c8f6a6d9a278483363a2312aa'
+
         @headers = {
-            "x-anchor-key": header_api_key,
-            "Content-Type": 'application/json'
+            "x-anchor-key" => header_api_key,
+            "Content-Type" => 'application/json'
         }
     end
 
     def create_individual_account(user_data)
+  # Expected user_data:
+  # { first_name:, last_name:, id:, email:, postal_code:, bvn:, city:, state:, dob:, phone_number:, address_line1: }
 
-        # user_data => {first_name:, last_name:, id:, email:, postal_code:,  bvn:, city:, dob:, phone_number:, address_line1:}
-        first_name     = user_data[:first_name]
-        last_name      = user_data[:last_name]
-        id             = user_data[:id]
-        email          = user_data[:email]
-        postal_code    = user_data[:postal_code]
-        bvn            = user_data[:bvn]
-        city           = user_data[:city]
-        state          = user_data[:state]
-        dob            = user_data[:dob]
-        phone_number   = user_data[:phone_number]
-        address_line1  = user_data[:address_line1]
+  first_name   = user_data[:first_name]
+  last_name    = user_data[:last_name]
+  id           = user_data[:user_id]
+  email        =  user_data[:email]
+  postal_code  = user_data[:postal_code]
+  bvn          = user_data[:bvn]
+  city         = user_data[:city]
+  state        = user_data[:state]
+  dob          = user_data[:dob]
+  phone_number = user_data[:phone_number]
+  address      = user_data[:address]
 
-           body ={ "data": {
-                type: "individualCustomer",
-                attributes: {
-                    fullName: {
-                    "firstName": first_name,
-                    "lastName": last_name
-                },
-                address: {
-                    addressLine1: address_line1,
-                    city: city,
-                    state: state,
-                    country: "NG",
-                    postalCode: postal_code
-                },
-                email: email,
-                phoneNumber: phone_number,
-                metadata: {
-                    my_customerID: id
-                }
-            }
-        }}.to_json
+  body = {
+    data: {
+      type: "IndividualCustomer",
+      attributes: {
+        fullName: {
+          firstName: first_name,
+          lastName: last_name
+        },
+        address: {
+          addressLine_1: address,
+          addressLine_2: address,
+          city: city,
+          state: state,
+          country: "NG",
+          postalCode: postal_code
+        },
+        email: email,
+        phoneNumber: phone_number,
+        metadata: {
+          my_customerID: id
+        }
+      }
+    }
+  }.to_json
 
+  begin
+    response = self.class.post("/api/v1/customers", headers: @headers, body: body)
 
-        begin
-            response = self.class.post("/customers", headers: @headers, body: body)
+    if response.success?
+        account_id = response["data"]["id"]
+        new_account = store_account_details(account_id, user_data)
+        { response: new_account, status: :ok }
 
-
-            if response.success?
-                account_id = response["data"]["id"]
-                user_data = user_data.merge(account_id: account_id)
-                new_Account = Account.create(user_data)
-                if new_Account.persisted?
-                    return {response: response["data"], status: :ok}
-                else
-                    raise new_Account.errors.full_messages.to_sentence || 'bad request'
-                end
-            else
-                raise response['message'] || 'bad request'
-            end
-            rescue StandardError => e
-            { response: e.message || 'bad request', status: :bad_request }
-
-
-        end
+    else
+      error_title = response.dig("errors", 0, "detail") || "bad request"
+      raise error_title
     end
 
+    rescue StandardError => e
+                binding.b
+
+    { message: e.message || "bad request", status: :bad_request }
+  end
+end
+
+
     def user_kyc_verification(kyc_data, account)
-        kyc_data => {bvn:, dob:, gender:}
+
+
+        bvn  = kyc_data[:bvn] || account[:bvn]
+        dob  = kyc_data[:dob] || account[:dob]
+        gender = kyc_data[:gender] || account[:gender]
+
+
+
         id = account.account_id
         body = {
           "data": {
                 "type": "Verification",
                 "attributes": {
-                "level": "TIER_1",
-                "level1": {
+                "level": "TIER_2",
+                "level2": {
                     "bvn": bvn,
                     "dateOfBirth": dob,
                     "gender": gender
                 }
-                }
+            }
             }
         }.to_json
     begin
 
-        response = self.class.post("/customers/#{id}/verification/individual", headers: @headers, body: body)
+        response = self.class.post("/api/v1/customers/#{id}/verification/individual", headers: @headers, body: body)
+
         if response.success?
-            message = response&.dig("data", "message")
-            raise "account  not found"  unless updatedAccount
+            message = response&.dig("data", "attributes", "message")
+            raise "account  not found"  unless account
                unless account.update(status: "verifying", dob: dob, bvn: bvn, gender: gender)
                 raise account.errors.full_messages.to_sentence || 'bad request'
                end
             return {response: response["data"], message: message, status: :ok}
+            # return {response: account, message: message, status: :ok}
         else
-        raise response['message'] || 'bad request'
+        raise response&.dig("errors", 0, 'detail') || 'bad request'
         end
         rescue StandardError => e
+            binding.b
+
         { message: e.message || 'bad request', status: :bad_request }
 
     end
 end
 
 
-def create_account_number(productType = "SAVINGS", type= :individual,  account)
+def create_account_number( type= :individual,  account)
+    productType = "SAVINGS"
 
+    current_user = account[:account]
+
+    id = account[:account][:account_id]
     account_type = {:individual => "IndividualCustomer", :corporate => "CorporateCustomer"}
     body = {
         "data": {
             "type": "DepositAccount",
             "attributes": {
-            "productName": productType
+            "productName":productType
             },
             "relationships": {
             "customer": {
                 "data": {
                 "id": id,
-                "type": account_type[type]
+                "type": "IndividualCustomer"
                 }
             }
-            }
+         }
         }
     }.to_json
 
@@ -132,21 +149,30 @@ def create_account_number(productType = "SAVINGS", type= :individual,  account)
                 raise "Invalid account type, Must be one of #{account_type.keys.join(", ")}"
             end
 
-            response = self.class.post("/deposit-accounts", headers: @headers, body: body)
-            account_number = response&.dig("data", "attributes", "bank", "accountNumber")
-            bank_name = response&.dig("data", "attributes", "bank", "accountName")
-        if response.success?
-           unless account.update(account_number: account_number, account_type:  account_type[type], staus: "completed", active: true, bank_name: bank_name)
+            response = self.class.post("/api/v1/accounts", headers: @headers, body: body)
+            # account_number = response&.dig("data", "attributes", "bank", "accountNumber")
+            # bank_name = response&.dig("data", "attributes", "bank", "accountName")
 
-            account.errors.full_messages.to_sentence || 'bad request'
+
+            bank_name = response.dig("data", "attributes", "bank", "name")
+            account_number = response.dig("data", "attributes", "accountNumber")
+        if response.success?
+
+            binding.b
+           unless current_user.update(account_number: account_number, account_type:  type, status: "completed", active: true, bank_name: bank_name)
+
+            current_user.errors.full_messages.to_sentence || 'bad request'
            end
 
-         return   {response: response["data"], status: :ok}
+        #  return   {response: response["data"], status: :ok}
+         return   {response: current_user, status: :ok}
         else
-            raise response['message'] || 'bad request'
+            raise response.dig("errors", 0, 'detail') || 'bad request'
         end
         rescue StandardError => e
-            return { response: e.message.to_s || 'bad request', status: :bad_request }
+                binding.b
+
+            return { response: e.message.to_s , message: e.message || 'bad request', status: :bad_request }
 
         end
 
@@ -163,6 +189,122 @@ def inboundDepositedFund(inboundTransferId)
     rescue StandardError => e
         return e.message.to_s || 'bad request'
     end
+
+end
+
+def get_bank
+    begin
+        response = self.class.get("/banks", headers: @headers)
+        return response if response.success?
+        raise response['message'] || 'bad request'
+
+    rescue StandardError => e
+        return e.message.to_s || 'bad request'
+    end
+end
+
+
+def verify_account
+    begin
+        response = self.class.get("/payments/verify-account/000014/0000000010 ", headers: @headers)
+        return response if response.success?
+        raise response['message'] || 'bad request'
+
+    rescue StandardError => e
+        return e.message.to_s || 'bad request'
+    end
+end
+
+
+def create_counter_party(transfer_params)
+
+
+    body =  {
+        "data": {
+            "type": "CounterParty",
+            "attributes": {
+            "bankCode": transfer_params["bank_code"],
+            "accountName": transfer_params["account_name"],
+            "accountNumber": transfer_params["account_number"],
+            "verifyName": true
+            }
+        }
+        }.to_json
+    begin
+        response = self.class.get("/payments/counterparties ", headers: @headers)
+        return response if response.success?
+        raise response['message'] || 'bad request'
+
+        rescue StandardError => e
+            return e.message.to_s || 'bad request'
+        end
+end
+
+
+
+def initiate_transfer( receipient_params, source_id)
+
+
+ body =  {
+  "data": {
+        "type": "NIPTransfer",
+        "attributes": {
+            "amount": receipient_params[:amount],
+            "currency": "NGN",
+            "reason": ["description"],
+            "reference": "tthwubtvwt"
+        },
+        "relationships": {
+            "account": {
+                "data": {
+                    "id": source_id,
+                    "type": "DepositAccount"
+                }
+            },
+            "counterParty": {
+                "data": {
+                    "id": receipient_params["id"],
+                    "type": "CounterParty"
+                }
+            }
+        }
+    }
+}.to_json
+    begin
+        response = self.class.get("/payments/counterparties ", headers: @headers)
+        return response if response.success?
+        raise response['message'] || 'bad request'
+
+    rescue StandardError => e
+        return e.message.to_s || 'bad request'
+    end
+end
+
+def verify_transfer
+    begin
+        response = self.class.get("/verify/#{transferId}", headers: @headers)
+        return response if response.success?
+        raise response['message'] || 'bad request'
+
+    rescue StandardError => e
+        return e.message.to_s || 'bad request'
+    end
+end
+
+
+private
+
+def store_account_details(account_id, user_data)
+
+      new_account = Account.create(user_id: user_data[:user_id], postal_code: user_data[:postal_code],  bvn: user_data[:bvn], city: user_data[:city],  state: user_data[:state], dob: user_data[:dob], address: user_data[:address], account_id: account_id, vendor: user_data[:vendor])
+
+      if new_account.persisted?
+        new_account
+
+
+      else
+        raise new_account.errors.full_messages.to_sentence
+      end
 
 end
 

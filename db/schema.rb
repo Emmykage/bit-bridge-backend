@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_09_25_131448) do
+ActiveRecord::Schema[7.1].define(version: 2025_10_14_073909) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -36,6 +36,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_25_131448) do
     t.boolean "active", default: false
     t.integer "status", default: 0
     t.integer "gender", default: 0
+    t.date "dob"
     t.index ["account_id"], name: "index_accounts_on_account_id", unique: true
     t.index ["user_id"], name: "index_accounts_on_user_id"
   end
@@ -66,6 +67,17 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_25_131448) do
     t.uuid "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "bank_transactions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "description"
+    t.decimal "amount"
+    t.string "recipient_id"
+    t.string "transaction_id"
+    t.uuid "account_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_bank_transactions_on_account_id"
   end
 
   create_table "bill_orders", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -311,6 +323,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_25_131448) do
   add_foreign_key "accounts", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "bank_transactions", "accounts"
   add_foreign_key "bill_orders", "order_details"
   add_foreign_key "bill_orders", "users", on_delete: :nullify
   add_foreign_key "card_tokens", "order_items"
