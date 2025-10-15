@@ -70,25 +70,23 @@ module Api
         if user&.reset_password_period_valid?
 
 
-        if @user.update(password: user_params[:password])
-          render json: { data: UserSerializer.new(@user), message: 'password updated' }, status: :ok
-        else
-          render json: { message: @user.errors.full_messages.to_sentence }, status: :unprocessable_entity
+          if @user.update(password: user_params[:password])
+            render json: { data: UserSerializer.new(@user), message: 'password updated' }, status: :ok
+          else
+            render json: { message: @user.errors.full_messages.to_sentence }, status: :unprocessable_entity
 
-        end
+          end
         else
           render json: { message: 'Invalid or expired token' }, status: :unauthorized
         end
       end
 
       def user_update
-
-          if user.update(user_update_params) # don’t pass token itself
-            render json: { data: UserSerializer.new(user), message: 'User updated' }, status: :ok
-          else
-            render json: { message: user.errors.full_messages.to_sentence }, status: :unprocessable_entity
-          end
-
+        if user.update(user_update_params) # don’t pass token itself
+          render json: { data: UserSerializer.new(user), message: 'User updated' }, status: :ok
+        else
+          render json: { message: user.errors.full_messages.to_sentence }, status: :unprocessable_entity
+        end
       end
 
       def destroy

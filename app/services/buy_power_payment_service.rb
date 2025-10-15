@@ -183,9 +183,11 @@ class BuyPowerPaymentService
           raise response['message']
 
         elsif electric_bill_order.update(status: 'completed', payment_method: payment_method, use_commission: use_commission,
-                                            units: units, token: token, transaction_id: transaction_id, reason: message)
-          unless electric_bill_order.update(status: 'completed', payment_method: payment_method, use_commission: use_commission, units: units, token: token, transaction_id: transaction_id, reason: message)
-            electric_bill_order.update(status: 'disputed', reason: electric_bill_order&.full_messages&.to_sentence || message)
+                                         units: units, token: token, transaction_id: transaction_id, reason: message)
+          unless electric_bill_order.update(status: 'completed', payment_method: payment_method,
+                                            use_commission: use_commission, units: units, token: token, transaction_id: transaction_id, reason: message)
+            electric_bill_order.update(status: 'disputed',
+                                       reason: electric_bill_order&.full_messages&.to_sentence || message)
             raise electric_bill_order.full_messages.to_sentence
           end
         end
@@ -193,11 +195,9 @@ class BuyPowerPaymentService
         response['error']
         code = response['responseCode']
         electric_bill_order.update(status: 'declined', payment_method: payment_method, reason: response['message'])
-          case code
-            when 400, 422, 409, 500, 501, 502, 503, 403
-          else
-
-          end
+        case code
+        when 400, 422, 409, 500, 501, 502, 503, 403
+        end
         raise response['message']
       end
 

@@ -52,7 +52,7 @@ Rails.application.routes.draw do
         collection do
           post :verify_kyc
           get :get_account_number
-
+          get :user_accounts
         end
       end
       resources :transaction_records

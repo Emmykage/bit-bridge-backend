@@ -5,8 +5,17 @@ module Api
     class AccountsController < ApplicationController
       before_action :set_account, only: %i[show update destroy]
 
-      def create
+      def index
+   @accounts =  Account.all
+        render json: { data: ActiveModelSerializers::SerializableResource.new(@accounts) }, status: :ok
+      end
 
+
+        def user_accounts
+   @accounts =   current_user.accounts.all
+        render json: { data: ActiveModelSerializers::SerializableResource.new(@accounts) }, status: :ok
+      end
+        def create
         unless current_user.user_profile.present?
           return render json: { message: 'User profile not found: please update your account' },
                         status: :unprocessable_entity
@@ -47,7 +56,8 @@ module Api
         if service_response[:status] == :ok
           render json: { data: service_response[:response], messsage: 'Account created' }, status: :ok
         else
-          render json: { message: service_response[:message] || service_response[:response] }, status: :unprocessable_entity
+          render json: { message: service_response[:message] || service_response[:response] },
+                 status: :unprocessable_entity
         end
       end
 
@@ -73,11 +83,9 @@ module Api
         else
           render json: { message: service_response[:message] }, status: :unprocessable_entity
         end
-
       end
 
-
-        def verify_account
+      def verify_account
         service = AccountService.new
         service_response = service.verify_account
 
@@ -88,8 +96,8 @@ module Api
         else
           render json: { message: service_response[:message] }, status: :unprocessable_entity
         end
-
       end
+
       def create_counter_party
         service = AccountService.new
         service_response = service.create_counter_party(transfer_params)
@@ -101,7 +109,6 @@ module Api
         else
           render json: { message: service_response[:message] }, status: :unprocessable_entity
         end
-
       end
 
       def initiate_transfer
@@ -115,9 +122,7 @@ module Api
         else
           render json: { message: service_response[:message] }, status: :unprocessable_entity
         end
-
       end
-
 
       def get_account(user_id = null)
         accout_ref = params[:accountReference] || user_id
@@ -174,7 +179,6 @@ module Api
         account_info = current_user_info.merge(user_data)
         service_response = service.create_individual_account(account_info)
 
-        # binding.b
         if service_response[:status] == :ok
           render json: { data: service_response[:response], message: 'User Onboarded successfully' }, status: :ok
         else
@@ -206,7 +210,8 @@ module Api
 
       # POST /accounts
       def account_params
-        params.require(:account).permit(:vendor, :bvn, :currency, :account_name, :account_type, :address, :city, :state, :postal_code, :country, :active, :status, :gender, :dob)
+        params.require(:account).permit(:vendor, :bvn, :currency, :account_name, :account_type, :address, :city,
+                                        :state, :postal_code, :country, :active, :status, :gender, :dob)
       end
     end
   end
