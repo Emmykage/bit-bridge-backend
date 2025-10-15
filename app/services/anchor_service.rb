@@ -5,7 +5,7 @@ class AnchorService
 
   base_uri ENV['DEV_ANCHOR_BASE_URL'] || 'https://api.sandbox.getanchor.co/'
   def initialize
-    header_api_key = ENV['ANCHOR_API_KEY'] || '9P6wC.4aed16aee26886c2480fbe21d174d2a1973dddaa3d3cac7d5b8908b4e24999d841b8491ff77c8f6a6d9a278483363a2312aa'
+    header_api_key = ENV['DEV_ANCHOR_API_KEY'] || '9P6wC.4aed16aee26886c2480fbe21d174d2a1973dddaa3d3cac7d5b8908b4e24999d841b8491ff77c8f6a6d9a278483363a2312aa'
 
     @headers = {
       'x-anchor-key' => header_api_key,
