@@ -36,26 +36,12 @@ module Api
 
       def anchor
 
-        {
-        "id": "1740570000000000-anc_et",
-        "type": "customer.identification.approved",
-        "attributes": {
-          "createdAt": "2025-02-26T11:50:54.024588369"
-        },
-        "relationships": {
-          "customer": {
-            "data": {
-              "id": "173503000000000-anc_ind_cst",
-              "type": "IndividualCustomer"
-            }
-          }
-        }
-        }
+
         data = JSON.parse(request.raw_post)
         Rails.logger.info("✅  Anchor webhook json post: #{data}")
 
 
-        account_id = data&,dig("relationships", "customer", "data", "id")
+        account_id = data&.dig("relationships", "customer", "data", "id")
 
         if data["type"] == "customer.identification.approved"
           handleKycVerificatiion(account_id)
