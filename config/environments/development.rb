@@ -3,8 +3,7 @@
 require 'active_support/core_ext/integer/time'
 
 Rails.application.routes.default_url_options = {
-  host: 'localhost',
-  port: 3000
+  host: 'bit-bridge-backend.onrender.com'
 }
 
 Rails.application.configure do
@@ -15,8 +14,21 @@ Rails.application.configure do
   # since you don't have to restart the web server when you make code changes.
   config.enable_reloading = true
 
+  config.action_mailer.delivery_method = :smtp
+  host = 'bitbridgeglobal.com'
+  config.action_mailer.default_url_options = { host: host }
+
   # Do not eager load code on boot.
   config.eager_load = false
+
+    config.action_mailer.smtp_settings = {
+    address: 'smtp.hostinger.com',
+    port: 587,
+    user_name: 'support@bitbridgeglobal.com',
+    password: '@Support-bitbridgeglobal-123',
+    authentication: 'plain',
+    enable_starttls_auto: true
+  }
 
   # Show full error reports.
   config.consider_all_requests_local = true
@@ -38,8 +50,8 @@ Rails.application.configure do
   end
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
-  config.active_storage.service = :local
-  config.action_mailer.asset_host = 'http://localhost:3000'
+  config.active_storage.service = :amazon
+  config.action_mailer.asset_host = 'bitbridgeglobal.netlify.app'
 
   config.action_mailer.perform_caching = false
 
@@ -64,8 +76,8 @@ Rails.application.configure do
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
 
-  config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
-  config.action_mailer.delivery_method = :letter_opener
-  config.action_mailer.perform_deliveries = true
-  config.action_mailer.raise_delivery_errors = true
+  # config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
+  # config.action_mailer.delivery_method = :letter_opener
+  # config.action_mailer.perform_deliveries = true
+  # config.action_mailer.raise_delivery_errors = true
 end
