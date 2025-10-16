@@ -21,7 +21,7 @@ Rails.application.configure do
   # Do not eager load code on boot.
   config.eager_load = false
 
-    config.action_mailer.smtp_settings = {
+  config.action_mailer.smtp_settings = {
     address: 'smtp.hostinger.com',
     port: 587,
     user_name: 'support@bitbridgeglobal.com',

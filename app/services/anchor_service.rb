@@ -21,11 +21,11 @@ class AnchorService
     last_name    = user_data[:last_name]
     id           = user_data[:user_id]
     email = user_data[:email]
-    postal_code  = user_data[:postal_code]
-    bvn          = user_data[:bvn]
+    postal_code = user_data[:postal_code]
+    user_data[:bvn]
     city         = user_data[:city]
     state        = user_data[:state]
-    dob          = user_data[:dob]
+    user_data[:dob]
     phone_number = user_data[:phone_number]
     address      = user_data[:address]
 
@@ -212,6 +212,41 @@ class AnchorService
     end
   end
 
+  def get_inbound_transfer(transfer_id)
+    response = self.class.get("api/v1/inbound-transfers/#{transfer_id}", headers: @headers)
+
+    raise response['message'] || 'bad request' unless response.success?
+
+    receipient_id = response&.dig('relationships', 'account', 'data', 'id')
+    amount = response&.dig('attributes', 'amount')
+    sender = response&.dig('attributes', 'sourceAccountName')
+    address = response&.dig('attributes', 'sourceAccountNumber')
+    bank = response&.dig('attributes', 'sourceBank', 'name')
+
+    account = Account.find_by(useable_id: receipient_id)
+
+    user = account.user
+
+
+    transaction_params = {
+      wallet_id: user.wallet.id,
+      amount: amount,
+      address: address,
+      sender: sender,
+      bank_code: bank,
+      bank: bank,
+      transaction_type: 'deposit',
+      status: 'approved',
+      coin_type: 'bank'
+    }
+
+
+    transaction = Transaction.new(transaction_params)
+    raise transaction.errors.full_messages.to_sentence unless transaction.persisted?
+  rescue StandardError => e
+    puts e.message
+  end
+
   def initiate_transfer(receipient_params, source_id)
     {
       "data": {
@@ -268,4 +303,6 @@ class AnchorService
 
     new_account
   end
+
+  def create_record(model, params); end
 end

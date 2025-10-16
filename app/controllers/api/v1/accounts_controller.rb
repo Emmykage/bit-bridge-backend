@@ -6,16 +6,16 @@ module Api
       before_action :set_account, only: %i[show update destroy]
 
       def index
-   @accounts =  Account.all
+        @accounts = Account.all
         render json: { data: ActiveModelSerializers::SerializableResource.new(@accounts) }, status: :ok
       end
 
-
-        def user_accounts
-   @accounts =   current_user.accounts.all
+      def user_accounts
+        @accounts = current_user.accounts.all
         render json: { data: ActiveModelSerializers::SerializableResource.new(@accounts) }, status: :ok
       end
-        def create
+
+      def create
         unless current_user.user_profile.present?
           return render json: { message: 'User profile not found: please update your account' },
                         status: :unprocessable_entity

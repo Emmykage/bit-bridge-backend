@@ -35,18 +35,25 @@ module Api
       end
 
       def anchor
-
-
         data = JSON.parse(request.raw_post)
         Rails.logger.info("✅  Anchor webhook json post: #{data}")
 
 
-        account_id = data&.dig("relationships", "customer", "data", "id")
 
-        if data["type"] == "customer.identification.approved"
-          handleKycVerificatiion(account_id)
 
+
+        account_id = data&.dig('relationships', 'customer', 'data', 'id')
+        transfer_id = data('relationships', 'transfer', 'data', 'id')
+
+        handleKycVerificatiion(account_id) if data['type'] == 'customer.identification.approved'
+
+        transfer_id if data['type'] == 'nip.inbound.received'
+
+        if data['type'] == 'nip.inbound.completed'
+          service = AnchorService.new
+          service.get_inbound_transfer(transfer_id)
         end
+
 
 
 
@@ -58,10 +65,8 @@ module Api
       private
 
       def handleKycVerificatiion(account_id)
-           account = Account.find_by(account_id: account_id)
-          account.update(status: "verified")
-
-
+        account = Account.find_by(account_id: account_id)
+        account.update(status: 'verified')
       end
 
       def handleTransactionConfirmation(event_data)
