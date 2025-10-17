@@ -112,27 +112,27 @@ module Api
       end
 
       def create_counter_party
-        service = AccountService.new
-        service_response = service.create_counter_party(transfer_params)
+        service = AnchorService.new
+        service_response = service.create_counter_party(account_params)
 
         service_response[:response]
 
         if service_response[:status] == :ok
-          render json: { data: service_response[:response], messsage: 'Bank fetched' }, status: :ok
+          render json: { data: service_response[:data], messsage: 'Counter Party created' }, status: :ok
         else
           render json: { message: service_response[:message] }, status: :unprocessable_entity
         end
       end
 
       def initiate_fund_transfer
-        service = AccountService.new
+        service = AnchorService.new
         anchor_account = current_user.accounts.find_by(vendor: 'anchor')
 
-        if anchor_account.nil? || !anchor_account.useable_id.nil?
-          return render json: { message: 'No Anchor Account Present' }, status: :not
+        if anchor_account.nil? || anchor_account.useable_id.nil?
+          return render json: { message: 'No Anchor Account Present' }, status: :not_found
         end
 
-        transfer_params = transfer_params.to_h.symbolize_keys.merge(source_id: anchor_account.useable_id, account_id: anchor_account.id,
+        transfer_params = account_params.to_h.symbolize_keys.merge(source_id: anchor_account.useable_id, source_name: anchor_account.account_name, account_id: anchor_account.id, wallet_id: current_user.wallet.id, source_account_number: anchor_account.account_number,
                                                                     account_name: anchor_account.account_name)
         service_response = service.initiate_transfer(transfer_params)
 
@@ -256,8 +256,8 @@ module Api
 
       # POST /accounts
       def account_params
-        params.require(:account).permit(:vendor, :bvn, :currency, :account_name, :account_type, :address, :city,
-                                        :state, :postal_code, :country, :active, :status, :gender, :dob)
+        params.require(:account).permit(:vendor, :bvn, :currency, :account_name, :account_type, :address, :city, :counter_party_id, :inter_bank, :amount, :description,
+                                        :state, :postal_code, :country, :active, :status, :gender, :dob, :bank_code, :bank, :account_number)
       end
     end
   end

@@ -56,8 +56,10 @@ Rails.application.routes.draw do
           get :get_user_account_detail
           get :get_account_details
           get :get_banks
+
           get :verify_transfer
           post :initiate_fund_transfer
+          post :create_counter_party
         end
 
         member do

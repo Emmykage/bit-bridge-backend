@@ -164,26 +164,19 @@ class AnchorService
   end
 
   def inboundDepositedFund(inboundTransferId)
-
-    begin
-      response = self.class.get("api/v1/inbound-transfers/#{inboundTransferId}", headers: @headers)
+    response = self.class.get("api/v1/inbound-transfers/#{inboundTransferId}", headers: @headers)
     return response if response.success?
 
     raise response['message'] || 'bad request'
-    rescue StandardError => e
-      e.message.to_s || 'bad request'
-    end
+  rescue StandardError => e
+    e.message.to_s || 'bad request'
   end
 
   def fetch_bank_list
-  begin
-    response = fetch('banks', nil, nil)
-    return response
+    fetch('get', 'banks', nil, nil)
   rescue StandardError => e
     { message: e.message.to_s || 'bad request' }
   end
-end
-
 
   def verify_account_details(bank_id, account_number)
     response = self.class.get("/payments/verify-account/#{bank_id}/#{account_number} ", headers: @headers)
@@ -197,24 +190,25 @@ end
   end
 
   def create_counter_party(transfer_params)
+    account_name = transfer_params['account_name'].present? ? transfer_params['account_name'] : 'nil'
     body = {
-      "data": {
-        "type": 'CounterParty',
-        "attributes": {
-          "bankCode": transfer_params['bank_code'],
-          "accountName": transfer_params['account_name'],
-          "accountNumber": transfer_params['account_number'],
-          "verifyName": true
+      data: {
+        type: 'CounterParty',
+        attributes: {
+          bankCode: transfer_params['bank_code'],
+          accountNumber: transfer_params['account_number'],
+          verifyName: true
         }
       }
-    }.to_json
+    }
+
+    # Add accountName only if present
+    # body[:data][:attributes][:accountName] = transfer_params['account_name'] if transfer_params['account_name'].present?
+    body[:data][:attributes][:accountName] = account_name
+    body = body.to_json
+
     begin
-
-      response =      fetch("post","counterparties", nil, body)
-      response = self.class.get('/ ', headers: @headers, body: body)
-      return response if response.success?
-
-      raise response['message'] || 'bad request'
+      fetch('post', 'counterparties', nil, body)
     rescue StandardError => e
       { message: e.message.to_s || 'bad request', status: :bad_request }
     end
@@ -256,50 +250,51 @@ end
   end
 
   def initiate_transfer(transfer_params)
-
-    transfer_type =  transfer_params[:anchor] ? "BookTransfer" : "NIPTransfer"
-
-    initials = transaction_params[:account_name].to_s.strip.split(' ').map { |name| name[0] }.join.upcase
-    timestamp = Time.now.to_i
-      account_number = transfer_params[:account_number]
-
-    reference = "fbg-#{Time.now.to_i}-#{initials}"
+    transfer_type = transfer_params[:inter_bank] ? 'BookTransfer' : 'NIPTransfer'
+    recipient_name = transfer_params[:account_name]
+    account_number = transfer_params[:account_number]
+    source_name = transfer_params[:source_name]
+    source_account_number = transfer_params[:source_account_number]
+    initials = recipient_name.to_s.strip.split(' ').map { |name| name[0] }.join.downcase
+    reference = "fbg#{Time.now.to_i}#{initials}"
     counter_party_id = transfer_params[:counter_party_id]
-    counter_party_id_type = "CounterParty"
-     recipient    = transfer_params[:account_name]
-      bank_code    = transfer_params[:bank_code]
-      bank = transaction_params["bank"] || "anchor"
-      receiver__bank = transaction_params["customer_bank"] || "anchor"
-    relationships = transfer_type == "NIPTransfer" ?
-      {
-          account: {
-            data: {
-              id: transaction_params[:source_id],
-              type: 'DepositAccount'
-            }
-          },
-          counterParty: {
-            data: {
-              id: counter_party_id,
-              type: counter_party_id_type
-            }
-          }
-        }: {
-      destinationAccount: {
-        data: {
-          type: "SubAccount",
-          id: account_number
-        }
-      },
-      account: {
-        data: {
-          type: "SubAccount",
-          id: transaction_params[:source_id]
-        }
-      }
-    }
+    counter_party_id_type = 'CounterParty'
+    bank_code = transfer_params[:bank_code]
+    bank = 'anchor'
+    recipient_bank = transfer_params['bank']
+    relationships = if transfer_type == 'NIPTransfer'
+                      {
+                        account: {
+                          data: {
+                            id: transfer_params[:source_id],
+                            type: 'DepositAccount'
+                          }
+                        },
+                        counterParty: {
+                          data: {
+                            id: counter_party_id,
+                            type: counter_party_id_type
+                          }
+                        }
+                      }
+                    else
+                      {
+                        destinationAccount: {
+                          data: {
+                            type: 'SubAccount',
+                            id: account_number
+                          }
+                        },
+                        account: {
+                          data: {
+                            type: 'SubAccount',
+                            id: transfer_params[:source_id]
+                          }
+                        }
+                      }
+                    end
 
-    #source_id is usuable_id from account model
+    # source_id is usuable_id from account model
     body = {
       data: {
         type: transfer_type,
@@ -313,23 +308,24 @@ end
       }
     }.to_json
 
+
     begin
       # Remove trailing space in URL and make POST request
-      response = self.class.post('api/v1/transfers', headers: @headers, body: body)
-      raise(response['message'] || 'Bad request') unless response.success?
+      response = fetch('post', 'transfers', nil, body)
 
       # Use dig to safely access nested JSON keys
-      status       = response.dig('data', 'attributes', 'status')&.downcase
-      amount       = response.dig('data', 'attributes', 'amount')
-      description  = response.dig('data', 'attributes', 'reason')
-
+      status       = response.dig(:data, 'attributes', 'status')&.downcase
+      amount       = response.dig(:data, 'attributes', 'amount')
+      description  = response.dig(:data, 'attributes', 'reason')
 
       # Example: create a transaction record (assuming `transaction` is a model)
       transaction = Transaction.new(
+        wallet_id: transfer_params[:wallet_id],
         account_id: transfer_params[:account_id],
         status: status,
         amount: amount,
-        account_name: recipient,
+        account_name: source_name,
+        address: source_account_number,
         transaction_type: 'withdrawal',
         unique_transaction_id: counter_party_id,
         bank: bank
@@ -338,56 +334,55 @@ end
       raise transaction.errors.full_messages.to_sentence unless transaction.valid?
 
       transaction.save!
-      transaction.transaction_records.create!(
-        status: 'pending',
+      transaction.create_transaction_record!(
+        status: status,
         description: description,
-        customer_name: recipient,
+        customer_name: recipient_name,
         reference: reference,
         account_number: account_number,
         bank_code: bank_code,
-        bank:  receiver__bank
-
+        bank: recipient_bank,
+        amount: amount
       )
+
       { data: transaction, status: :ok }
     rescue StandardError => e
+
       { message: e.message.presence || 'Bad request', status: :bad_request }
     end
   end
 
   def verify_transfer_request(transferId)
     response = self.class.get("/verify/#{transferId}", headers: @headers)
-    return {data: response["data"], status: :ok} if response.success?
+    return { data: response['data'], status: :ok } if response.success?
 
     raise response['message'] || 'bad request'
   rescue StandardError => e
     { message: e.message.to_s || 'bad request', status: :bad_request }
   end
 
-
   def fetch_all_account_details
-    response = self.class.get("/api/v1/account-numbers", headers: @headers)
+    response = self.class.get('/api/v1/account-numbers', headers: @headers)
     raise response['message'] || 'bad request' unless response.success?
+
     { data: response['data'], status: :ok }
   rescue StandardError => e
-
     { message: e.message.to_s || 'bad request', status: :bad_request }
   end
 
-
   def fetch_account_detail(account_id, view_account = true)
-
     base_url = "/api/v1/account/#{account_id}"
 
-    query = view_account ? "?include=AccountNumber" : ""
+    query = view_account ? '?include=AccountNumber' : ''
     # query = accountView ? { include: "AccountNumber" } : {}
 
     url = base_url + query
     response = self.class.get(url, headers: @headers)
 
-    raise response.dig("errors", 0, 'detail' ) || 'bad request' unless response.success?
+    raise response.dig('errors', 0, 'detail') || 'bad request' unless response.success?
+
     { data: response['data'], status: :ok }
   rescue StandardError => e
-
     { message: e.message.to_s || 'bad request', status: :bad_request }
   end
 
@@ -403,48 +398,24 @@ end
     new_account
   end
 
-  # def fetch(api, params, body)
-
-  #   begin
-  #   response = self.class.get(api + params, headers: @headers, body: body)
-
-
-
-  #   return {data: response["data"], status: :ok} if response.success?
-  #       binding.b
-
-
-  #   raise response.dig("errors", 0, 'detail' )|| 'bad request'
-
-  #   rescue StandardError => e
-
-
-  #     raise e.message.to_s || 'bad request'
-
-  #   end
-
-  # end
-
   def fetch(method, api, params = '', body = nil)
- response =
-    case method.downcase
-    when 'get'
-      self.class.get("/api/v1/#{api}#{params}", headers: @headers, body: body)
-    when 'post'
-      self.class.post("/api/v1/#{api}#{params}", headers: @headers, body: body)
+    response =
+      case method.downcase
+      when 'get'
+        self.class.get("/api/v1/#{api}#{params}", headers: @headers, body: body)
+      when 'post'
+        self.class.post("/api/v1/#{api}#{params}", headers: @headers, body: body)
+      else
+        raise StandardError, 'Unsupported HTTP method'
+      end
+
+    if response.success?
+      { data: response['data'], status: :ok }
     else
-      raise StandardError, 'Unsupported HTTP method'
+      error_message = response.dig('errors', 0, 'detail') || response.message || 'Bad request'
+      raise StandardError, error_message
     end
-
-  if response.success?
-    { data: response['data'], status: :ok }
-  else
-    error_message = response.dig('errors', 0, 'detail') || response.message || 'Bad request'
-    raise StandardError, error_message
+  rescue StandardError => e
+    raise StandardError, e.message
   end
-rescue StandardError => e
-  raise StandardError, e.message
-end
-
-
 end
