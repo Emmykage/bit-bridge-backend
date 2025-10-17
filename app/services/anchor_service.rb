@@ -301,7 +301,7 @@ class AnchorService
         attributes: {
           amount: transfer_params[:amount],
           currency: 'NGN',
-          reason: transfer_params[:description],
+          reason: transfer_params[:description].blank? ? 'Fund Transfer' : transfer_params[:description],
           reference: reference
         },
         relationships: relationships
