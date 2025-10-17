@@ -72,14 +72,14 @@ module Api
         end
       end
 
-      def get_bank
-        service = AccountService.new
-        service_response = service.get_bank
+      def get_banks
+        service = AnchorService.new
+        service_response = service.fetch_bank_list
 
         service_response[:response]
 
         if service_response[:status] == :ok
-          render json: { data: service_response[:response], messsage: 'Bank fetched' }, status: :ok
+          render json: { data: service_response[:data], messsage: 'Bank fetched' }, status: :ok
         else
           render json: { message: service_response[:message] }, status: :unprocessable_entity
         end
@@ -157,7 +157,7 @@ module Api
         end
       end
 
-      def get_account_detail
+      def get_user_account_detail
         account = Account.find_by(user_id: current_user.id, vendor: 'anchor')
 
         return { message: 'No Anchor Account Present', status: :not_found } unless account
@@ -174,7 +174,6 @@ module Api
       end
 
       def get_account_details
-
         service = AnchorService.new
         service_response = service.fetch_all_account_details
         service_response[:response]

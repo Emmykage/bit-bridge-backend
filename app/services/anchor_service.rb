@@ -164,22 +164,26 @@ class AnchorService
   end
 
   def inboundDepositedFund(inboundTransferId)
-    response = self.class.get("api/v1/inbound-transfers/#{inboundTransferId}", headers: @headers)
+
+    begin
+      response = self.class.get("api/v1/inbound-transfers/#{inboundTransferId}", headers: @headers)
     return response if response.success?
 
     raise response['message'] || 'bad request'
-  rescue StandardError => e
-    e.message.to_s || 'bad request'
+    rescue StandardError => e
+      e.message.to_s || 'bad request'
+    end
   end
 
-  def get_bank
-    response = self.class.get('/banks', headers: @headers)
-    return response if response.success?
-
-    raise response['message'] || 'bad request'
+  def fetch_bank_list
+  begin
+    response = fetch('banks', nil, nil)
+    return response
   rescue StandardError => e
-    e.message.to_s || 'bad request'
+    { message: e.message.to_s || 'bad request' }
   end
+end
+
 
   def verify_account_details(bank_id, account_number)
     response = self.class.get("/payments/verify-account/#{bank_id}/#{account_number} ", headers: @headers)
@@ -205,7 +209,9 @@ class AnchorService
       }
     }.to_json
     begin
-      response = self.class.get('/payments/counterparties ', headers: @headers, body: body)
+
+      response =      fetch("post","counterparties", nil, body)
+      response = self.class.get('/ ', headers: @headers, body: body)
       return response if response.success?
 
       raise response['message'] || 'bad request'
@@ -259,7 +265,7 @@ class AnchorService
 
     reference = "fbg-#{Time.now.to_i}-#{initials}"
     counter_party_id = transfer_params[:counter_party_id]
-    counter_party_id_type: "CounterParty"
+    counter_party_id_type = "CounterParty"
      recipient    = transfer_params[:account_name]
       bank_code    = transfer_params[:bank_code]
       bank = transaction_params["bank"] || "anchor"
@@ -325,7 +331,7 @@ class AnchorService
         amount: amount,
         account_name: recipient,
         transaction_type: 'withdrawal',
-        unique_transaction_id: counter_party_id
+        unique_transaction_id: counter_party_id,
         bank: bank
       )
 
@@ -336,8 +342,8 @@ class AnchorService
         status: 'pending',
         description: description,
         customer_name: recipient,
-        reference: reference
-        account_number: account_number
+        reference: reference,
+        account_number: account_number,
         bank_code: bank_code,
         bank:  receiver__bank
 
@@ -377,7 +383,8 @@ class AnchorService
 
     url = base_url + query
     response = self.class.get(url, headers: @headers)
-    raise response['message'] || 'bad request' unless response.success?
+
+    raise response.dig("errors", 0, 'detail' ) || 'bad request' unless response.success?
     { data: response['data'], status: :ok }
   rescue StandardError => e
 
@@ -396,5 +403,48 @@ class AnchorService
     new_account
   end
 
-  def create_record(model, params); end
+  # def fetch(api, params, body)
+
+  #   begin
+  #   response = self.class.get(api + params, headers: @headers, body: body)
+
+
+
+  #   return {data: response["data"], status: :ok} if response.success?
+  #       binding.b
+
+
+  #   raise response.dig("errors", 0, 'detail' )|| 'bad request'
+
+  #   rescue StandardError => e
+
+
+  #     raise e.message.to_s || 'bad request'
+
+  #   end
+
+  # end
+
+  def fetch(method, api, params = '', body = nil)
+ response =
+    case method.downcase
+    when 'get'
+      self.class.get("/api/v1/#{api}#{params}", headers: @headers, body: body)
+    when 'post'
+      self.class.post("/api/v1/#{api}#{params}", headers: @headers, body: body)
+    else
+      raise StandardError, 'Unsupported HTTP method'
+    end
+
+  if response.success?
+    { data: response['data'], status: :ok }
+  else
+    error_message = response.dig('errors', 0, 'detail') || response.message || 'Bad request'
+    raise StandardError, error_message
+  end
+rescue StandardError => e
+  raise StandardError, e.message
+end
+
+
 end
