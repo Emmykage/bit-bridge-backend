@@ -6,6 +6,8 @@ class Transaction < ApplicationRecord
   has_one :user, through: :wallet
   has_many :accounts, through: :user
   has_one :transaction_record, foreign_key: 'exchange_id'
+  belongs_to :account, optional: true
+
 
   attr_accessor :coupon_code
 

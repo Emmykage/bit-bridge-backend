@@ -164,7 +164,7 @@ class AnchorService
   end
 
   def inboundDepositedFund(inboundTransferId)
-    response = self.class.get("/inbound-transfers/#{inboundTransferId}", headers: @headers)
+    response = self.class.get("api/v1/inbound-transfers/#{inboundTransferId}", headers: @headers)
     return response if response.success?
 
     raise response['message'] || 'bad request'
@@ -181,17 +181,19 @@ class AnchorService
     e.message.to_s || 'bad request'
   end
 
-  def verify_account
-    response = self.class.get('/payments/verify-account/000014/0000000010 ', headers: @headers)
-    return response if response.success?
+  def verify_account_details(bank_id, account_number)
+    response = self.class.get("/payments/verify-account/#{bank_id}/#{account_number} ", headers: @headers)
 
-    raise response['message'] || 'bad request'
+
+    raise response['message'] || 'bad request' unless response.success?
+
+    { data: response, status: :ok }
   rescue StandardError => e
-    e.message.to_s || 'bad request'
+    { message: e.message.to_s || 'bad request', status: :bad_request }
   end
 
   def create_counter_party(transfer_params)
-    {
+    body = {
       "data": {
         "type": 'CounterParty',
         "attributes": {
@@ -203,12 +205,12 @@ class AnchorService
       }
     }.to_json
     begin
-      response = self.class.get('/payments/counterparties ', headers: @headers)
+      response = self.class.get('/payments/counterparties ', headers: @headers, body: body)
       return response if response.success?
 
       raise response['message'] || 'bad request'
     rescue StandardError => e
-      e.message.to_s || 'bad request'
+      { message: e.message.to_s || 'bad request', status: :bad_request }
     end
   end
 
@@ -232,7 +234,7 @@ class AnchorService
       wallet_id: user.wallet.id,
       amount: amount,
       address: address,
-      sender: sender,
+      account_name: sender,
       bank_code: bank,
       bank: bank,
       transaction_type: 'deposit',
@@ -247,49 +249,139 @@ class AnchorService
     puts e.message
   end
 
-  def initiate_transfer(receipient_params, source_id)
-    {
-      "data": {
-        "type": 'NIPTransfer',
-        "attributes": {
-          "amount": receipient_params[:amount],
-          "currency": 'NGN',
-          "reason": ['description'],
-          "reference": 'tthwubtvwt'
-        },
-        "relationships": {
-          "account": {
-            "data": {
-              "id": source_id,
-              "type": 'DepositAccount'
+  def initiate_transfer(transfer_params)
+
+    transfer_type =  transfer_params[:anchor] ? "BookTransfer" : "NIPTransfer"
+
+    initials = transaction_params[:account_name].to_s.strip.split(' ').map { |name| name[0] }.join.upcase
+    timestamp = Time.now.to_i
+      account_number = transfer_params[:account_number]
+
+    reference = "fbg-#{Time.now.to_i}-#{initials}"
+    counter_party_id = transfer_params[:counter_party_id]
+    counter_party_id_type: "CounterParty"
+     recipient    = transfer_params[:account_name]
+      bank_code    = transfer_params[:bank_code]
+      bank = transaction_params["bank"] || "anchor"
+      receiver__bank = transaction_params["customer_bank"] || "anchor"
+    relationships = transfer_type == "NIPTransfer" ?
+      {
+          account: {
+            data: {
+              id: transaction_params[:source_id],
+              type: 'DepositAccount'
             }
           },
-          "counterParty": {
-            "data": {
-              "id": receipient_params['id'],
-              "type": 'CounterParty'
+          counterParty: {
+            data: {
+              id: counter_party_id,
+              type: counter_party_id_type
             }
           }
+        }: {
+      destinationAccount: {
+        data: {
+          type: "SubAccount",
+          id: account_number
+        }
+      },
+      account: {
+        data: {
+          type: "SubAccount",
+          id: transaction_params[:source_id]
         }
       }
-    }.to_json
-    begin
-      response = self.class.get('/payments/counterparties ', headers: @headers)
-      return response if response.success?
+    }
 
-      raise response['message'] || 'bad request'
+    #source_id is usuable_id from account model
+    body = {
+      data: {
+        type: transfer_type,
+        attributes: {
+          amount: transfer_params[:amount],
+          currency: 'NGN',
+          reason: transfer_params[:description],
+          reference: reference
+        },
+        relationships: relationships
+      }
+    }.to_json
+
+    begin
+      # Remove trailing space in URL and make POST request
+      response = self.class.post('api/v1/transfers', headers: @headers, body: body)
+      raise(response['message'] || 'Bad request') unless response.success?
+
+      # Use dig to safely access nested JSON keys
+      status       = response.dig('data', 'attributes', 'status')&.downcase
+      amount       = response.dig('data', 'attributes', 'amount')
+      description  = response.dig('data', 'attributes', 'reason')
+
+
+      # Example: create a transaction record (assuming `transaction` is a model)
+      transaction = Transaction.new(
+        account_id: transfer_params[:account_id],
+        status: status,
+        amount: amount,
+        account_name: recipient,
+        transaction_type: 'withdrawal',
+        unique_transaction_id: counter_party_id
+        bank: bank
+      )
+
+      raise transaction.errors.full_messages.to_sentence unless transaction.valid?
+
+      transaction.save!
+      transaction.transaction_records.create!(
+        status: 'pending',
+        description: description,
+        customer_name: recipient,
+        reference: reference
+        account_number: account_number
+        bank_code: bank_code,
+        bank:  receiver__bank
+
+      )
+      { data: transaction, status: :ok }
     rescue StandardError => e
-      e.message.to_s || 'bad request'
+      { message: e.message.presence || 'Bad request', status: :bad_request }
     end
   end
 
-  def verify_transfer
+  def verify_transfer_request(transferId)
     response = self.class.get("/verify/#{transferId}", headers: @headers)
-    return response if response.success?
+    return {data: response["data"], status: :ok} if response.success?
 
     raise response['message'] || 'bad request'
   rescue StandardError => e
-    e.message.to_s || 'bad request'
+    { message: e.message.to_s || 'bad request', status: :bad_request }
+  end
+
+
+  def fetch_all_account_details
+    response = self.class.get("/api/v1/account-numbers", headers: @headers)
+    raise response['message'] || 'bad request' unless response.success?
+    { data: response['data'], status: :ok }
+  rescue StandardError => e
+
+    { message: e.message.to_s || 'bad request', status: :bad_request }
+  end
+
+
+  def fetch_account_detail(account_id, view_account = true)
+
+    base_url = "/api/v1/account/#{account_id}"
+
+    query = view_account ? "?include=AccountNumber" : ""
+    # query = accountView ? { include: "AccountNumber" } : {}
+
+    url = base_url + query
+    response = self.class.get(url, headers: @headers)
+    raise response['message'] || 'bad request' unless response.success?
+    { data: response['data'], status: :ok }
+  rescue StandardError => e
+
+    { message: e.message.to_s || 'bad request', status: :bad_request }
   end
 
 

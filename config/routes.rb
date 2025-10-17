@@ -53,6 +53,14 @@ Rails.application.routes.draw do
           post :verify_kyc
           get :get_account_number
           get :user_accounts
+          get :get_account_detail
+          get :get_account_details
+          get :verify_transfer
+          post :initiate_fund_transfer
+        end
+
+        member do
+          get :verify_transfer
         end
       end
       resources :transaction_records

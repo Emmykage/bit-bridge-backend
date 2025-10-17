@@ -98,6 +98,19 @@ module Api
         end
       end
 
+      def verify_transfer
+        transfer_id = params[:transfer_id]
+        return render json: { message: 'transfer_id is required' }, status: :unprocessable
+        service = AccountService.new
+        service_response = service.verify_transfer_request(transfer_id)
+
+        if service_response[:status] == :ok
+          render json: { data: service_response[:response], messsage: 'Bank fetched' }, status: :ok
+        else
+          render json: { message: service_response[:message] }, status: :unprocessable_entity
+        end
+      end
+
       def create_counter_party
         service = AccountService.new
         service_response = service.create_counter_party(transfer_params)
@@ -111,14 +124,20 @@ module Api
         end
       end
 
-      def initiate_transfer
+      def initiate_fund_transfer
         service = AccountService.new
+        anchor_account = current_user.accounts.find_by(vendor: 'anchor')
+
+        if anchor_account.nil? || !anchor_account.useable_id.nil?
+          return render json: { message: 'No Anchor Account Present' }, status: :not
+        end
+
+        transfer_params = transfer_params.to_h.symbolize_keys.merge(source_id: anchor_account.useable_id, account_id: anchor_account.id,
+                                                                    account_name: anchor_account.account_name)
         service_response = service.initiate_transfer(transfer_params)
 
-        service_response[:response]
-
         if service_response[:status] == :ok
-          render json: { data: service_response[:response], messsage: 'Bank fetched' }, status: :ok
+          render json: { data: service_response[:data], message: 'Fund has been sent' }, status: :ok
         else
           render json: { message: service_response[:message] }, status: :unprocessable_entity
         end
@@ -135,6 +154,35 @@ module Api
           render json: { data: service_response[:response] }, status: :ok
         else
           render json: { message: service_response[:message] }, status: :unprocessable_entity
+        end
+      end
+
+      def get_account_detail
+        account = Account.find_by(user_id: current_user.id, vendor: 'anchor')
+
+        return { message: 'No Anchor Account Present', status: :not_found } unless account
+
+        service = AnchorService.new
+        service_response = service.fetch_account_detail(account.useable_id, true)
+        service_response[:response]
+        if service_response[:status] == :ok
+          render json: { data: service_response[:data], messsage: 'Account Numbers fetched' }, status: :ok
+        else
+          render json: { message: service_response[:message] || service_response[:response] },
+                 status: :unprocessable_entity
+        end
+      end
+
+      def get_account_details
+
+        service = AnchorService.new
+        service_response = service.fetch_all_account_details
+        service_response[:response]
+        if service_response[:status] == :ok
+          render json: { data: service_response[:data], messsage: 'Account Numbers fetched' }, status: :ok
+        else
+          render json: { message: service_response[:message] || service_response[:response] },
+                 status: :unprocessable_entity
         end
       end
 
@@ -166,10 +214,6 @@ module Api
           render json: { message: service_response[:message] }, status: :unprocessable_entity
         end
       end
-
-
-      private
-
 
       def create_anchor_account
         service = AnchorService.new
@@ -207,6 +251,9 @@ module Api
           render json: { message: service_response[:message] }, status: :unprocessable_entity
         end
       end
+
+      private
+
 
       # POST /accounts
       def account_params

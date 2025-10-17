@@ -36,14 +36,15 @@ module Api
 
       def anchor
         data = JSON.parse(request.raw_post)
-        Rails.logger.info("✅  Anchor webhook json post: #{data}")
-
-
-
+        data.dig('relationships', 'data', 'type')
 
 
         account_id = data&.dig('relationships', 'customer', 'data', 'id')
-        transfer_id = data('relationships', 'transfer', 'data', 'id')
+        transfer_id = data.dig('relationships', 'transfer', 'data', 'id')
+
+        Rails.logger.info("✅  Anchor webhook Data TYPE: #{data['type']}")
+        Rails.logger.info("✅  Anchor webhook json post: #{data}")
+
 
         handleKycVerificatiion(account_id) if data['type'] == 'customer.identification.approved'
 
@@ -52,6 +53,12 @@ module Api
         if data['type'] == 'nip.inbound.completed'
           service = AnchorService.new
           service.get_inbound_transfer(transfer_id)
+        end
+
+        if data['type'] == 'nip.transfer.successful'
+          Rails.logger.info("✅  Anchor webhook transfer successful data: #{data}")
+          AnchorService.new
+          # service.get_transfer_details(transfer_id)
         end
 
 
@@ -98,7 +105,7 @@ module Api
           wallet_id: user.wallet.id,
           amount: payment_info['amountPaid'],
           address: payment_info['accountNumber'],
-          sender: payment_info['accountName'],
+          account_name: payment_info['accountName'],
           bank_code: payment_info['bankCode'],
           transaction_type: 'deposit',
           status: 'approved',
