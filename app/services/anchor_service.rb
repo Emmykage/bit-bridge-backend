@@ -371,17 +371,13 @@ class AnchorService
   end
 
   def fetch_account_detail(account_id, view_account = true)
-    base_url = "/api/v1/account/#{account_id}"
+    base_url = "accounts/#{account_id}"
 
-    query = view_account ? '?include=AccountNumber' : ''
-    # query = accountView ? { include: "AccountNumber" } : {}
+    query = view_account ? "?#{{ include: "AccountNumber" }.to_query} ": ''
 
     url = base_url + query
-    response = self.class.get(url, headers: @headers)
-
-    raise response.dig('errors', 0, 'detail') || 'bad request' unless response.success?
-
-    { data: response['data'], status: :ok }
+    response = fetch("get", base_url, query, nil)
+   return response
   rescue StandardError => e
     { message: e.message.to_s || 'bad request', status: :bad_request }
   end
