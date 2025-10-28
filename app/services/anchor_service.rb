@@ -411,7 +411,6 @@ class AnchorService
 
     user = account.user
 
-    # Rails.logger.info("✅  Anchor webhook: ======================== #{account_id}")
 
 
 
@@ -432,7 +431,8 @@ class AnchorService
 
     raise transaction.errors.full_messages.to_sentence unless transaction.save
 
-    puts "Transaction saved successfully: #{transaction.id}"
+    Rails.logger.info("✅ Transaction saved successfully #{transaction.id}")
+
 
 
 
