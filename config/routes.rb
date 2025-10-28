@@ -37,6 +37,7 @@ Rails.application.routes.draw do
       # Define your API routes here
 
       post 'monnify/webhook', to: 'webhooks#monnify'
+      post 'anchor/webhook', to: 'webhooks#anchor'
       # resources :webhooks do
       #   collection do
       #     post :monnify
