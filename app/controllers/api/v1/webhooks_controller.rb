@@ -58,15 +58,19 @@ module Api
           service.get_inbound_transfer(transfer_id)
 
         when 'nip.transfer.successful'
-          Rails.logger.info("✅  Anchor webhook transfer successful data: #{data}")
+          # Rails.logger.info("✅  Anchor webhook transfer successful data: #{data}")
           service.confirm_transfer_withdrawal(data)
 
         when 'transaction.created'
-          Rails.logger.info("✅  Anchor webhook: Initiatetransaction")
+          # Rails.logger.info("✅  Anchor webhook: Initiatetransaction")
           # AnchorService.new
 
+        when 'payment.received'
+          # Rails.logger.info("✅  Anchor webhook: Payment Received")
+          # service.fund_deposit_account(data)
+
         when 'payment.settled'
-          Rails.logger.info("✅  Anchor webhook: Transfer successful- deposit")
+          # Rails.logger.info("✅  Anchor webhook: Transfer successful- deposit")
           service.fund_deposit_account(data)
         else
           Rails.logger.info('✅  Anchor webhook: No Option')
