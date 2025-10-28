@@ -314,7 +314,7 @@ class AnchorService
       response = fetch('post', 'transfers', nil, body)
 
       # Use dig to safely access nested JSON keys
-      transfer_id       = response.dig(:data, 'id')
+      transfer_id = response.dig(:data, 'id')
       status       = response.dig(:data, 'attributes', 'status')&.downcase
       amount       = response.dig(:data, 'attributes', 'amount')
       description  = response.dig(:data, 'attributes', 'reason')
@@ -381,8 +381,6 @@ class AnchorService
   end
 
   def fund_deposit_account(data)
-
-
     account_id = data.dig('attributes', 'payment', 'settlementAccount', 'accountId')
 
     Rails.logger.info("✅  Anchor webhook userId: ======================== #{account_id} ")
@@ -454,27 +452,23 @@ class AnchorService
     puts e.message
   end
 
-
   def confirm_transfer_withdrawal(data)
     transfer_id = data.dig('relationships', 'transfer', 'data', 'id')
 
-    raise "Missing transfer ID in webhook payload" unless transfer_id
+    raise 'Missing transfer ID in webhook payload' unless transfer_id
 
     transaction =  Transaction.find_by(transfer_id: transfer_id)
     raise "Transaction not found for transfer ID: #{transfer_id}" unless transaction
 
 
-    if transaction.update(status: "approved")
-    Rails.logger.info("✅ Transaction #{transaction.id} (Transfer #{transfer_id}) approved successfully.")
+    if transaction.update(status: 'approved')
+      Rails.logger.info("✅ Transaction #{transaction.id} (Transfer #{transfer_id}) approved successfully.")
 
     else
       error_message = transaction.errors.full_messages.to_sentence
       Rails.logger.error("❌ Failed to approve transaction #{transaction.id}: #{error_message}")
 
     end
-
-
-
   end
 
 
