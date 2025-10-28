@@ -385,6 +385,7 @@ class AnchorService
 
     account_id = data.dig('attributes', 'payment', 'settlementAccount', 'accountId')
 
+    Rails.logger.info("✅  Anchor webhook: ========================  #{data}")
     Rails.logger.info("✅  Anchor webhook: ======================== #{account_id} ")
 
     account = Account.find_by(useable_id: account_id)
