@@ -385,10 +385,13 @@ class AnchorService
 
     account_id = data.dig('attributes', 'payment', 'settlementAccount', 'accountId')
 
-    Rails.logger.info("✅  Anchor webhook: ========================  #{data}")
-    Rails.logger.info("✅  Anchor webhook: ======================== #{account_id} ")
+    Rails.logger.info("✅  Anchor webhook data: ========================  #{data}")
+    Rails.logger.info("✅  Anchor webhook userId: ======================== #{account_id} ")
 
     account = Account.find_by(useable_id: account_id)
+
+    Rails.logger.info("✅  Anchor webhook account: ======================== #{account}")
+
     amount = data['attributes']['payment']['amount']
     receiver_account_number = data.dig('attributes', 'payment', 'virtualNuban', 'accountNumber') || 'N/A'
     receiver_account_name = data.dig('attributes', 'payment', 'virtualNuban', 'accountName') || 'N/A'
@@ -403,11 +406,10 @@ class AnchorService
 
 
 
-    Rails.logger.info("✅  Anchor webhook: ======================== #{account} ")
 
     user = account.user
 
-    Rails.logger.info("✅  Anchor webhook: ======================== #{account_id}")
+    # Rails.logger.info("✅  Anchor webhook: ======================== #{account_id}")
 
 
 
