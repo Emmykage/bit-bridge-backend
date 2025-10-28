@@ -314,6 +314,7 @@ class AnchorService
       response = fetch('post', 'transfers', nil, body)
 
       # Use dig to safely access nested JSON keys
+      transfer_id       = response.dig(:data, 'id')
       status       = response.dig(:data, 'attributes', 'status')&.downcase
       amount       = response.dig(:data, 'attributes', 'amount')
       description  = response.dig(:data, 'attributes', 'reason')
@@ -328,7 +329,8 @@ class AnchorService
         address: source_account_number,
         transaction_type: 'withdrawal',
         unique_transaction_id: counter_party_id,
-        bank: bank
+        bank: bank,
+        transfer_id: transfer_id
       )
 
       raise transaction.errors.full_messages.to_sentence unless transaction.valid?
@@ -347,7 +349,6 @@ class AnchorService
 
       { data: transaction, status: :ok }
     rescue StandardError => e
-
       { message: e.message.presence || 'Bad request', status: :bad_request }
     end
   end
@@ -373,13 +374,89 @@ class AnchorService
   def fetch_account_detail(account_id, view_account = true)
     base_url = "accounts/#{account_id}"
 
-    query = view_account ? "?#{{ include: "AccountNumber" }.to_query} ": ''
-
-    url = base_url + query
-    response = fetch("get", base_url, query, nil)
-   return response
+    query = view_account ? "?#{{ include: 'AccountNumber' }.to_query} " : ''
+    fetch('get', base_url, query, nil)
   rescue StandardError => e
     { message: e.message.to_s || 'bad request', status: :bad_request }
+  end
+
+  def fund_deposit_account(data)
+    account_id = data.dig('attributes', 'payment', 'settlementAccount', 'accountId')
+
+    account = Account.find_by(useable_id: account_id)
+    amount = data['attributes']['payment']['amount']
+    receiver_account_number = data.dig('attributes', 'payment', 'virtualNuban', 'accountNumber') || 'N/A'
+    receiver_account_name = data.dig('attributes', 'payment', 'virtualNuban', 'accountName') || 'N/A'
+    bank = 'Anchor'
+    bank_code = 'anchor'
+    status =  'approved'
+    description = data.dig('attributes', 'payment', 'narration')
+    sender_account_number = data.dig('attributes', 'payment', 'counterParty', 'accountNumber')
+    sender_name = data.dig('attributes', 'payment', 'counterParty', 'accountName')
+    sender_bank = data.dig('attributes', 'payment', 'counterParty', 'bank', 'name')
+    reference =   data.dig('attributes', 'payment', 'paymentReference')
+
+
+    user = account.user
+
+
+    transaction_params = {
+      wallet_id: user.wallet.id,
+      amount: amount,
+      address: sender_account_number,
+      account_name: sender_name,
+      bank_code: sender_bank,
+      bank: sender_bank,
+      transaction_type: 'deposit',
+      status: 'approved',
+      coin_type: 'bank'
+    }
+
+
+    transaction = Transaction.new(transaction_params)
+
+    raise transaction.errors.full_messages.to_sentence unless transaction.save
+
+    puts "Transaction saved successfully: #{transaction.id}"
+
+
+
+
+    transaction.create_transaction_record!(
+      status: status,
+      description: description,
+      customer_name: receiver_account_name,
+      reference: reference,
+      account_number: receiver_account_number,
+      bank_code: bank_code,
+      bank: bank,
+      amount: amount
+    )
+  rescue StandardError => e
+    puts e.message
+  end
+
+
+  def confirm_transfer_withdrawal(data)
+    transfer_id = data.dig('relationships', 'transfer', 'data', 'id')
+
+    raise "Missing transfer ID in webhook payload" unless transfer_id
+
+    transaction =  Transaction.find_by(transfer_id: transfer_id)
+    raise "Transaction not found for transfer ID: #{transfer_id}" unless transaction
+
+
+    if transaction.update(status: "approved")
+    Rails.logger.info("✅ Transaction #{transaction.id} (Transfer #{transfer_id}) approved successfully.")
+
+    else
+      error_message = transaction.errors.full_messages.to_sentence
+      Rails.logger.error("❌ Failed to approve transaction #{transaction.id}: #{error_message}")
+
+    end
+
+
+
   end
 
 

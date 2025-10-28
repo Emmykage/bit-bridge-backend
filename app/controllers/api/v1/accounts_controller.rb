@@ -133,7 +133,7 @@ module Api
         end
 
         transfer_params = account_params.to_h.symbolize_keys.merge(source_id: anchor_account.useable_id, source_name: anchor_account.account_name, account_id: anchor_account.id, wallet_id: current_user.wallet.id, source_account_number: anchor_account.account_number,
-                                                                    account_name: anchor_account.account_name)
+                                                                   account_name: anchor_account.account_name)
         service_response = service.initiate_transfer(transfer_params)
 
         if service_response[:status] == :ok

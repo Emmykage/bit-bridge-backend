@@ -41,27 +41,37 @@ module Api
 
         account_id = data&.dig('relationships', 'customer', 'data', 'id')
         transfer_id = data.dig('relationships', 'transfer', 'data', 'id')
-
+        type = data['type']
         Rails.logger.info("✅  Anchor webhook Data TYPE: #{data['type']}")
         Rails.logger.info("✅  Anchor webhook json post: #{data}")
 
+        service = AnchorService.new
 
         handleKycVerificatiion(account_id) if data['type'] == 'customer.identification.approved'
 
         transfer_id if data['type'] == 'nip.inbound.received'
 
-        if data['type'] == 'nip.inbound.completed'
-          service = AnchorService.new
+
+        case type
+
+        when 'nip.inbound.completed'
           service.get_inbound_transfer(transfer_id)
-        end
 
-        if data['type'] == 'nip.transfer.successful'
+        when 'nip.transfer.successful'
           Rails.logger.info("✅  Anchor webhook transfer successful data: #{data}")
-          AnchorService.new
-          # service.get_transfer_details(transfer_id)
+          service.confirm_transfer_withdrawal(data)
+
+        when 'transaction.created'
+          Rails.logger.info("✅  Anchor webhook: Initiatetransaction")
+          # AnchorService.new
+
+        when 'payment.settled'
+          Rails.logger.info("✅  Anchor webhook: Transfer successful- deposit")
+          service.fund_deposit_account(data)
+        else
+          Rails.logger.info('✅  Anchor webhook: No Option')
+
         end
-
-
 
 
         # Process the webhook data as needed
