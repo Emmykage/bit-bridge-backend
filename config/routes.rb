@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
+  resources :cards
   resources :bank_transactions
   resources :commissions
   resources :bill_orders
@@ -44,6 +45,13 @@ Rails.application.routes.draw do
       #   end
 
       # end
+
+      resources :card do
+        collection do
+          post :fund_wallet
+        end
+
+      end
       resources :refresh do
         collection do
           get :refresh

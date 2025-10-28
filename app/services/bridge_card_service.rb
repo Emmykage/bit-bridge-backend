@@ -7,7 +7,7 @@ class BridgeCardService
 
   def initialize
     @secret_key = ENV['BITBRIDGE_SECRET']
-    token = ''
+    token = ENV['BIDGE_CARD_TOKEN']
     @headers = {
       'token' => "Bearer #{token}",
       'Content-Type' => 'application/json'
@@ -19,11 +19,9 @@ class BridgeCardService
     last_name = account_params[:last_name]
     address = account_params[:address]
     phone = account_params[:phone]
-    account_params[:first_name]
     city = account_params[:city]
     state = account_params[:state]
-    account_params[:postal_code]
-    account_params[:postal_code]
+
     postal_code = account_params[:postal_code]
     email = account_params[:email]
     bvn = account_params[:bvn]
@@ -60,7 +58,7 @@ class BridgeCardService
     end
   end
 
-  def call(params)
+  def create_card(params)
     cardholder_id = params[:cardholder_id]
     card_type = params[:card_type] || 'virtual' # "virtual" or "physical"
     card_brand = params[:card_brand] || 'Mastercard'
@@ -144,6 +142,22 @@ class BridgeCardService
   rescue StandardError => e
     { message: e.message, status: :bad_request }
   end
+
+  def fund_wallet(card_params)
+    amount = card_params["amount"]
+
+    body = {
+      amount: amount
+    }.to_json
+
+    url = "/issuing/sandbox/cards/fund_issuing_wallet?currency=NGNorUSD"
+
+    fetch('patch', url, body)
+  rescue StandardError => e
+    { message: e.message, status: :bad_request }
+  end
+
+
 
   def fund_card(_card_params)
     cardholder_id = 'd0658fedf8284207866d96183fa'

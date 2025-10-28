@@ -1,0 +1,66 @@
+class API::V1::CardsController < ApplicationController
+  before_action :set_card, only: %i[ show update destroy ]
+
+  # GET /cards
+  def index
+    @cards = Card.all
+
+    render json: @cards
+  end
+
+  def fund_wallet
+    service = BridgeCardService.new
+
+    service_response =  service.fund_wallet(card_params)
+
+    if service_response[:status] == :ok
+      render json: {data: response[:data], status: :ok}
+
+    else
+      render json: {message:  response[:message], status: :unprocessable_entity}
+
+    end
+
+  end
+
+  # GET /cards/1
+  def show
+    render json: @card
+  end
+
+  # POST /cards
+  def create
+    @card = Card.new(card_params)
+
+    if @card.save
+      render json: @card, status: :created, location: @card
+    else
+      render json: @card.errors, status: :unprocessable_entity
+    end
+  end
+
+  # PATCH/PUT /cards/1
+  def update
+    if @card.update(card_params)
+      render json: @card
+    else
+      render json: @card.errors, status: :unprocessable_entity
+    end
+  end
+
+  # DELETE /cards/1
+  def destroy
+    @card.destroy!
+  end
+
+  private
+    # Use callbacks to share common setup or constraints between actions.
+    def set_card
+      @card = Card.find(params[:id])
+    end
+
+    # Only allow a list of trusted parameters through.
+    def card_params
+      params.require(:card).permit(:cardholder_id, :card_id, :transaction_reference, :card_type, :card_brand, :card_currency, :card_limit, :funding_amount, :pin_encrypted, :status, :meta_data, :user_id)
+    end
+end
