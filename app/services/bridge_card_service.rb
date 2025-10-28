@@ -145,6 +145,26 @@ class BridgeCardService
     { message: e.message, status: :bad_request }
   end
 
+  def fund_card(_card_params)
+    cardholder_id = 'd0658fedf8284207866d96183fa'
+    amount = ''
+    reference = ''
+
+    body = {
+      card_id: cardholder_id,
+      amount: amount,
+      transaction_reference: reference,
+      currency: 'USD'
+
+    }.to_json
+
+    url = '/issuing/sandbox/cards/fund_card_asynchronously'
+
+    fetch('patch', url, body)
+  rescue StandardError => e
+    { message: e.message, status: :bad_request }
+  end
+
 
 
   private
@@ -159,6 +179,10 @@ class BridgeCardService
 
       response = self.class.post(_url,
                                  body: body, headers: @headers)
+    when 'patch'
+
+      response = self.class.patch(_url,
+                                  body: body, headers: @headers)
 
     else
       raise 'No method pased'
