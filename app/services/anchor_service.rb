@@ -382,9 +382,10 @@ class AnchorService
 
   def fund_deposit_account(data)
 
-         Rails.logger.info("✅  Anchor webhook: ======================== ")
 
     account_id = data.dig('attributes', 'payment', 'settlementAccount', 'accountId')
+
+    Rails.logger.info("✅  Anchor webhook: ======================== #{account_id} ")
 
     account = Account.find_by(useable_id: account_id)
     amount = data['attributes']['payment']['amount']
@@ -400,9 +401,12 @@ class AnchorService
     reference =   data.dig('attributes', 'payment', 'paymentReference')
 
 
+
+    Rails.logger.info("✅  Anchor webhook: ======================== #{account} ")
+
     user = account.user
 
-     Rails.logger.info("✅  Anchor webhook: ======================== #{account_id}")
+    Rails.logger.info("✅  Anchor webhook: ======================== #{account_id}")
 
 
 
