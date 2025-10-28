@@ -392,7 +392,6 @@ class AnchorService
 
 
     Rails.logger.info("❌ Anchor account  does not exist ======================== #{account}") unless account
-    Rails.logger.info("✅  Anchor webhook data: ========================  #{account}")
 
     amount = data['attributes']['payment']['amount']
     receiver_account_number = data.dig('attributes', 'payment', 'virtualNuban', 'accountNumber') || 'N/A'
@@ -405,6 +404,10 @@ class AnchorService
     sender_name = data.dig('attributes', 'payment', 'counterParty', 'accountName')
     sender_bank = data.dig('attributes', 'payment', 'counterParty', 'bank', 'name')
     reference =   data.dig('attributes', 'payment', 'paymentReference')
+
+
+    Rails.logger.info("✅  Anchor webhook data: ========================  #{amount} #{sender_name}")
+
 
 
 
