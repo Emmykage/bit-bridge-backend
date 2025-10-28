@@ -6,7 +6,7 @@ class BridgeCardService
   base_uri 'https://issuecards.api.bridgecard.co/v1/'
 
   def initialize
-    @secrete_key = "BITBRIDGE_SECRET"
+    @secret_key = ENV['BITBRIDGE_SECRET']
     token = ''
     @headers = {
       'token' => "Bearer #{token}",
@@ -51,8 +51,10 @@ class BridgeCardService
         "meta_data": { "any_key": 'any_value' }
 
       }.to_json
+      url = '/issuing/sandbox/cardholder/register_cardholder_synchronously'
 
-      fetch(post, '/issuing/sandbox/cardholder/register_cardholder_synchronously', nil, body)
+      response = fetch(post, url, body)
+      { data: response['data', status: :ok] }
     rescue StandardError => e
       { message: e.message, status: :bad_request }
     end
@@ -112,26 +114,27 @@ class BridgeCardService
   end
 
   def create_virtua_card(pin)
-    encryped_pin = '39sksksie3902023020dj03020203039'
-    key = bitbridge_key
+    encryped_pin = AES256.encrypt(pin, @secret_key)
+    AES256.decrypt(encryped_pin, @secret_key)
+    bitbridge_key
     cardholder_id = 'd0658fedf8284207866d96183fa'
     card_type = 'virtual' || 'physical'
     card_limit = '500000' || '1000000'
-    reference = "",
-    amount = '300'
+    reference = '',
+                amount = '300'
     user_id = 'd0658fedf828420786e4a7083fa'
 
 
     body = {
-      cardholder_id: cardholder_id ,
+      cardholder_id: cardholder_id,
       card_type: card_type,
       card_brand: 'Mastercard',
       card_currency: 'USD',
-      card_limit: card_limit ,
+      card_limit: card_limit,
       transaction_reference: reference,
       funding_amount: amount,
       pin: encryped_pin,
-      meta_data: { user_id: user_id  }
+      meta_data: { user_id: user_id }
 
     }.to_json
 
@@ -151,8 +154,7 @@ class BridgeCardService
     case _method
     when 'get'
 
-      response = self.class.post(_url,
-                                 body: body, headers: @headers)
+      response = self.class.get(_url, headers: @headers)
     when 'post'
 
       response = self.class.post(_url,
