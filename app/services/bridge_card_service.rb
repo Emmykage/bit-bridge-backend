@@ -135,8 +135,6 @@ class BridgeCardService
         "meta_data": { "account_source": 'any_value' }
       }.to_json
 
-      binding.b
-
 
       response = fetch('post', '/issuing/sandbox/cards/create_card', body)
 
@@ -145,8 +143,6 @@ class BridgeCardService
       { data: card, message: response['message'], status: :ok }
       # handle_response(response)
     rescue StandardError => e
-      binding.b
-
       { success: false, message: e.message, status: :bad_request }
     end
   end
@@ -273,7 +269,6 @@ class BridgeCardService
 
     raise response.dig('detail', 0, 'msg') || response['message'] || 'failed to created card'
   rescue StandardError => e
-    binding.b
     raise e.message || 'something went wrong'
   end
 end
