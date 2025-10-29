@@ -22,12 +22,12 @@ class BridgeCardService
     first_name = account_params[:first_name]
     last_name = account_params[:last_name]
     address = account_params[:address]
-    phone = '07065343418' # account_params[:phone_number]
+    phone = account_params[:phone_number]
     city = account_params[:city]
     state = account_params[:state]
     house_no = account_params[:house_no]
     postal_code = account_params[:postal_code]
-    email = 'emmie5@gmail.com' # account_params[:email]
+    email =  account_params[:email]
     bvn = account_params[:bvn]
 
 
