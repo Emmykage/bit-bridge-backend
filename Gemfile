@@ -46,6 +46,7 @@ gem 'devise'
 gem 'devise-jwt'
 # gem 'jsonapi-serializer'
 gem 'active_model_serializers'
+gem 'aes-everywhere'
 gem 'dotenv-rails'
 gem 'httparty'
 
