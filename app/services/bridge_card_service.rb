@@ -79,7 +79,7 @@ class BridgeCardService
         phone: phone,
         city: city,
         state: state,
-        postal_code: postal_code,
+        postal: postal_code,
         bvn: bvn,
         house_no: house_no,
         cardholder_id: response['data']['cardholder_id'],
