@@ -46,11 +46,13 @@ Rails.application.routes.draw do
 
       # end
 
-      resources :card do
+      resources :cards do
         collection do
           post :fund_wallet
+          post :register_cardholder
+          get :user_card
+          post :create_card
         end
-
       end
       resources :refresh do
         collection do
