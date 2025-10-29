@@ -99,7 +99,7 @@ module Api
       # Only allow a list of trusted parameters through.
       def card_params
         params.require(:card).permit(:cardholder_id, :card_id, :transaction_reference, :card_type, :card_brand,
-                                     :card_currency, :card_limit, :funding_amount, :amount, :pin_encrypted, :status, :postal_code, :user_id, :address, :city, :state, :postal, :house_no, :bvn, :account_source)
+                                     :card_currency, :card_limit, :funding_amount, :amount, :pin, :status, :postal_code, :user_id, :address, :city, :state, :postal, :house_no, :bvn, :account_source)
       end
     end
   end

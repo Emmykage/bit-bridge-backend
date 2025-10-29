@@ -1,13 +1,17 @@
 # frozen_string_literal: true
 
+# require 'aes_everywhere'
 class BridgeCardService
   include HTTParty
 
   base_uri 'https://issuecards.api.bridgecard.co/v1/'
 
   def initialize
-    @secret_key = ENV['BITBRIDGE_SECRET']
-    token = ENV['BRIDGE_CARD_TOKEN']
+    # @secret_key = ENV['BITBRIDGE_SECRET']
+    # token = ENV['BRIDGE_CARD_TOKEN']
+
+    @secret_key = 'BITBRIDGE_SECRET'
+    token = 'at_test_fe591f230a9b7f4f7c5f6bef43846ab4f94f211e6ee679d93879a9b1c6763fe1c2995e38900db8c07ac7bc6dfa58df44efc9fb808f43ca6881e2741044f43e9dc4676cea48f96f5a0931884b4d7a52f5260c3814d2339cdddc9b280e499c87872747e9abceab6d506529cce8d10440edc53ee88876904ee7271d6b856858c501e31fa9929c86e761b67c9239094f08b32e1aaf40d914515c2506fa8b5e5237920bf23235de90283a98ececd70b435585870f62f34f06ee37f6f5794361b23b3513aa8efff5fdd2e33cc88a375374053552c90a89b6edc6c711e8714a495a1cbe09038d6fe5f340d6840dd46336dc4dd708b871ff401afec416d0b8521c3162ac'
     @headers = {
       'token' => "Bearer #{token}",
       'Content-Type' => 'application/json'
@@ -18,30 +22,29 @@ class BridgeCardService
     first_name = account_params[:first_name]
     last_name = account_params[:last_name]
     address = account_params[:address]
-    phone = account_params[:phone_number]
+    phone = '07065343418' # account_params[:phone_number]
     city = account_params[:city]
     state = account_params[:state]
     house_no = account_params[:house_no]
     postal_code = account_params[:postal_code]
-    email = account_params[:email]
+    email = 'emmie5@gmail.com' # account_params[:email]
     bvn = account_params[:bvn]
 
 
-    card_params = {
-      first_name: first_name,
-      last_name: last_name,
-      address: address,
-      phone: phone,
-      city: city,
-      state: state,
-      postal_code: postal_code,
-      bvn: bvn,
-      house_no: house_no,
+    # card_params = {
+    #   first_name: first_name,
+    #   last_name: last_name,
+    #   address: address,
+    #   phone: phone,
+    #   city: city,
+    #   state: state,
+    #   postal_code: postal_code,
+    #   bvn: bvn,
+    #   house_no: house_no,
+    #   user_id: account_params[:user_id]
 
-      user_id: account_params[:user_id]
 
-
-    }
+    # }
 
     begin
       body = {
@@ -67,6 +70,24 @@ class BridgeCardService
       }.to_json
       url = '/issuing/sandbox/cardholder/register_cardholder_synchronously'
       response = fetch('post', url, body)
+
+
+      card_params = {
+        first_name: first_name,
+        last_name: last_name,
+        address: address,
+        phone: phone,
+        city: city,
+        state: state,
+        postal_code: postal_code,
+        bvn: bvn,
+        house_no: house_no,
+        cardholder_id: response['data']['cardholder_id'],
+        user_id: account_params[:user_id]
+
+
+      }
+
       card = Card.create!(card_params)
 
       { data: card, message: response['message'], status: :ok }
@@ -77,13 +98,17 @@ class BridgeCardService
 
   def create_card(params, card)
     cardholder_id = params[:cardholder_id]
-    card_type = params[:card_type] || 'virtual' # "virtual" or "physical"
+    card_type = params[:card_type].downcase || 'virtual' # "virtual" or "physical"
     card_brand = params[:card_brand] || 'Mastercard'
     card_currency = params[:card_currency] || 'USD'
+
     card_limit = params[:card_limit] || '500000'
     transaction_reference = params[:transaction_reference] || SecureRandom.uuid
-    params[:funding_amount] || '0'
-    pin = AES256.encrypt(params[:pin], @secret_key)
+    amount = params[:amount] || '0'
+
+
+    # pin = AES256.encrypt(params[:pin], @secret_key)
+    pin = params[:pin]
     # meta_data = params[:meta_data] || {}
 
 
@@ -97,27 +122,33 @@ class BridgeCardService
       amount: amount,
       pin: pin
     }
+    begin
+      body = {
+        'cardholder_id' => cardholder_id,
+        'card_type' => card_type,
+        'card_brand' => card_brand,
+        'card_currency' => card_currency,
+        'card_limit' => card_limit,
+        'transaction_reference' => transaction_reference,
+        'funding_amount' => amount,
+        'pin' => pin,
+        "meta_data": { "account_source": 'any_value' }
+      }.to_json
 
-    body = {
-      'cardholder_id' => cardholder_id,
-      'card_type' => card_type,
-      'card_brand' => card_brand,
-      'card_currency' => card_currency,
-      'card_limit' => card_limit,
-      'transaction_reference' => transaction_reference,
-      'funding_amount' => amount,
-      'pin' => pin,
-      "meta_data": { "account_source": 'any_value' }
-    }.to_json
+      binding.b
 
-    response = fetch('post', '/issuing/sandbox/cards/create_card', body)
 
-    card.update!(card_params)
+      response = fetch('post', '/issuing/sandbox/cards/create_card', body)
 
-    { data: card, message: response['message'], status: :ok }
-    # handle_response(response)
-  rescue StandardError => e
-    { success: false, message: e.message, status: :bad_request }
+      card.update!(card_params)
+
+      { data: card, message: response['message'], status: :ok }
+      # handle_response(response)
+    rescue StandardError => e
+      binding.b
+
+      { success: false, message: e.message, status: :bad_request }
+    end
   end
 
   # Fetch card details by card_id
@@ -242,6 +273,7 @@ class BridgeCardService
 
     raise response.dig('detail', 0, 'msg') || response['message'] || 'failed to created card'
   rescue StandardError => e
+    binding.b
     raise e.message || 'something went wrong'
   end
 end
