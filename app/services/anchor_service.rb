@@ -232,7 +232,7 @@ class AnchorService
 
     transaction_params = {
       wallet_id: user.wallet.id,
-      amount: amount,
+      amount: amount/100,
       address: address,
       account_name: sender,
       bank_code: bank,
@@ -261,6 +261,7 @@ class AnchorService
     counter_party_id_type = 'CounterParty'
     bank_code = transfer_params[:bank_code]
     bank = 'anchor'
+    account_type = "SubAccount" || "DepositAccount"
     recipient_bank = transfer_params['bank']
     relationships = if transfer_type == 'NIPTransfer'
                       {
@@ -281,13 +282,13 @@ class AnchorService
                       {
                         destinationAccount: {
                           data: {
-                            type: 'SubAccount',
+                            type: account_type,
                             id: account_number
                           }
                         },
                         account: {
                           data: {
-                            type: 'SubAccount',
+                            type: account_type,
                             id: transfer_params[:source_id]
                           }
                         }

@@ -27,7 +27,7 @@ class Transaction < ApplicationRecord
 
 
   def validate_transaction_on_create
-    return unless (amount > wallet.balance) && status != 'declined'
+        return unless (amount > wallet.balance) && status != 'declined'
 
     errors.add(:amount, 'insufficient balance')
   end
