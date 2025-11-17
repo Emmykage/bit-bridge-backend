@@ -3,6 +3,8 @@
 class AnchorService
   include HTTParty
 
+  # org-id = 17581018436930-anc_og
+
   base_uri ENV['DEV_ANCHOR_BASE_URL'] || 'https://api.sandbox.getanchor.co/'
   def initialize
     header_api_key = ENV['DEV_ANCHOR_API_KEY'] || '9P6wC.4aed16aee26886c2480fbe21d174d2a1973dddaa3d3cac7d5b8908b4e24999d841b8491ff77c8f6a6d9a278483363a2312aa'
@@ -232,7 +234,7 @@ class AnchorService
 
     transaction_params = {
       wallet_id: user.wallet.id,
-      amount: amount/100,
+      amount: amount,
       address: address,
       account_name: sender,
       bank_code: bank,
@@ -392,7 +394,7 @@ class AnchorService
 
     Rails.logger.info("❌ Anchor account  does not exist ======================== #{account}") unless account
 
-    amount = data['attributes']['payment']['amount']
+    amount = data['attributes']['payment']['amount']/100
     receiver_account_number = data.dig('attributes', 'payment', 'virtualNuban', 'accountNumber') || 'N/A'
     receiver_account_name = data.dig('attributes', 'payment', 'virtualNuban', 'accountName') || 'N/A'
     bank = 'Anchor'
