@@ -7,7 +7,6 @@ Rails.application.routes.default_url_options = {
 }
 
 Rails.application.configure do
-
   config.enable_reloading = true
 
   config.action_mailer.delivery_method = :smtp

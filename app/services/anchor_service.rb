@@ -251,7 +251,6 @@ class AnchorService
   end
 
   def initiate_transfer(transfer_params)
-
     wallet_balance = transfer_params[:wallet_balance]
     transfer_type = transfer_params[:inter_bank] ? 'BookTransfer' : 'NIPTransfer'
     recipient_name = transfer_params[:account_name]
@@ -264,7 +263,7 @@ class AnchorService
     counter_party_id_type = 'CounterParty'
     bank_code = transfer_params[:bank_code]
     bank = 'anchor'
-    account_type = "SubAccount" || "DepositAccount"
+    account_type = 'SubAccount' || 'DepositAccount'
     recipient_bank = transfer_params['bank']
     relationships = if transfer_type == 'NIPTransfer'
                       {
@@ -321,9 +320,7 @@ class AnchorService
 
       # end
 
-       if  wallet_balance < account_params[:amount].to_f
-        raise 'Insufficient balance for this transfer'
-      end
+      raise 'Insufficient balance for this transfer' if wallet_balance < account_params[:amount].to_f
 
 
       response = fetch('post', 'transfers', nil, body)
@@ -405,7 +402,7 @@ class AnchorService
 
     Rails.logger.info("❌ Anchor account  does not exist ======================== #{account}") unless account
 
-    amount = data['attributes']['payment']['amount']/100
+    amount = data['attributes']['payment']['amount'] / 100
     receiver_account_number = data.dig('attributes', 'payment', 'virtualNuban', 'accountNumber') || 'N/A'
     receiver_account_name = data.dig('attributes', 'payment', 'virtualNuban', 'accountName') || 'N/A'
     bank = 'Anchor'

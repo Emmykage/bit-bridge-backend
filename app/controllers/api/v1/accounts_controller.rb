@@ -132,7 +132,7 @@ module Api
           return render json: { message: 'No Anchor Account Present' }, status: :not_found
         end
 
-        transfer_params = account_params.to_h.symbolize_keys.merge(source_id: anchor_account.useable_id, source_name: anchor_account.account_name, account_id: anchor_account.id, wallet_id: current_user.wallet.id, source_account_number: anchor_account.account_number,wallet_balance: current_user.wallet.balance,
+        transfer_params = account_params.to_h.symbolize_keys.merge(source_id: anchor_account.useable_id, source_name: anchor_account.account_name, account_id: anchor_account.id, wallet_id: current_user.wallet.id, source_account_number: anchor_account.account_number, wallet_balance: current_user.wallet.balance,
                                                                    account_name: anchor_account.account_name)
         service_response = service.initiate_transfer(transfer_params)
 
