@@ -4,7 +4,7 @@
 class BridgeCardService
   include HTTParty
 
-  base_uri 'https://issuecards.api.bridgecard.co/v1/'
+  base_uri 'https://issuecards.api.bridgecard.co/v1/issuing/sandbox/'
 
   def initialize
     # @secret_key = ENV['BITBRIDGE_SECRET']
@@ -17,6 +17,9 @@ class BridgeCardService
       'Content-Type' => 'application/json'
     }
   end
+
+
+  # cards and cardholder management
 
   def register_cardholder_synchronously(account_params)
     first_name = account_params[:first_name]
@@ -31,20 +34,20 @@ class BridgeCardService
     bvn = account_params[:bvn]
 
 
-    # card_params = {
-    #   first_name: first_name,
-    #   last_name: last_name,
-    #   address: address,
-    #   phone: phone,
-    #   city: city,
-    #   state: state,
-    #   postal_code: postal_code,
-    #   bvn: bvn,
-    #   house_no: house_no,
-    #   user_id: account_params[:user_id]
+    card_params = {
+      first_name: first_name,
+      last_name: last_name,
+      address: address,
+      phone: phone,
+      city: city,
+      state: state,
+      postal_code: postal_code,
+      bvn: bvn,
+      house_no: house_no,
+      user_id: account_params[:user_id]
 
 
-    # }
+    }
 
     begin
       body = {
@@ -68,25 +71,11 @@ class BridgeCardService
         "meta_data": { "account_source": 'any_value' }
 
       }.to_json
-      url = '/issuing/sandbox/cardholder/register_cardholder_synchronously'
+      url = '/cardholder/register_cardholder_synchronously'
       response = fetch('post', url, body)
 
 
-      card_params = {
-        first_name: first_name,
-        last_name: last_name,
-        address: address,
-        phone: phone,
-        city: city,
-        state: state,
-        postal: postal_code,
-        bvn: bvn,
-        house_no: house_no,
-        cardholder_id: response['data']['cardholder_id'],
-        user_id: account_params[:user_id]
-
-
-      }
+      card_params[:cardholder_id] =  response['data']['cardholder_id']
 
       card = Card.create!(card_params)
 
@@ -96,15 +85,36 @@ class BridgeCardService
     end
   end
 
+
+  def get_cardholder_details(cardholder_id)
+    response = fetch('get', "/cardholder/get_cardholder?cardholder_id=#{cardholder_id}")
+
+    {data: response["data"], message: response["message"], status: :ok}
+  rescue StandardError => e
+      { message: e.message, status: :bad_request }
+
+
+  end
+
+    def delete_cardholder_details(cardholder_id)
+    response = fetch('delete', "/cardholder/get_cardholder?cardholder_id=#{cardholder_id}")
+
+    {data: response["data"], message: response["message"], status: :ok}
+  rescue StandardError => e
+      { message: e.message, status: :bad_request }
+
+
+  end
+
   def create_card(params, card)
-    cardholder_id = params[:cardholder_id]
+    cardholder_id = card[:cardholder_id]
     card_type = params[:card_type].downcase || 'virtual' # "virtual" or "physical"
     card_brand = params[:card_brand] || 'Mastercard'
     card_currency = params[:card_currency] || 'USD'
 
-    card_limit = params[:card_limit] || '500000'
+    card_limit = (params[:card_limit] || 5000).to_i * 100
     transaction_reference = params[:transaction_reference] || SecureRandom.uuid
-    amount = params[:amount] || '0'
+    amount = params[:amount].to_i * 100
 
 
     # pin = AES256.encrypt(params[:pin], @secret_key)
@@ -122,6 +132,10 @@ class BridgeCardService
       amount: amount,
       pin: pin
     }
+
+
+    # binding.b
+
     begin
       body = {
         'cardholder_id' => cardholder_id,
@@ -136,8 +150,10 @@ class BridgeCardService
       }.to_json
 
 
-      response = fetch('post', '/issuing/sandbox/cards/create_card', body)
+      response = fetch('post', '/cards/create_card', body)
 
+      card_id = response.dig('data', 'card_id')
+      card_params[:card_id] = card_id
       card.update!(card_params)
 
       { data: card, message: response['message'], status: :ok }
@@ -151,7 +167,7 @@ class BridgeCardService
   def card_details(card_id)
     raise ArgumentError, 'card_id is required' if card_id.blank?
 
-    url = "/issuing/sandbox/cards/get_card_details?card_id=#{card_id}"
+    url = "/cards/get_card_details?card_id=#{card_id}"
 
     response = fetch('get', url, body)
     { data: response['data'], status: :ok }
@@ -163,7 +179,7 @@ class BridgeCardService
   def card_balance(card_id)
     raise ArgumentError, 'card_id is required' if card_id.blank?
 
-    url = "/issuing/sandbox/cards/get_card_balance?card_id=#{card_id}"
+    url = "/get_card_balance?card_id=#{card_id}"
 
     response = fetch('get', url, nil)
     { data: response['data'], status: :ok }
@@ -196,12 +212,150 @@ class BridgeCardService
 
     }.to_json
 
-    url = '/issuing/sandbox/cards/create_card'
+    url = '/create_card'
 
     fetch('post', url, body)
   rescue StandardError => e
     { message: e.message, status: :bad_request }
   end
+
+
+  def fund_card(card_params)
+    card_id = card_params['card_id']
+    amount = card_params['amount']
+
+    reference ="bgcard#{Time.now.to_i}#{SecureRandom.hex(5)}"
+    body = {
+      card_id: card_id,
+      amount: amount,
+      transaction_reference: reference,
+      currency: 'USD'
+
+    }.to_json
+
+    url = '/cards/fund_card_asynchronously'
+
+    fetch('patch', url, body)
+    { data: response['data'], status: :ok }
+  rescue StandardError => e
+    { message: e.message, status: :bad_request }
+  end
+
+
+
+  def get_card_transaction (card_id, page=1)
+    response = fetch("get", "/cards/get_card_transactions?card_id=#{card_id}&page=#{page}")
+
+    {data: response["data"], message: response["message"], status: :ok}
+
+    rescue StandardError => e
+
+      {message: e.message, status: :bad_request}
+
+
+  end
+
+
+    def get_card_transaction_by_id (card_id, reference)
+    response = fetch("get", "/cards/get_card_transaction_by_id?card_id=#{card_id}&client_transaction_reference=#{reference}")
+
+    {data: response["data"], message: response["message"], status: :ok}
+
+    rescue StandardError => e
+
+      {message: e.message, status: :bad_request}
+
+
+  end
+
+
+    def get_transaction_status (card_id, reference)
+    response = fetch("get", "/cards/get_card_transaction_status?card_id=#{card_id}&client_transaction_reference=#{reference}")
+
+    {data: response["data"], message: response["message"], status: :ok}
+
+    rescue StandardError => e
+
+      {message: e.message, status: :bad_request}
+
+
+  end
+
+
+      def freeze_card (card_id, reference)
+    response = fetch("PATCH", "/cards/freeze_card?card_id=#{card_id}")
+
+    {data: response["data"], message: response["message"], status: :ok}
+
+    rescue StandardError => e
+
+      {message: e.message, status: :bad_request}
+
+
+  end
+
+
+        def unfreeze_card (card_id, reference)
+    response = fetch("PATCH", "/cards/unfreeze_card?card_id=#{card_id}")
+
+    {data: response["data"], message: response["message"], status: :ok}
+
+    rescue StandardError => e
+
+      {message: e.message, status: :bad_request}
+
+
+  end
+
+
+
+
+  def get_all_cardholders
+
+  response =   fetch("get", "/cards/get_all_cardholder?page=1", nil)
+  { data: response['data'], message: response["message"], status: :ok }
+  rescue StandardError => e
+    { message: e.message, status: :bad_request }
+
+  end
+
+
+
+    def get_all_cardholder_cards(cardholder_id)
+
+  response =   fetch("get", "/cards/get_all_cardholder_cards?cardholder_id=#{cardholder_id}", nil)
+  { data: response['data'], message: response["message"], status: :ok }
+  rescue StandardError => e
+    { message: e.message, status: :bad_request }
+
+  end
+
+
+  # delete cardholders card
+
+      def delete_details(card_id)
+    response = fetch('delete', "/cards/delete_card/=#{card_id}")
+
+    {data: response["data"], message: response["message"], status: :ok}
+  rescue StandardError => e
+      { message: e.message, status: :bad_request }
+
+
+  end
+
+
+  def get_all_issued_cards(page=1)
+  response =  fetch('get', '/cards/get_all_cards?page=#{page}', nil)
+  {message: response["message"], data: response["data"] , status: :ok}
+
+  rescue StandardError => e
+    {message: e.message, status: :bad_request}
+
+  end
+
+
+
+
 
   def fund_wallet(card_params)
     amount = card_params['amount']
@@ -210,7 +364,7 @@ class BridgeCardService
       amount: amount
     }.to_json
 
-    url = "/issuing/sandbox/cards/fund_issuing_wallet?currency=#{currency}"
+    url = "/fund_issuing_wallet?currency=#{currency}"
 
 
     response = fetch('patch', url, body)
@@ -220,26 +374,66 @@ class BridgeCardService
     { message: e.message, status: :bad_request }
   end
 
-  def fund_card(_card_params)
-    cardholder_id = 'd0658fedf8284207866d96183fa'
-    amount = ''
-    reference = ''
 
+
+  def fund_issueing_wallet(amount, currency='USD')
     body = {
-      card_id: cardholder_id,
-      amount: amount,
-      transaction_reference: reference,
-      currency: 'USD'
-
+      amount: amount
     }.to_json
 
-    url = '/issuing/sandbox/cards/fund_card_asynchronously'
 
-    fetch('patch', url, body)
+
+    response = fetch('patch', "/cards/fund_issuing_wallet?currency=#{currency}", body: body)
+
+
+    { data: response['data'], message: response['message'], status: :ok }
+
+  rescue StandardError => e
+    { message: e.message, status: :bad_request }
+
+  end
+
+  def get_issue_wallet_balance
+
+    response = fetch('get', '/cards/get_issuing_wallet_balance', nil)
+
+    { data: response['data'], status: :ok }
+
+  rescue StandardError => e
+    { message: e.message, status: :bad_request }
+
+
+  end
+
+
+  def get_fx_rates
+    response = fetch("get","/cards/fx-rate", nil)
+    { data: response['data'], status: :ok }
+  rescue StandardError => e
+    { message: e.message, status: :bad_request }
+
+  end
+
+
+  def get_card_details (card_id)
+    response = fetch("get","/cards/generate_token_for_card_details?card_id=#{card_id}", nil)
+
+    { data: response['data'], status: :ok }
+  rescue StandardError => e
+    { message: e.message, status: :bad_request }
+
+  end
+
+  def fetch_decrypted_pin(encrypted_pin)
+    # AES256.decrypt(encrypted_pin, @secret_key)
+    response = fetch('get', "https://issuecards-api-bridgecard-co.relay.evervault.com/v1/issuing/cards/get_card_details_from_token?token=6419a7034aa44f1c886a2ade32a97436", nil)
+
     { data: response['data'], status: :ok }
   rescue StandardError => e
     { message: e.message, status: :bad_request }
   end
+
+
 
 
 
@@ -258,6 +452,11 @@ class BridgeCardService
     when 'patch'
 
       response = self.class.patch(_url,
+                                  body: body, headers: @headers)
+
+ when 'delete'
+
+      response = self.class.delete(_url,
                                   body: body, headers: @headers)
 
     else

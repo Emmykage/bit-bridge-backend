@@ -244,7 +244,6 @@ class AnchorService
       coin_type: 'bank'
     }
 
-
     transaction = Transaction.new(transaction_params)
     raise transaction.errors.full_messages.to_sentence unless transaction.persisted?
   rescue StandardError => e
@@ -252,6 +251,8 @@ class AnchorService
   end
 
   def initiate_transfer(transfer_params)
+
+    wallet_balance = transfer_params[:wallet_balance]
     transfer_type = transfer_params[:inter_bank] ? 'BookTransfer' : 'NIPTransfer'
     recipient_name = transfer_params[:account_name]
     account_number = transfer_params[:account_number]
@@ -312,8 +313,19 @@ class AnchorService
     }.to_json
 
 
+
     begin
       # Remove trailing space in URL and make POST request
+
+      # if wallet.balance < transfer_params[:amount]
+
+      # end
+
+       if  wallet_balance < account_params[:amount].to_f
+        raise 'Insufficient balance for this transfer'
+      end
+
+
       response = fetch('post', 'transfers', nil, body)
 
       # Use dig to safely access nested JSON keys
@@ -323,8 +335,7 @@ class AnchorService
       description  = response.dig(:data, 'attributes', 'reason')
 
       # Example: create a transaction record (assuming `transaction` is a model)
-      transaction = Transaction.new(
-        wallet_id: transfer_params[:wallet_id],
+      transaction = wallet.transactions.new(
         account_id: transfer_params[:account_id],
         status: status,
         amount: amount,
