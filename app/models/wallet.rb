@@ -5,6 +5,7 @@ class Wallet < ApplicationRecord
   has_many :transactions, class_name: 'Transaction'
   has_many :bill_orders, through: :user
   has_many :order_details, through: :user
+  has_one :card_holder, dependent: :destroy
 
   enum :wallet_type, { ngn: 0, usdt: 1 }
 

@@ -1,8 +1,5 @@
-# frozen_string_literal: true
 
-module Api
-  module V1
-    class CardsController < ApplicationController
+    class Api::V1::CardHoldersController < ApplicationController
       before_action :set_card, only: %i[show update destroy]
 
       # GET /cards
@@ -27,14 +24,45 @@ module Api
       end
 
       def user_card
-        card = current_user.cards.last
-        render json: { data: card, status: :ok }
+        card_holder = current_user.wallet.card_holder
+
+
+        unless card_holder
+          render json: { message: 'No card found for user'}, status: :not_found
+          return
+        end
+
+
+        card = card_holder.cards.last
+
+        render json: { data: card , status: :ok }
       end
 
+
+        def user_cards
+        card_holder = current_user.wallet.card_holder
+
+
+        unless card_holder
+          render json: { message: 'No card found for user'}, status: :not_found
+          return
+        end
+
+        service = BridgeCardService.new
+
+        service_response = service.get_all_cardholder_cards(card_holder.unique_card_holder_id)
+        if service_response[:status] == :ok
+          render json: {data: service_response[:data]} , status: :ok
+
+        else
+          render json: { message: service_response[:message] }, status: :unprocessable_entity
+        end
+      end
       def register_cardholder
         service = BridgeCardService.new
 
-        proccessed_card_params = current_user.attributes.symbolize_keys.merge(card_params.to_h.symbolize_keys).merge(current_user.user_profile.attributes.symbolize_keys)
+        proccessed_card_params = current_user.attributes.symbolize_keys.merge(card_holder_params.to_h.symbolize_keys).merge(current_user.user_profile.attributes.symbolize_keys)
+        proccessed_card_params[:wallet_id] = current_user.wallet.id
         service_response = service.register_cardholder_synchronously(proccessed_card_params)
         if service_response[:status] == :ok
           render json: { data: service_response[:data], message: service_response[:message] }, status: :ok
@@ -48,9 +76,9 @@ module Api
       def create_card
         service = BridgeCardService.new
 
-        recent_card = current_user.cards.last
+        card_holder = current_user.wallet.card_holder
         proccessed_card_params = card_params.to_h.symbolize_keys
-        service_response = service.create_card(proccessed_card_params, recent_card)
+        service_response = service.create_card(proccessed_card_params, card_holder)
         if service_response[:status] == :ok
           render json: { data: service_response[:data], message: service_response[:message] }, status: :ok
 
@@ -101,6 +129,7 @@ module Api
         params.require(:card).permit(:cardholder_id, :card_id, :transaction_reference, :card_type, :card_brand,
                                      :card_currency, :card_limit, :funding_amount, :amount, :pin, :status, :postal_code, :user_id, :address, :city, :state, :postal, :house_no, :bvn, :account_source)
       end
+       def card_holder_params
+        params.require(:card_holder).permit(:pin, :status, :postal_code, :address, :city, :state, :postal, :house_no, :bvn, :account_source)
+      end
     end
-  end
-end

@@ -101,7 +101,7 @@ class BillOrder < ApplicationRecord
 
   def save_commission
     commission_percent = amount * 0.01
-    wallet.commission = use_commission ? @commission_balance : wallet.commission + commission_percent
+    wallet.commission = use_commission ? @commission_balance : (wallet.commission || 0) + commission_percent
     wallet.save
   end
 

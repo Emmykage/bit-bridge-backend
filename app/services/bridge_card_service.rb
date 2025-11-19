@@ -32,6 +32,8 @@ class BridgeCardService
     postal_code = account_params[:postal_code]
     email = account_params[:email]
     bvn = account_params[:bvn]
+    wallet_id = account_params[:wallet_id]
+    user_id = account_params[:user_id]
 
 
     card_params = {
@@ -44,7 +46,8 @@ class BridgeCardService
       postal_code: postal_code,
       bvn: bvn,
       house_no: house_no,
-      user_id: account_params[:user_id]
+      user_id: account_params[:user_id],
+      wallet_id: account_params[:wallet_id]
 
 
     }
@@ -68,18 +71,19 @@ class BridgeCardService
           "bvn": bvn,
           "selfie_image": 'https://image.com'
         },
-        "meta_data": { "account_source": 'any_value' }
+        "meta_data": { "userId": user_id, "walletId": wallet_id }
 
       }.to_json
       url = '/cardholder/register_cardholder_synchronously'
       response = fetch('post', url, body)
 
 
-      card_params[:cardholder_id] = response['data']['cardholder_id']
+      card_params[:unique_card_holder_id] = response['data']['cardholder_id']
 
-      card = Card.create!(card_params)
+      # cardolder = wallet.create_cardholder(card_params)
+      cardholder = CardHolder.create(card_params)
 
-      { data: card, message: response['message'], status: :ok }
+      { data: cardholder, message: response['message'], status: :ok }
     rescue StandardError => e
       { message: e.message, status: :bad_request }
     end
@@ -101,8 +105,8 @@ class BridgeCardService
     { message: e.message, status: :bad_request }
   end
 
-  def create_card(params, card)
-    cardholder_id = card[:cardholder_id]
+  def create_card(params, card_holder)
+    cardholder_id = card_holder[:unique_card_holder_id]
     card_type = params[:card_type].downcase || 'virtual' # "virtual" or "physical"
     card_brand = params[:card_brand] || 'Mastercard'
     card_currency = params[:card_currency] || 'USD'
@@ -118,7 +122,6 @@ class BridgeCardService
 
 
     card_params = {
-      cardholder_id: cardholder_id,
       card_type: card_type,
       card_brand: card_brand,
       card_currency: card_currency,
@@ -128,8 +131,6 @@ class BridgeCardService
       pin: pin
     }
 
-
-    # binding.b
 
     begin
       body = {
@@ -149,7 +150,7 @@ class BridgeCardService
 
       card_id = response.dig('data', 'card_id')
       card_params[:card_id] = card_id
-      card.update!(card_params)
+      card_holder.create!(card_params)
 
       { data: card, message: response['message'], status: :ok }
       # handle_response(response)
@@ -286,6 +287,7 @@ class BridgeCardService
 
   def get_all_cardholder_cards(cardholder_id)
     response = fetch('get', "/cards/get_all_cardholder_cards?cardholder_id=#{cardholder_id}", nil)
+
     { data: response['data'], message: response['message'], status: :ok }
   rescue StandardError => e
     { message: e.message, status: :bad_request }
@@ -405,9 +407,26 @@ class BridgeCardService
 
     end
 
-    return response if response.success?
+    parsed = begin
+    response.parsed_response
+  rescue JSON::ParserError
+    response.body
+  end
 
-    raise response.dig('detail', 0, 'msg') || response['message'] || 'failed to created card'
+  # return parsed response if success
+  return parsed if response.success?
+
+
+  # extract error message safely
+  error_msg =
+    if parsed.is_a?(Hash)
+      parsed.dig('detail', 0, 'msg') || parsed['message'] || 'Failed to create card'
+    else
+      "HTTP Error #{response.code}: #{parsed}"
+    end
+
+  raise error_msg
+
   rescue StandardError => e
     raise e.message || 'something went wrong'
   end

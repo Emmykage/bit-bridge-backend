@@ -209,6 +209,7 @@ class BuyPowerPaymentService
       electric_bill_order.update(status: 'timedout', payment_method: payment_method)
       raise ActiveRecord::Rollback, 'Transaction TimedOut'
     rescue StandardError => e
+      binding.b
       return { response: e.message.to_s, status: 'error' }
     end
   end
