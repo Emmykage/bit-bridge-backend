@@ -175,12 +175,13 @@ class BridgeCardService
   def card_balance(card_id)
     raise ArgumentError, 'card_id is required' if card_id.blank?
 
-    url = "/get_card_balance?card_id=#{card_id}"
+    url = "/cards/get_card_balance?card_id=#{card_id}"
 
     response = fetch('get', url, nil)
     { data: response['data'], status: :ok }
   rescue StandardError => e
-    { success: false, message: e.message, status: bad_request }
+    binding.b
+    { success: false, message: e.message, status: :bad_request }
   end
 
   def create_virtua_card(pin)
@@ -215,9 +216,15 @@ class BridgeCardService
     { message: e.message, status: :bad_request }
   end
 
-  def fund_card(card_params)
+  def fund_card(card_params, wallet)
     card_id = card_params['card_id']
-    amount = card_params['amount']
+    amount = card_params['amount'].to_i * 100
+
+
+    wallet.balance < amount.to_f && raise('Insufficient wallet balance')
+
+
+
 
     reference = "bgcard#{Time.now.to_i}#{SecureRandom.hex(5)}"
     body = {
@@ -229,8 +236,7 @@ class BridgeCardService
     }.to_json
 
     url = '/cards/fund_card_asynchronously'
-
-    fetch('patch', url, body)
+    response = fetch('patch', url, body)
     { data: response['data'], status: :ok }
   rescue StandardError => e
     { message: e.message, status: :bad_request }

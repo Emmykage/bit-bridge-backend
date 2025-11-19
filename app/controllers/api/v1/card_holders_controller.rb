@@ -23,6 +23,39 @@
         end
       end
 
+        def fund_card
+        service = BridgeCardService.new
+
+       wallet =  current_user.wallet
+
+        service_response = service.fund_card(card_params, wallet)
+
+        if service_response[:status] == :ok
+          render json: { data: service_response[:data], message: "transaction completed" }, status: :ok
+
+        else
+          render json: { message: service_response[:message] }, status: :unprocessable_entity
+
+        end
+      end
+
+        def card_balance
+        service = BridgeCardService.new
+        id = params[:id]
+
+        service_response = service.card_balance(id)
+
+        if service_response[:status] == :ok
+          render json: { data: service_response[:data], message: "transaction completed" }, status: :ok
+
+        else
+          render json: { message: service_response[:message] }, status: :unprocessable_entity
+
+        end
+      end
+
+
+
       def user_card
         card_holder = current_user.wallet.card_holder
 
@@ -87,6 +120,20 @@
 
         end
       end
+
+      def get_rates
+        service = BridgeCardService.new
+
+        service_response = service.get_fx_rates
+
+        if service_response[:status] == :ok
+          render json: {message: "Rates Fetched", data: service_response[:data]}, status: :ok
+         else
+          render json: { message: service_response[:message] }, status: :unprocessable_entity
+
+        end
+      end
+
 
       # GET /cards/1
       def show
