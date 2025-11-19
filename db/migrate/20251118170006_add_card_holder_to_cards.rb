@@ -11,7 +11,11 @@ class AddCardHolderToCards < ActiveRecord::Migration[7.1]
     reversible do |dir|
       dir.up do
          default_card_holder = CardHolder.first
-          Card.update_all(card_holder_id: default_card_holder.id) if default_card_holder
+        if default_card_holder
+            Card.update_all(card_holder_id: default_card_holder.id)
+        else
+          Card.delete_all
+         end
       end
     end
 
