@@ -321,7 +321,7 @@ class AnchorService
 
       # end
 
-      raise 'Insufficient balance for this transfer' if wallet_balance < transfer_params[:amount]
+      raise 'Insufficient balance for this transfer' if wallet_balance < transfer_params[:amount].to_i
 
 
       response = fetch('post', 'transfers', nil, body)
