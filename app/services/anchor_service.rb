@@ -252,6 +252,7 @@ class AnchorService
 
   def initiate_transfer(transfer_params)
     wallet_balance = transfer_params[:wallet_balance]
+    wallet_id = transfer_params[:wallet_id]
     transfer_type = transfer_params[:inter_bank] ? 'BookTransfer' : 'NIPTransfer'
     recipient_name = transfer_params[:account_name]
     account_number = transfer_params[:account_number]
@@ -303,7 +304,7 @@ class AnchorService
       data: {
         type: transfer_type,
         attributes: {
-          amount: transfer_params[:amount],
+          amount: transfer_params[:amount].to_i * 100,
           currency: 'NGN',
           reason: transfer_params[:description].blank? ? 'Fund Transfer' : transfer_params[:description],
           reference: reference
@@ -321,7 +322,7 @@ class AnchorService
 
       # end
 
-      raise 'Insufficient balance for this transfer' if wallet_balance < transfer_params[:amount].to_i
+      raise 'Insufficient balance for this transfer' if wallet_balance.to_i < transfer_params[:amount].to_i
 
 
       response = fetch('post', 'transfers', nil, body)
@@ -329,11 +330,12 @@ class AnchorService
       # Use dig to safely access nested JSON keys
       transfer_id = response.dig(:data, 'id')
       status       = response.dig(:data, 'attributes', 'status')&.downcase
-      amount       = response.dig(:data, 'attributes', 'amount')
+      # amount       = response.dig(:data, 'attributes', 'amount')
       description  = response.dig(:data, 'attributes', 'reason')
 
       # Example: create a transaction record (assuming `transaction` is a model)
-      transaction = wallet.transactions.new(
+      transaction = Transaction.new(
+        wallet_id: wallet_id,
         account_id: transfer_params[:account_id],
         status: status,
         amount: amount,
@@ -361,6 +363,7 @@ class AnchorService
 
       { data: transaction, status: :ok }
     rescue StandardError => e
+      binding.b
       { message: e.message.presence || 'Bad request', status: :bad_request }
     end
   end
