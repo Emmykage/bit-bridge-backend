@@ -46,7 +46,6 @@ class BridgeCardService
       postal_code: postal_code,
       bvn: bvn,
       house_no: house_no,
-      user_id: account_params[:user_id],
       wallet_id: account_params[:wallet_id]
 
 
