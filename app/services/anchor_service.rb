@@ -265,6 +265,7 @@ class AnchorService
     bank = 'anchor'
     account_type = 'SubAccount' || 'DepositAccount'
     recipient_bank = transfer_params['bank']
+    amount = transfer_params[:amount]
     relationships = if transfer_type == 'NIPTransfer'
                       {
                         account: {
@@ -320,7 +321,7 @@ class AnchorService
 
       # end
 
-      raise 'Insufficient balance for this transfer' if wallet_balance < account_params[:amount].to_f
+      raise 'Insufficient balance for this transfer' if wallet_balance < transfer_params[:amount]
 
 
       response = fetch('post', 'transfers', nil, body)
