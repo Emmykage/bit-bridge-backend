@@ -74,6 +74,7 @@ class BridgeCardService
 
       }.to_json
       url = '/cardholder/register_cardholder_synchronously'
+
       response = fetch('post', url, body)
 
 
@@ -130,8 +131,8 @@ class BridgeCardService
       pin: pin
     }
 
-
     begin
+      raise 'Insufficient wallet balance' if params[:wallet_balance] < amount.to_f
       body = {
         'cardholder_id' => cardholder_id,
         'card_type' => card_type,
@@ -149,7 +150,7 @@ class BridgeCardService
 
       card_id = response.dig('data', 'card_id')
       card_params[:card_id] = card_id
-      card_holder.create!(card_params)
+      card = card_holder.cards.create!(card_params)
 
       { data: card, message: response['message'], status: :ok }
       # handle_response(response)
@@ -179,7 +180,6 @@ class BridgeCardService
     response = fetch('get', url, nil)
     { data: response['data'], status: :ok }
   rescue StandardError => e
-    binding.b
     { success: false, message: e.message, status: :bad_request }
   end
 

@@ -110,7 +110,9 @@
         service = BridgeCardService.new
 
         card_holder = current_user.wallet.card_holder
+        wallet_balance = current_user.wallet.balance
         proccessed_card_params = card_params.to_h.symbolize_keys
+        proccessed_card_params[:wallet_balance] = wallet_balance
         service_response = service.create_card(proccessed_card_params, card_holder)
         if service_response[:status] == :ok
           render json: { data: service_response[:data], message: service_response[:message] }, status: :ok
