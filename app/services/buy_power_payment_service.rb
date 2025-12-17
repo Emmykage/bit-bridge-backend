@@ -22,7 +22,10 @@ class BuyPowerPaymentService
   end
 
   def process_payment(current_user, payment_processor_params)
+
     res = nil
+    amount = payment_processor_params[:amount].to_f || 0.0
+
 
     res = verify_meter(payment_processor_params) unless payment_processor_params[:skip] === true
 
@@ -34,7 +37,7 @@ class BuyPowerPaymentService
       tariff_class: payment_processor_params[:tariff_class],
       service_type: payment_processor_params[:service_type],
       email: current_user.email || payment_processor_params[:email],
-      amount: payment_processor_params[:amount],
+      amount: amount,
       phone: current_user.user_profile&.phone_number || payment_processor_params[:phone],
       biller: payment_processor_params[:biller],
       description: payment_processor_params[:description],
@@ -47,7 +50,7 @@ class BuyPowerPaymentService
       tariff_class: payment_processor_params[:tariff_class],
       service_type: payment_processor_params[:service_type],
       email: payment_processor_params[:email],
-      amount: payment_processor_params[:amount],
+      amount: amount,
       phone: payment_processor_params[:phone],
       biller: payment_processor_params[:biller],
       description: payment_processor_params[:description],
