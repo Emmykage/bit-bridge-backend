@@ -24,8 +24,7 @@ class BuyPowerPaymentService
   def process_payment(current_user, payment_processor_params)
 
     res = nil
-    amount = payment_processor_params[:amount].to_f
-
+    amount = payment_processor_params[:amount]
 
     res = verify_meter(payment_processor_params) unless payment_processor_params[:skip] === true
 
