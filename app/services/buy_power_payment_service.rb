@@ -84,7 +84,7 @@ class BuyPowerPaymentService
     headers: @get_headers
   )
 
-  raise(response['message'] || 'Meter verification failed') unless response.success?
+  raise("#{response['message']} #{meter_type}" || 'Meter verification failed') unless response.success?
 
   response
 end
