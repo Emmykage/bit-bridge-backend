@@ -64,30 +64,31 @@ class BuyPowerPaymentService
     { response: e.message.to_s, status: 'error' }
   end
 
-  def verify_meter(verify_processor_params)
-    meter_number = verify_processor_params[:billersCode]
-    biller = verify_processor_params[:biller]
-    meter_type = verify_processor_params[:meter_type]
-    service_type = verify_processor_params[:service_type].upcase
+ def verify_meter(params)
+  meter_number = params[:billersCode]
+  biller       = params[:biller]
+  meter_type   = params[:meter_type] || 'PREPAID'
+  service_type = params[:service_type].to_s.upcase
 
+  query = {
+    meter: meter_number,
+    disco: biller,
+    vendType: meter_type,
+    vertical: service_type,
+    orderId: false
+ }.compact
 
+  response = self.class.get(
+    "/check/meter",
+    query: query,
+    headers: @get_headers
+  )
 
-    begin
-      response = self.class.get(
-        "/check/meter?meter=#{meter_number}&disco=#{biller}&vendType=#{meter_type}&vertical=#{service_type}&orderId=false", headers: @get_headers
-      )
+  raise(response['message'] || 'Meter verification failed') unless response.success?
 
+  response
+end
 
-      raise response['message'] unless response.success?
-
-
-
-
-      response
-    rescue StandardError => e
-      raise e.message
-    end
-  end
 
   def pay_data(electric_bill_order)
     body = {
